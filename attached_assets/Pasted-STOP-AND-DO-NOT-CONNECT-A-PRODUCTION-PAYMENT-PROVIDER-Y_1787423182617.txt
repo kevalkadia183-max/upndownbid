@@ -1,0 +1,457 @@
+STOP AND DO NOT CONNECT A PRODUCTION PAYMENT PROVIDER YET.
+
+I reviewed the current SignalRank MVP on mobile and I do not like the current UI/design direction.
+
+First, keep all existing functionality intact. Do not delete or rewrite working authentication, database, leaderboard, bidding, penalty, review, or transaction logic.
+
+1. PAYMENT REQUIREMENT
+
+Keep payments in SANDBOX/TEST MODE for now.
+
+Do NOT ask me to connect Stripe, Whop, Razorpay, or another production payment provider yet.
+
+Create/keep a payment abstraction layer so a production provider can be connected later.
+
+For development, use:
+
+* Sandbox/mock payment flow
+* Test transactions
+* Clearly marked simulated payments
+* Complete transaction ledger
+* Server-side transaction validation
+* Idempotency protection
+
+The current message asking me to “Connect Stripe” should not block development of the rest of the application.
+
+Build and test the complete user experience first.
+
+Production payments will be configured later.
+
+2. COMPLETE UI REDESIGN
+
+The current SignalRank UI looks too much like a corporate financial dashboard.
+
+Redesign it from scratch into a modern, premium, competitive social marketplace.
+
+The product should feel:
+
+* Modern
+* Competitive
+* Social
+* Premium
+* Fast
+* Slightly edgy
+* Trustworthy
+* Mobile-first
+
+Do NOT use the current oversized typography-heavy layout.
+
+Do NOT use giant empty hero sections.
+
+Do NOT make the homepage look like a financial report.
+
+Do NOT copy Outbid.lol’s exact design.
+
+Outbid.lol remains a functional reference only.
+
+Create an original visual identity.
+
+3. VISUAL DIRECTION
+
+Use a dark premium interface.
+
+Suggested direction:
+
+* Near-black/dark navy background
+* White/light-gray typography
+* Electric blue or purple primary accent
+* Bright green for Support
+* Red for Penalty
+* Subtle borders
+* Soft gradients
+* Glass/card surfaces
+* Small shadows
+* Rounded but not excessively rounded cards
+* Smooth micro-interactions
+
+The interface should feel closer to a modern startup/product-discovery platform than a banking dashboard.
+
+4. MOBILE-FIRST
+
+This is extremely important.
+
+The screenshots show the application being used on an iPhone.
+
+Design specifically for a 375–430px mobile viewport first.
+
+Everything must fit naturally on mobile.
+
+Avoid:
+
+* Horizontal overflow
+* Tiny buttons
+* Huge headings
+* Excessive empty space
+* Desktop tables
+* Buttons extending beyond screen
+* Cards that require awkward horizontal scrolling
+
+Then adapt the same design to tablet and desktop.
+
+5. HOME / EXPLORE PAGE
+
+Create a compact header:
+
+Logo / SignalRank
+Explore
+Trending
+Activity
+Sign In
+
+On mobile, collapse navigation into a clean menu.
+
+Below the header:
+
+“Discover what’s rising.”
+
+Short supporting text.
+
+Then a prominent search:
+
+Search products, apps, companies…
+
+Then compact filter tabs:
+
+Rank
+Trending
+New
+Most Supported
+Most Penalized
+
+6. LEADERBOARD CARDS
+
+Make ranking cards much more visually attractive.
+
+Example:
+
+┌─────────────────────────────┐
+│ #1                    $2,381│
+│                             │
+│ [LOGO]  Beacon              │
+│         Productivity       │
+│                             │
+│ 1.2K supporters   152 ⚔     │
+│                             │
+│ Effective Bid               │
+│ $2,381                      │
+│                             │
+│ [Support]       [View →]    │
+└─────────────────────────────┘
+
+The rank should be visually prominent.
+
+Show:
+
+* Rank
+* Product logo
+* Product name
+* Category
+* Short description
+* Effective bid
+* Supporter count
+* Penalizer count
+* Review score
+
+Do not overload the card.
+
+7. SUPPORT VS PENALTY
+
+Make the two actions immediately understandable.
+
+Support = positive/green
+
+Penalty = negative/red
+
+Example:
+
+[ ↑ Support $25 ]
+
+[ ↓ Penalize $10 ]
+
+Do not make these look like normal navigation buttons.
+
+They are the core actions of the platform.
+
+8. PRODUCT DETAIL PAGE
+
+Redesign the product page into a modern product profile.
+
+Top:
+
+Product logo
+Product name
+Verified badge if applicable
+Category
+Rank #1
+
+Then:
+
+$2,381
+Effective Bid
+
+Below:
+
+Owner Bid       $1,200
+Community       +$1,381
+Penalties       -$200
+
+Then statistics:
+
+1.2K Supporters
+152 Penalizers
+2.8K Reviews
+4.6 Review Score
+
+Then two large actions:
+
+[ ↑ SUPPORT THIS PRODUCT ]
+
+[ ↓ APPLY PENALTY ]
+
+The actions should be visually distinct.
+
+9. REVIEWS
+
+Make reviews feel like community opinions, not accounting records.
+
+Tabs:
+
+Support Reviews
+Penalty Reviews
+
+Each review:
+
+Avatar
+Username/Anonymous
+Supporter/Penalizer badge
+Star rating
+Reason
+Written review
+Date
+
+Example:
+
+Mira
+SUPPORTER
+★★★★★
+
+“Great product. It makes a busy week feel less chaotic.”
+
+Reason: Great product
+
+Do NOT make the financial amount the dominant part of the review.
+
+The reason/review is the important social content.
+
+10. LIVE ACTIVITY
+
+Add a compact activity feed.
+
+Examples:
+
+🟢 Alex supported Beacon +$25
+
+🔴 Jane penalized Wildform -$10
+
+🟢 Mike supported Lynk +$15
+
+Show relative timestamps.
+
+Allow users to remain anonymous publicly if they choose.
+
+11. PLATFORM STATISTICS
+
+Do not put giant statistics at the top of the homepage.
+
+Instead create a compact stats strip:
+
+12.5K Products
+8.7K Supporters
+2.1K Penalizers
+23K Reviews
+
+Use smaller cards.
+
+12. PRODUCT DISCOVERY
+
+Add:
+
+Trending
+Rising Fast
+Most Supported
+Most Penalized
+Highest Rated
+Most Controversial
+
+“Most Controversial” should represent products receiving substantial activity from both supporters and penalizers.
+
+13. COLOR SEMANTICS
+
+Use color consistently:
+
+GREEN = Support / positive
+
+RED = Penalty / negative
+
+PURPLE/BLUE = Brand / ranking
+
+YELLOW = featured/top ranking where appropriate
+
+Do not use bright colors everywhere.
+
+Use them only for meaningful actions and data.
+
+14. TYPOGRAPHY
+
+Reduce the current oversized typography.
+
+Use:
+
+* Strong but compact headings
+* Highly readable body text
+* Clear numeric typography
+* Good spacing
+* Consistent hierarchy
+
+The current “THE PUBLIC LEDGER” hero is too large and consumes too much mobile screen.
+
+Replace it with something much more compact.
+
+15. HEADER
+
+The current header is too large.
+
+Create a compact sticky header.
+
+Desktop:
+Logo | Explore | Trending | Activity | How It Works | Pricing | Search | Sign In
+
+Mobile:
+Logo | Search | Menu
+
+Keep the header approximately 60–70px tall.
+
+16. DESIGN SYSTEM
+
+Create reusable components:
+
+Button
+SupportButton
+PenaltyButton
+ProductCard
+LeaderboardCard
+ReviewCard
+StatsCard
+ActivityItem
+Badge
+AvatarStack
+SearchBar
+FilterTabs
+Modal
+BottomSheet
+Navigation
+
+Use one consistent design system across the entire application.
+
+17. ANIMATIONS
+
+Add subtle animations:
+
+* Rank movement
+* Support confirmation
+* Penalty confirmation
+* Number updates
+* Card hover
+* Button press
+* Activity appearing
+
+Keep animations fast and lightweight.
+
+Do not create distracting animations.
+
+18. IMPORTANT FUNCTIONALITY
+
+DO NOT change the core ranking formula:
+
+Effective Bid =
+Owner Bid
+
+* Community Support
+
+* Penalties
+
+Example:
+
+Owner Bid: $180
+Community Support: $119
+Penalties: $22
+
+Effective Bid = $277
+
+Keep all three values visible.
+
+19. SANDBOX NOTICE
+
+Make the current sandbox notice smaller and less intrusive.
+
+Instead of taking up a huge portion of the page, use a small informational banner:
+
+“Sandbox mode — no real funds are transferred.”
+
+Do not make it look like a production payment warning.
+
+20. REFERENCE IMAGE
+
+Use the attached/current UI feedback and the modern dark leaderboard concept discussed in this conversation as the design direction.
+
+The target should feel substantially more polished than the current SignalRank UI.
+
+Do not simply change colors.
+
+Rework:
+
+* Layout
+* Spacing
+* Typography
+* Cards
+* Navigation
+* Leaderboard
+* Product page
+* Reviews
+* Support/Penalty actions
+* Mobile responsiveness
+
+21. BEFORE FINISHING
+
+Test the application specifically at:
+
+375px
+390px
+414px
+430px
+768px
+1440px
+
+Check:
+
+* No horizontal scrolling
+* No clipped buttons
+* No overlapping cards
+* No broken modals
+* No oversized sections
+* No inaccessible controls
+* Good touch targets
+
+Keep all existing functionality working.
+
+After completing the redesign, show me the updated mobile homepage and product detail page before making any production payment integration.

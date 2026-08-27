@@ -1,0 +1,228 @@
+CRITICAL: Polar has automatically DISABLED the UpnDownBid webhook endpoint because of continuous delivery failures.
+
+Polar reports:
+
+Disabled endpoint:
+https://upndownbid.lol/api/payments/webhooks/polar
+
+Reason:
+"After multiple consecutive failed delivery attempts, we've disabled your webhook endpoint."
+
+The Polar sandbox payment was successfully completed and Polar shows:
+- Revenue: $5
+- Orders: 1
+- Order Paid: $5
+- Customer Created: Sandbox Verification
+
+DO NOT create another payment.
+DO NOT re-enable the webhook yet.
+DO NOT change production payment behavior yet.
+
+We need to diagnose the webhook failure first.
+
+Perform a READ-ONLY forensic investigation of the actual failed Polar webhook deliveries.
+
+1. FIND THE FAILED DELIVERIES
+
+Inspect the Polar webhook delivery history for this endpoint.
+
+For the completed $5 sandbox transaction, identify:
+- event ID
+- event type
+- delivery attempts
+- HTTP status returned by UpnDownBid
+- response body/status if available
+- delivery timestamps
+- failure reason
+
+Do NOT expose secrets, webhook signing secrets, access tokens, card information, or customer PII.
+
+2. TRACE THE REQUEST IN UPNDOWNBID
+
+Find the corresponding requests in the UpnDownBid production API logs.
+
+Determine exactly what happened.
+
+Check whether the endpoint:
+
+POST /api/payments/webhooks/polar
+
+returned:
+- 2xx
+- 4xx
+- 5xx
+- timeout
+- connection failure
+
+Identify the exact application error/stack trace if available.
+
+3. VERIFY SIGNATURE HANDLING
+
+Check the Polar Standard Webhooks signature verification implementation.
+
+Confirm:
+- correct webhook secret is being used
+- correct signature headers are read
+- raw request body is preserved before verification
+- signature verification is performed before processing
+- sandbox webhook secret matches the sandbox environment
+- production/live secret is NOT accidentally being used for sandbox events
+
+Do not print the secret itself.
+
+4. VERIFY EVENT PARSING
+
+Inspect the actual Polar event received from the successful $5 payment.
+
+Determine its exact native Polar event type.
+
+Compare that event type with the UpnDownBid adapter.
+
+Do NOT assume Stripe-style event names.
+
+Tell me:
+
+Polar event type:
+UpnDownBid recognized event type:
+Mapped internal event:
+Result:
+
+If the current adapter is expecting the wrong Polar event name or payload structure, identify that as the defect.
+
+5. VERIFY PAYLOAD FIELDS
+
+Compare the actual Polar webhook payload against what the adapter expects.
+
+Specifically verify:
+- event ID
+- order ID
+- checkout ID
+- customer ID
+- amount
+- currency
+- metadata
+- product ID
+- external/internal payment ID
+
+Determine whether the internal payment/campaign identifier is actually present where the adapter expects it.
+
+6. VERIFY HTTP CONTRACT
+
+A webhook provider normally expects a successful HTTP response after accepting a valid event.
+
+Determine whether our handler is accidentally returning an error after successfully receiving/processing an event.
+
+Check for:
+- incorrect response status
+- JSON serialization errors
+- database errors
+- transaction errors
+- missing environment variables
+- signature failures
+- event mapping failures
+- exceptions after ledger processing
+
+7. CHECK FOR PARTIAL PROCESSING
+
+This is critical.
+
+Determine whether any of the failed webhook attempts partially changed the database.
+
+Check:
+
+internal payment
+ledger
+campaign action
+Boost count
+ranking power
+audit events
+
+Make sure we do not have:
+
+payment succeeded + webhook failed + ledger partially written
+
+or
+
+ledger written + webhook returned 500
+
+or
+
+campaign updated multiple times
+
+8. IDEMPOTENCY
+
+Check whether the failed delivery attempts created duplicate records.
+
+Expected:
+
+1 Polar event
+1 internal payment state transition
+1 successful ledger entry
+1 campaign action
+
+Not:
+
+5 webhook attempts
+5 ledger entries
+
+9. DETERMINE ROOT CAUSE
+
+Give me one precise root cause.
+
+Examples:
+
+- wrong webhook secret
+- wrong sandbox secret
+- invalid signature verification
+- incorrect raw-body handling
+- unsupported Polar event type
+- incorrect payload mapping
+- missing payment metadata
+- database failure
+- endpoint timeout
+- application exception
+- incorrect HTTP response
+- other
+
+Do not guess.
+
+Use the actual failed delivery/application evidence.
+
+10. ONLY AFTER DIAGNOSIS
+
+Do NOT automatically fix anything yet.
+
+First report:
+
+WEBHOOK URL: PASS/FAIL
+ENDPOINT REACHABLE: PASS/FAIL
+SIGNATURE VERIFICATION: PASS/FAIL
+EVENT PARSING: PASS/FAIL
+PAYLOAD MAPPING: PASS/FAIL
+DATABASE PROCESSING: PASS/FAIL
+HTTP RESPONSE: PASS/FAIL
+IDEMPOTENCY: PASS/FAIL
+
+Then provide:
+
+ROOT CAUSE:
+<exact reason>
+
+FAILED EVENT:
+<event type and safe identifier>
+
+HTTP RESPONSE:
+<status>
+
+APPLICATION ERROR:
+<safe error summary>
+
+DATABASE EFFECT:
+<what actually changed>
+
+RECOMMENDED FIX:
+<exact change required>
+
+Stop there.
+
+Do not modify code, database, webhook configuration, or Polar settings until I approve the diagnosis.

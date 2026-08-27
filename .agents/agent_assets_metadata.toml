@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "9zc5rLiWfgBVP_FeZoKtL"
+uri = "file://artifacts/upndownbid-demo-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "product demo background music"
+description = "Generated music: Instrumental background music scoring an energetic, trustworthy marketplace product demo. Warm plucked synth, crisp muted percussion, subtle bass pulse, airy marimba accents, 112 BPM…"

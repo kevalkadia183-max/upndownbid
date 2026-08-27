@@ -1,0 +1,636 @@
+FINAL RELEASE GATE → PAYMENT INTEGRATION → PAYMENT VALIDATION
+
+We are at the final stage of Upndownbid.lol.
+
+IMPORTANT:
+Do NOT skip testing.
+Do NOT add payment integration until the complete pre-payment release gate passes.
+Do NOT use real payment credentials during the pre-payment tests.
+Do NOT modify working campaign/ranking/owner logic unless a test proves there is a defect.
+
+==================================================
+PHASE 1 — FINAL PRE-PAYMENT RELEASE AUDIT
+==================================================
+
+Start with a non-mutating inspection of the entire current codebase.
+
+Review:
+- campaign logic
+- weekly Sunday-to-Sunday campaign lifecycle
+- winner selection
+- winner history
+- owner portal
+- Clerk authentication/verification
+- public anonymous flows
+- Boost / Push Down actions
+- penalty/review reason flow
+- product creation
+- profile management
+- admin panel
+- leaderboard/ranking calculations
+- payment/ledger code already present
+- database transactions
+- API routes
+- rate limiting
+- idempotency
+- test infrastructure
+- production build
+- deployment/workflow configuration
+
+Do NOT assume something is working because it exists in the UI.
+Verify the actual backend behavior.
+
+==================================================
+PHASE 2 — TEST ISOLATION
+==================================================
+
+Ensure tests cannot corrupt shared development/production data.
+
+Use disposable/sandbox test records wherever possible.
+
+Never:
+- create fake production users
+- create fake permanent payments
+- alter real campaign winners
+- modify real owner balances
+- send real payment requests
+- use real payment credentials
+
+Verify Task #25 remains protected and merged.
+
+==================================================
+PHASE 3 — COMPLETE OWNER PORTAL TEST
+==================================================
+
+Test the complete owner lifecycle.
+
+A. Anonymous user
+- Can browse products
+- Can view rankings
+- Can view campaign
+- Can Boost
+- Can Push Down
+- Can submit appropriate penalty/review feedback
+- Cannot access owner-only management
+
+B. Owner authentication
+Verify Clerk authentication and verification.
+
+After verification the owner must only see/manage their own products.
+
+Test:
+- owner-only access
+- cross-owner access denied
+- profile editing
+- profile persistence after refresh
+- product/listing editing
+- listing persistence after refresh
+- archive listing
+- archived listing behavior
+- owner feedback/review viewing
+- owner reply to feedback/review
+- public visibility of owner reply
+
+Cross-owner security is mandatory.
+
+Owner A must never be able to edit/view management data belonging to Owner B.
+
+==================================================
+PHASE 4 — PRODUCT CREATION
+==================================================
+
+Verify the public product creation flow.
+
+When adding a product, collect only:
+
+- username
+- email
+- password
+
+The rest of the profile/product information can be completed or updated later from the owner profile/portal.
+
+Verify:
+- product is created
+- owner is correctly associated
+- credentials/authentication work
+- duplicate/conflicting ownership cannot occur
+- owner can access only their own product
+- public product appears correctly
+
+==================================================
+PHASE 5 — CAMPAIGN TEST
+==================================================
+
+Campaign rules:
+
+- Every campaign lasts exactly 7 days.
+- Campaign runs Sunday → Sunday.
+- A new campaign starts fresh.
+- Old bids do NOT carry into the new campaign.
+- Old rankings do NOT carry into the new campaign.
+- Previous winner history is preserved.
+- Last week's winner remains visible in winner/history section.
+- Current week's winner is clearly identified.
+- Highest valid effective bid wins the campaign.
+- Winner is determined when campaign closes.
+- Winner cannot be changed after the campaign is finalized.
+- New campaign starts with a fresh ranking.
+- Minimum claim/bid rules remain enforced.
+
+Test:
+- campaign countdown
+- campaign closing
+- winner calculation
+- winner persistence
+- winner history
+- new campaign reset
+- concurrent bids
+- concurrent Boost actions
+- concurrent Push Down actions
+- ranking consistency
+
+Pay particular attention to race conditions.
+
+==================================================
+PHASE 6 — BOOST / PUSH DOWN
+==================================================
+
+The UI should use:
+
+BOOST
+PUSH DOWN
+
+instead of confusing "Bid" / "Penalty" terminology for public actions.
+
+Verify every product card has:
+- BOOST button
+- PUSH DOWN button
+
+Each button must open the correct action flow.
+
+BOOST:
+- correct product
+- correct campaign
+- correct amount
+- correct ranking update
+- correct ledger
+- idempotent replay
+
+PUSH DOWN:
+- correct product
+- simple reason selection
+- reasons should include:
+
+1. I tested it — there is a bug
+2. UI/UX issue
+3. Broken feature
+4. Performance issue
+5. I'm a competitor
+6. No reason
+7. Just for fun
+8. Other
+
+If the user selects a problem-related option, provide a short optional field:
+
+"Describe the issue (optional)"
+
+For "Other":
+
+"Tell us more (optional)"
+
+Keep this flow short and simple.
+
+==================================================
+PHASE 7 — PAYMENT / RANKING INTEGRITY
+==================================================
+
+The existing payment-integrity implementation has reportedly passed:
+
+13/13 tests
+Typecheck
+Concurrent owner bids
+Duplicate payment protection
+Failed/cancelled payment protection
+Consistent leaderboard snapshots
+Lost-response/idempotency replay protection
+
+Do NOT assume this is enough.
+
+Re-run the relevant tests against the current code.
+
+Verify:
+
+A successful payment MUST result in the corresponding leaderboard/owner bid update.
+
+A cancelled payment MUST NOT change ranking.
+
+A failed payment MUST NOT change ranking.
+
+A duplicate webhook/event MUST NOT duplicate the bid.
+
+A replayed request must return the original result rather than creating another transaction.
+
+Concurrent owner bids must remain atomic.
+
+The displayed leaderboard amount must match the authoritative payment/ledger state.
+
+No payment can create a ranking update without a valid corresponding payment.
+
+No ranking update can claim to be paid when the payment failed.
+
+==================================================
+PHASE 8 — ADMIN PANEL SECURITY
+==================================================
+
+Verify admin functionality.
+
+Admin must be able to see:
+
+- users
+- products
+- owners
+- campaigns
+- winners
+- total platform revenue
+- payment totals
+- Boost activity
+- Push Down activity
+- reviews/feedback
+- traffic/usage analytics
+- product analytics
+- campaign analytics
+
+Admin must be able to:
+
+- remove inappropriate products
+- remove scam/fraudulent listings
+- suspend users
+- restore users/listings where appropriate
+- review reported content
+
+Examples of prohibited listings:
+- pornography
+- scams
+- malicious websites
+- illegal content
+- phishing
+- deceptive/fraudulent services
+
+IMPORTANT:
+Admin routes must be protected server-side.
+Do NOT rely only on hiding buttons in the frontend.
+
+==================================================
+PHASE 9 — FULL SECURITY/API TEST
+==================================================
+
+Run the complete API/security suite.
+
+Do not stop at unit tests.
+
+Check:
+- authentication
+- authorization
+- ownership
+- cross-owner access
+- input validation
+- rate limiting
+- idempotency
+- replay protection
+- concurrent writes
+- payment integrity
+- campaign integrity
+- admin authorization
+- public mutation endpoints
+
+All tests must pass.
+
+==================================================
+PHASE 10 — BUILD / TYPECHECK
+==================================================
+
+Run:
+
+- frontend typecheck
+- backend/API typecheck
+- complete test suite
+- security suite
+- production frontend build
+- production API build
+
+Fix genuine failures.
+
+Do not weaken tests just to make them pass.
+
+==================================================
+PHASE 11 — BROWSER RELEASE TEST
+==================================================
+
+Use fresh browser sessions.
+
+Test DESKTOP:
+
+Anonymous:
+- landing page
+- campaign
+- rankings
+- product details
+- Boost
+- Push Down
+- feedback flow
+- navigation
+
+Owner:
+- authentication
+- verification
+- owner portal
+- profile edit
+- product edit
+- archive
+- feedback
+- reply
+
+Admin:
+- login/access
+- users
+- products
+- moderation
+- analytics
+
+Test MOBILE:
+
+Repeat the critical anonymous and owner flows.
+
+Check:
+- no horizontal overflow
+- buttons don't overlap
+- dialogs open correctly
+- bottom navigation works
+- forms work
+- countdown works
+- ranking cards work
+- Boost opens Boost flow
+- Push Down opens Push Down flow
+- owner portal is usable
+
+==================================================
+PHASE 12 — RELEASE DECISION
+==================================================
+
+At this point create a clear report:
+
+FINAL RELEASE GATE
+
+Typecheck: PASS/FAIL
+API tests: PASS/FAIL
+Security tests: PASS/FAIL
+Production build: PASS/FAIL
+Desktop browser: PASS/FAIL
+Mobile browser: PASS/FAIL
+Anonymous flow: PASS/FAIL
+Owner flow: PASS/FAIL
+Admin flow: PASS/FAIL
+Campaign lifecycle: PASS/FAIL
+Winner system: PASS/FAIL
+Boost/Push Down: PASS/FAIL
+Payment integrity: PASS/FAIL
+
+If ANY release-blocking item fails:
+
+STOP.
+
+Do NOT integrate live payment yet.
+
+Explain:
+- exact failure
+- affected component
+- severity
+- proposed fix
+
+If everything passes, continue automatically to Phase 13.
+
+==================================================
+PHASE 13 — PAYMENT INTEGRATION
+==================================================
+
+ONLY AFTER PHASE 12 PASSES.
+
+Inspect the existing payment implementation first.
+
+If the project already contains a payment provider integration/configuration, continue using that provider rather than introducing another provider unnecessarily.
+
+The existing Upndownbid checkout design has previously used Polar-style checkout, so inspect the current implementation before deciding whether Polar or another provider is already wired into the application.
+
+Do NOT blindly replace existing payment infrastructure.
+
+Payment requirements:
+
+1. User chooses a Boost amount.
+2. Show the product being boosted.
+3. Show campaign number.
+4. Show current highest effective bid.
+5. Show the user's proposed amount.
+6. Show amount required to reach the desired ranking.
+7. Clearly state that the payment is for the campaign action.
+8. User confirms.
+9. Payment provider checkout opens.
+10. Payment succeeds.
+11. Server verifies the payment.
+12. Server records the payment.
+13. Server updates the authoritative bid/ledger.
+14. Leaderboard updates atomically.
+15. User receives confirmation.
+
+Payment must be server-authoritative.
+
+NEVER trust:
+- frontend payment success
+- frontend amount
+- frontend ranking
+- frontend product ownership
+
+==================================================
+PHASE 14 — PAYMENT WEBHOOKS
+==================================================
+
+Implement/verify secure webhook handling.
+
+Webhook processing must be:
+
+- authenticated/verified
+- idempotent
+- replay-safe
+- transaction-safe
+- concurrency-safe
+
+For every event:
+
+payment event
+→ verify signature
+→ verify payment status
+→ identify product/owner/campaign
+→ validate amount
+→ check idempotency
+→ record payment
+→ update authoritative bid
+→ update leaderboard
+→ commit transaction
+
+Duplicate webhook:
+→ return safely
+→ no duplicate payment
+→ no duplicate ranking update
+
+Failed/cancelled payment:
+→ no ranking update
+
+==================================================
+PHASE 15 — SANDBOX PAYMENT TESTING
+==================================================
+
+Before live mode, use ONLY sandbox/test payments.
+
+Test:
+
+1. successful payment
+2. failed payment
+3. cancelled checkout
+4. duplicate webhook
+5. webhook replay
+6. delayed webhook
+7. lost browser response
+8. refresh after payment
+9. double-click payment
+10. concurrent payments
+11. payment for wrong product
+12. payment for wrong campaign
+13. insufficient/invalid amount
+14. owner attempting unauthorized payment
+
+Verify the database and leaderboard after every scenario.
+
+==================================================
+PHASE 16 — PAYMENT UI
+==================================================
+
+The payment flow should be simple.
+
+Do not expose unnecessary technical information.
+
+Before checkout show:
+
+PRODUCT
+CAMPAIGN
+CURRENT #1
+YOUR BOOST
+PROJECTED RANK
+TOTAL
+
+Then:
+
+"Continue to payment"
+
+After successful payment:
+
+"Boost successful"
+
+Show:
+- product
+- amount
+- campaign
+- current rank
+- transaction/reference ID if appropriate
+
+Never claim payment succeeded until the server/provider confirms it.
+
+==================================================
+PHASE 17 — LIVE PAYMENT PREPARATION
+==================================================
+
+Do NOT activate live payment automatically.
+
+Prepare:
+
+- production payment environment variables
+- webhook production endpoint
+- webhook secret
+- success/cancel URLs
+- production configuration
+- payment provider settings
+
+Keep secrets ONLY in environment variables/secrets.
+
+Never commit:
+- API keys
+- webhook secrets
+- payment credentials
+- .env files
+
+Verify .gitignore and repository history.
+
+==================================================
+PHASE 18 — FINAL PAYMENT RELEASE CHECK
+==================================================
+
+After sandbox testing:
+
+Run again:
+
+- typecheck
+- complete tests
+- security tests
+- production build
+- payment tests
+- desktop browser test
+- mobile browser test
+
+Then produce:
+
+PAYMENT RELEASE REPORT
+
+Provider:
+Environment:
+Sandbox tests:
+Webhook tests:
+Idempotency:
+Concurrency:
+Failed payment handling:
+Cancellation handling:
+Refund handling (if supported):
+Security:
+Production build:
+FINAL STATUS:
+
+Do NOT switch to live payment unless everything is PASS.
+
+==================================================
+IMPORTANT FINAL RULE
+==================================================
+
+This is a production release.
+
+Do not make cosmetic changes during the release gate.
+
+Do not remove tests to make the suite pass.
+
+Do not bypass authentication.
+
+Do not trust client-side payment state.
+
+Do not mutate production data during testing.
+
+Do not enable live payments until sandbox payment validation is complete.
+
+GitHub remains the source of truth.
+
+Before any major database/payment schema change:
+- create/verify backup
+- run migration safely
+- verify rollback strategy
+
+At the end, give me a concise report of:
+1. what passed
+2. what failed
+3. what was fixed
+4. what remains
+5. whether Upndownbid.lol is READY FOR LIVE PAYMENT

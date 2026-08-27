@@ -1,0 +1,112 @@
+FINAL LIVE POLAR CONFIGURATION — STOP BEFORE FIRST PAYMENT
+
+The sandbox production deployment has now been successfully verified.
+
+Published commit:
+4537653a0c604a748a977103bdfc635e6162f0cf
+
+Current verified production state:
+
+- Production active and healthy
+- Homepage HTTP 200
+- Frontend loads successfully
+- /api/public/payment-environment returns HTTP 200
+- mode = sandbox
+- provider = polar
+- liveEnabled = false
+- PAYMENT_MODE=sandbox
+- POLAR_SANDBOX_ENABLED=true
+- No live credentials configured
+- No production financial data changed
+
+Now proceed with ONLY the production live-payment configuration.
+
+IMPORTANT SAFETY RULES:
+
+1. Do NOT create a checkout.
+2. Do NOT charge a card.
+3. Do NOT replay any webhook.
+4. Do NOT modify existing payments.
+5. Do NOT modify ledger entries.
+6. Do NOT modify leaderboard/ranking records.
+7. Do NOT perform any financial transaction.
+
+LIVE CONFIGURATION:
+
+Configure the production secret store with the LIVE Polar credentials and webhook signing secret.
+
+Use the existing secure secrets mechanism.
+
+Never put secrets in source code.
+Never commit secrets.
+Never expose secret values to the frontend.
+Never print secret values in logs.
+
+Switch production configuration from:
+
+PAYMENT_MODE=sandbox
+POLAR_SANDBOX_ENABLED=true
+
+to the appropriate LIVE configuration supported by the existing implementation.
+
+Preserve:
+
+- payment signature verification
+- gross amount verification
+- currency verification
+- metadata verification
+- authenticated ownership
+- campaign validation
+- idempotency
+- ledger exactly-once behavior
+- leaderboard exactly-once behavior
+- reconciliation behavior
+- audit logging
+
+DEPLOY:
+
+1. Verify the intended commit.
+2. Configure the production secrets.
+3. Apply the live configuration.
+4. Publish/deploy the application.
+5. Restart required services.
+6. Verify service health.
+7. Verify homepage HTTP 200.
+8. Verify frontend loads.
+9. Verify:
+
+GET /api/public/payment-environment
+
+returns:
+
+mode = live
+provider = polar
+liveEnabled = true
+
+Do NOT expose credentials in the response.
+
+10. Verify there are no startup errors.
+11. Verify the database/payment counts remain unchanged.
+12. Verify no checkout was created.
+13. Verify no payment/webhook/ledger/ranking record was modified.
+
+CRITICAL STOP CONDITION:
+
+Once LIVE mode is confirmed and healthy, STOP.
+
+Do NOT create the first live checkout.
+
+Do NOT make the first live payment.
+
+Do NOT ask the system to automatically test a payment.
+
+Report:
+
+- deployed commit
+- live configuration status
+- payment-environment response
+- service health
+- confirmation that no checkout/payment was created
+- confirmation that no financial data changed
+
+Then wait for my instruction to perform the FIRST REAL $5 COMMUNITY_BID.

@@ -1,0 +1,161 @@
+FINAL LIVE POLAR PAYMENT ENABLEMENT
+
+All sandbox payment verification and pre-live security checks have passed.
+
+Now prepare UpDownBid for REAL LIVE POLAR PAYMENTS.
+
+IMPORTANT:
+This is a production financial change. Work carefully and do not weaken any existing payment, signature, authorization, idempotency, ledger, ranking, or reconciliation protections.
+
+PHASE 1 — PRE-CHANGE SAFETY
+
+Before changing production payment configuration:
+
+1. Verify the current Git working tree is clean.
+2. Confirm the latest successful sandbox implementation is committed/published.
+3. Run the existing typecheck, production build, and payment/security test suite.
+4. Verify no .env, secrets, credentials, logs, or generated artifacts are being committed.
+5. Create/confirm a database backup or other recoverable checkpoint before changing payment configuration.
+6. Do not modify existing historical payment/ledger/ranking records.
+
+STOP if any of these checks fail.
+
+PHASE 2 — SWITCH POLAR TO LIVE
+
+Configure production only:
+
+PAYMENT_MODE=live
+PAYMENT_PROVIDER=polar
+POLAR_SANDBOX_ENABLED=false
+
+Use the LIVE Polar credentials/secrets from the secure production secret store.
+
+Do NOT hard-code credentials in source code.
+Do NOT expose Polar secret keys to the browser.
+
+Configure the production Polar webhook using the existing production endpoint:
+
+https://upndownbid.lol/api/payments/webhooks/polar
+
+Use the LIVE Polar webhook signing secret.
+
+Do not change the webhook route or payment architecture unless absolutely required.
+
+PHASE 3 — VERIFY LIVE CONFIGURATION
+
+After deployment, verify:
+
+- API starts successfully.
+- Web application starts successfully.
+- Production environment reports Polar LIVE mode internally without exposing secrets.
+- Live Polar credentials are accepted.
+- Webhook endpoint is reachable.
+- Webhook signature verification remains enabled.
+- No sandbox configuration remains active in the production payment path.
+- Frontend does not expose secret credentials.
+- Existing payment/security tests still pass.
+
+IMPORTANT:
+Do NOT create a real customer payment during this phase.
+
+PHASE 4 — LIVE CHECKOUT SAFETY
+
+Before allowing the first real transaction, inspect the generated checkout request and confirm:
+
+- authenticated user required
+- correct user/account
+- correct listing
+- correct campaign
+- COMMUNITY_BID action
+- amount supplied by server-authoritative rules
+- minimum bid remains $5 inclusive
+- currency correct
+- stable internal payment ID
+- stable idempotency key
+- hosted Polar checkout URL returned
+- internal payment is persisted BEFORE hosted checkout creation
+- payment starts as pending
+
+PHASE 5 — LIVE WEBHOOK SAFETY
+
+Confirm order.paid processing still requires:
+
+- valid Polar signature
+- existing internal payment
+- matching provider checkout/order
+- matching authenticated account/ownership
+- matching listing/campaign
+- matching COMMUNITY_BID action
+- matching currency
+- matching GROSS customer-paid amount
+- valid trusted metadata
+- idempotent provider event
+
+A failed verification must NOT credit the leaderboard.
+
+Successful verification must perform the existing exactly-once:
+
+payment succeeded
+→ provider event
+→ ledger entry
+→ ranking/communitySupport update
+→ audit event
+
+Do not introduce any refund behavior for COMMUNITY_BID.
+
+PHASE 6 — DEPLOYMENT
+
+Use the normal safe deployment workflow:
+
+1. Verify incoming Git changes.
+2. git pull origin main
+3. pnpm install
+4. activate uploader virtual environment if required by the project
+5. pip install -r requirements.txt if required
+6. restart the relevant production services
+7. verify service status
+8. verify the application responds
+9. verify production logs contain no startup/payment configuration errors
+
+Do not commit .env or environment-specific files.
+
+PHASE 7 — FIRST REAL PAYMENT
+
+ONLY after the live configuration and deployment checks pass:
+
+Stop and ask me to make the FIRST REAL LIVE PAYMENT manually.
+
+Do NOT create the payment yourself.
+Do NOT use a sandbox card.
+Do NOT use a test payment.
+Do NOT automatically submit a real payment.
+
+The first live payment should be a controlled minimum $5 COMMUNITY_BID.
+
+After I complete it, I will provide the production return URL/payment ID.
+
+Then perform a read-only trace first and verify:
+
+1. Polar live checkout succeeded.
+2. order.paid was delivered.
+3. Signature verified.
+4. Internal payment matched.
+5. Gross amount matched.
+6. Payment became succeeded.
+7. Exactly one provider event exists.
+8. Exactly one ledger entry exists.
+9. Exactly one leaderboard update exists.
+10. Audit event exists.
+11. No duplicate credit occurred.
+12. Published leaderboard reflects the payment.
+
+Do NOT perform any additional live transaction until the first live transaction has been fully verified.
+
+FINAL RULE:
+
+Do not claim "live payments are ready" merely because configuration succeeds.
+
+Only report LIVE PAYMENT READY after:
+configuration → deployment → health checks → first real $5 transaction → webhook → ledger → leaderboard
+
+have all been successfully verified.

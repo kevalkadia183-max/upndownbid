@@ -1,0 +1,655 @@
+FINAL QA + PRODUCTION READINESS AUDIT — UpnDownBid.lol
+
+You are now working on the final pre-launch version of UpnDownBid.lol.
+
+IMPORTANT:
+This is a FINAL TESTING AND BUG-FIX task.
+
+DO NOT:
+- Redesign the UI
+- Change the existing visual style
+- Remove working features
+- Add unrelated features
+- Add real payment processing yet
+- Replace the existing architecture unnecessarily
+- Introduce paid services unless absolutely required
+- Put test/demo data into production
+- Assume something works without testing it
+
+Your job is to thoroughly audit the existing application, test every important workflow, identify bugs, and fix only the issues required for production readiness.
+
+==================================================
+1. PRODUCT CORE
+==================================================
+
+UpnDownBid is a public weekly ranking marketplace where:
+
+- Website/app owners can submit their website/app.
+- Each product belongs to a category.
+- A campaign runs for exactly 7 days.
+- The campaign starts fresh every week.
+- Products compete based on their effective bid.
+- Users can bid/support products.
+- Users can apply monetary penalties to products.
+- Support increases effective bid.
+- Penalties decrease effective bid.
+- The highest effective bid ranks #1.
+- At the end of the campaign, the highest-ranked product becomes that week's winner.
+- Previous winners must remain stored historically.
+- The previous week's winner must remain prominently visible as the latest winner.
+- A new weekly campaign starts fresh while preserving historical records.
+
+==================================================
+2. PRODUCT SUBMISSION
+==================================================
+
+Test the complete "Add Product" flow.
+
+The user must be able to:
+
+1. Enter a valid website/app URL.
+2. Select a category.
+3. Enter/select the initial bid.
+4. See the projected ranking.
+5. See the current #1 bid.
+6. See exactly how much is required to reach #1.
+7. Submit the product.
+
+Rules:
+
+- URL must be validated.
+- Invalid URLs must be rejected gracefully.
+- Duplicate products/URLs must be handled correctly.
+- The same product should not accidentally create duplicate listings.
+- Category is required.
+- Minimum initial bid is $5 unless the existing business rules explicitly specify otherwise.
+- If the current #1 is $250, a new product paying $250 should be handled according to the existing tie/ranking rule.
+- If the user wants to claim #1 and the current effective bid is $250, the UI must clearly communicate the required amount.
+- Projected rank must be calculated from the real current ranking data.
+
+==================================================
+3. HOMEPAGE PRODUCT CARDS
+==================================================
+
+Every product card on the homepage/live rankings must provide clear actions:
+
+- BID / SUPPORT
+- PENALTY
+
+The user should be able to click the appropriate action directly from the product card.
+
+Verify:
+
+- Correct product ID is passed.
+- Correct product is targeted.
+- Correct campaign is targeted.
+- Bid amount is validated.
+- Penalty amount is validated.
+- The effective bid updates correctly.
+- Ranking updates immediately after successful action.
+- Counts update correctly.
+- No action can accidentally affect another product.
+
+==================================================
+4. EFFECTIVE BID CALCULATION
+==================================================
+
+Verify the calculation from the database/server side.
+
+Effective bid should follow the existing intended model:
+
+OWNER BID
++ COMMUNITY SUPPORT / BIDS
+- PENALTIES
+= EFFECTIVE BID
+
+Example:
+
+Owner bid = $180
+Community support = $119
+Penalties = $22
+
+Effective bid = $277
+
+Do NOT trust client-side calculations.
+
+The authoritative calculation must happen server-side.
+
+Prevent:
+
+- Negative effective bids unless intentionally supported by the business rules.
+- NaN values.
+- Decimal/rounding bugs.
+- Negative bid values.
+- Negative penalty values.
+- Invalid currency values.
+- Client manipulation.
+
+==================================================
+5. COMMUNITY BID / SUPPORT
+==================================================
+
+Test:
+
+- User selects a product.
+- User chooses bid/support amount.
+- User provides required information.
+- Amount is validated.
+- Action is recorded.
+- Product's support count increases.
+- Product's support total increases.
+- Effective bid increases.
+- Ranking recalculates.
+
+Test multiple bids on the same product.
+
+Test multiple users/products.
+
+Make sure one user's action cannot overwrite another user's action.
+
+==================================================
+6. PENALTY SYSTEM
+==================================================
+
+Test:
+
+- User selects a product.
+- User chooses a penalty amount.
+- User provides the required reason/context.
+- Penalty is recorded.
+- Penalty count increases.
+- Penalty total increases.
+- Effective bid decreases.
+- Ranking recalculates.
+
+Example:
+
+Effective bid = $277
+Penalty = $10
+
+New effective bid = $267.
+
+Penalties must never be allowed to manipulate another product.
+
+Validate penalty amounts server-side.
+
+Prevent:
+
+- $0 penalties if not allowed.
+- Negative penalties.
+- Invalid values.
+- Duplicate/replayed transactions.
+- Client-side manipulation.
+
+==================================================
+7. REVIEWS / REASONS
+==================================================
+
+Verify that users can provide a reason/context for:
+
+- Bid/support
+- Penalty
+
+The product page should show the relevant community activity/reviews according to the existing design.
+
+Verify:
+
+- Text validation.
+- Reason is stored with the correct action.
+- Correct product association.
+- Correct timestamp.
+- No unauthorized editing.
+- No XSS/injection through review text.
+
+==================================================
+8. WEEKLY CAMPAIGN SYSTEM
+==================================================
+
+This is CRITICAL.
+
+Each campaign lasts exactly 7 days.
+
+Verify:
+
+Campaign #1:
+Sunday → Sunday
+
+At campaign end:
+
+1. Determine the winner using the final effective bid.
+2. Record the winner permanently.
+3. Record final rankings/results.
+4. Close the campaign.
+5. Create the next campaign.
+6. Existing products may remain listed according to the current product rules.
+7. New users can enter fresh bids into the new campaign.
+8. New campaign ranking must not accidentally inherit old campaign monetary totals unless explicitly intended.
+9. Historical campaign data must remain unchanged.
+
+DO NOT delete previous campaign data.
+
+==================================================
+9. WINNER SYSTEM
+==================================================
+
+Verify:
+
+- Highest effective bid at campaign close becomes winner.
+- Winner is stored permanently.
+- Winner is clearly displayed.
+- "This Week's Winner" is visible.
+- Previous winners remain available in a Winner History section.
+- Last week's winner is prominently shown so users immediately know who won.
+- Winner history cannot be overwritten when the next campaign starts.
+
+Test at least:
+
+Campaign 1 → Winner A
+
+Campaign 2 → Winner B
+
+Campaign 3 → Winner C
+
+Verify all three remain in history.
+
+==================================================
+10. CAMPAIGN COUNTDOWN
+==================================================
+
+Verify the countdown:
+
+- Correct timezone.
+- Correct campaign start.
+- Correct campaign end.
+- Days/hours/minutes/seconds update correctly.
+- Countdown survives page refresh.
+- Countdown does not rely only on browser time.
+- Server time should be authoritative where possible.
+- At zero, campaign closes correctly.
+
+Handle edge cases around Sunday/week transitions.
+
+==================================================
+11. RANKING
+==================================================
+
+Verify ranking is always based on the authoritative effective bid.
+
+Test:
+
+Product A = $250
+Product B = $300
+Product C = $275
+
+Expected:
+
+#1 B
+#2 C
+#3 A
+
+Then add a penalty/support and verify rankings change correctly.
+
+Verify tie handling.
+
+Verify ranking after:
+
+- Owner bid
+- Community bid
+- Penalty
+- Campaign rollover
+- Page refresh
+- Multiple concurrent actions
+
+==================================================
+12. NO LOGIN / SIGNUP
+==================================================
+
+IMPORTANT:
+
+UpnDownBid does NOT require user login.
+
+There must be NO:
+
+- Login button
+- Sign up button
+- Profile button
+- Account page
+- Authentication requirement for normal public browsing
+- Fake login flow
+
+Remove/hide any leftover authentication UI if it is still present.
+
+Users should be able to:
+
+- Browse
+- Add a product
+- Bid/support
+- Apply penalties
+- View rankings
+- View winners
+
+without creating an account, subject to the existing payment/anti-abuse flow.
+
+==================================================
+13. NAVIGATION
+==================================================
+
+Test all navigation:
+
+- Home / Discover
+- Add Product
+- Rankings
+- Campaign
+- Winners
+- How It Works
+- Rules
+- Activity
+- Categories where actually needed
+- Product details
+- Menu
+- Back buttons
+- External website links
+
+Remove any obsolete navigation.
+
+Do NOT reintroduce login/profile navigation.
+
+==================================================
+14. MOBILE TESTING
+==================================================
+
+This application is mobile-first.
+
+Test at minimum:
+
+- iPhone-sized viewport
+- Android-sized viewport
+- Desktop viewport
+
+Check:
+
+- Header
+- Menu
+- Add Product
+- Bid controls
+- Penalty controls
+- Product cards
+- Rankings
+- Countdown
+- Winner section
+- Forms
+- Buttons
+- Modals
+- Checkout preparation
+- Long text
+- Horizontal scrolling
+
+There must be no accidental horizontal overflow.
+
+Bottom navigation must not cover important buttons/content.
+
+==================================================
+15. SECURITY
+==================================================
+
+Perform a basic production security audit.
+
+Check:
+
+- Server-side validation
+- Authorization where needed
+- Rate limiting/anti-spam where appropriate
+- XSS protection
+- SQL injection protection
+- CSRF protection where applicable
+- Input sanitization
+- URL validation
+- Amount validation
+- Transaction integrity
+- Duplicate transaction protection
+- Webhook replay protection if already implemented
+- Secure environment variables
+- No secrets in frontend code
+- No API keys committed to Git
+- No sensitive information exposed through API responses
+
+Do NOT expose payment secrets.
+
+==================================================
+16. DATABASE / DATA INTEGRITY
+==================================================
+
+Audit database relationships.
+
+Verify:
+
+- Products
+- Campaigns
+- Bids
+- Penalties
+- Reviews/reasons
+- Winners
+- Rankings
+- Transactions
+
+are correctly associated.
+
+Check foreign keys/relationships where applicable.
+
+Check duplicate records.
+
+Check timestamps.
+
+Check campaign IDs.
+
+Check product IDs.
+
+Make sure historical campaigns cannot be accidentally modified by current campaign activity.
+
+==================================================
+17. CONCURRENCY TESTING
+==================================================
+
+This is important because multiple people may bid at the same time.
+
+Simulate:
+
+User A bids on Product X.
+
+User B bids on Product X almost simultaneously.
+
+User C applies a penalty.
+
+Verify:
+
+- No lost updates.
+- No incorrect effective bid.
+- No duplicate transaction.
+- Rankings remain consistent.
+- Database remains consistent.
+
+Use atomic database operations/transactions where required.
+
+==================================================
+18. ERROR HANDLING
+==================================================
+
+Test:
+
+- Invalid URL
+- Missing category
+- Invalid bid
+- Invalid penalty
+- Network failure
+- Database failure
+- Duplicate product
+- Expired campaign
+- Invalid product
+- Invalid campaign
+- Payment failure placeholder/state if already implemented
+
+Errors must be understandable to normal users.
+
+Do not expose stack traces or internal errors.
+
+==================================================
+19. PERFORMANCE
+==================================================
+
+Check for:
+
+- Excessive API calls
+- Duplicate requests
+- Slow ranking queries
+- N+1 database queries
+- Unnecessary client rendering
+- Large payloads
+- Memory leaks
+- Countdown causing excessive requests
+
+Optimize only where there is a clear issue.
+
+Do not rewrite working architecture unnecessarily.
+
+==================================================
+20. PAYMENT PREPARATION — DO NOT CONNECT REAL PAYMENTS YET
+==================================================
+
+DO NOT activate real payment processing during this task.
+
+Instead verify that the application has a clean architecture for:
+
+- Owner bid payment
+- Community support/bid payment
+- Penalty payment
+
+Payment confirmation must eventually come from the payment provider/server webhook, not from the browser.
+
+Do not mark a bid/penalty as paid merely because the frontend says payment succeeded.
+
+Do not add production payment credentials.
+
+After QA is complete, STOP.
+
+We will handle payment integration in a separate task.
+
+==================================================
+21. PRODUCTION ENVIRONMENT
+==================================================
+
+Check:
+
+- Production environment variables
+- Database connection
+- HTTPS
+- Domain configuration
+- Error logging
+- Server health
+- Build process
+- Production start command
+- Database migrations
+- Seed/test data
+- CORS
+- API routes
+- Static assets
+- Favicon
+- Metadata
+- Open Graph metadata
+
+Make sure no development-only behavior accidentally appears in production.
+
+==================================================
+22. TEST DATA
+==================================================
+
+Identify demo/test data.
+
+Do NOT blindly delete existing data.
+
+First determine whether data is:
+
+- Real production data
+- Seed data
+- Demo data
+- Test data
+
+Only remove clearly identified test/demo records if appropriate.
+
+Do not destroy real campaign history.
+
+==================================================
+23. TEST AUTOMATION
+==================================================
+
+Run the existing test suite.
+
+If important tests are missing, add focused tests for:
+
+- Effective bid calculation
+- Ranking
+- Bid/support
+- Penalty
+- Product creation
+- Duplicate URL handling
+- Campaign rollover
+- Winner selection
+- Winner history
+- Concurrent updates
+- Input validation
+
+Do not create fake tests that simply assert the code returns what it already returns.
+
+Tests must verify actual behavior.
+
+==================================================
+24. FINAL REPORT
+==================================================
+
+After completing the audit, provide a concise report with:
+
+A. TESTS RUN
+B. TESTS PASSED
+C. BUGS FOUND
+D. BUGS FIXED
+E. REMAINING ISSUES
+F. SECURITY ISSUES
+G. PERFORMANCE ISSUES
+H. PAYMENT READINESS
+I. PRODUCTION READINESS
+
+For every bug fixed, explain:
+
+- What was wrong
+- What you changed
+- How you verified it
+
+==================================================
+25. STRICT CHANGE CONTROL
+==================================================
+
+Before making changes:
+
+1. Inspect the current implementation.
+2. Understand the existing architecture.
+3. Run the existing tests.
+4. Identify actual failures.
+5. Fix the smallest appropriate part.
+6. Re-run tests.
+7. Test the affected workflow manually.
+8. Do not make unrelated changes.
+
+At the end, give me a clear verdict:
+
+READY FOR PAYMENT INTEGRATION
+
+or
+
+NOT READY — [list the blockers]
+
+Do NOT connect real payment providers during this task.
+
+The goal is to get UpnDownBid.lol into a stable, verified state so that the NEXT task can be ONLY:
+
+"Integrate production payment processing."
+
+Do not proceed to payment integration automatically.

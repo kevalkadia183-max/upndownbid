@@ -1,0 +1,891 @@
+REDESIGN THE ENTIRE SIGNALRANK UI.
+
+I reviewed the current implementation on mobile and the current visual design feels outdated. The functionality is moving in the right direction, but the layout, typography, cards, borders, spacing, and overall visual language need a complete modern redesign.
+
+IMPORTANT:
+Do NOT simply tweak the existing CSS.
+
+Treat this as a complete UI/UX redesign while preserving the existing functionality and backend logic.
+
+The current screenshots show an overly heavy neo-brutalist style:
+
+* Very thick dark borders
+* Large rectangular boxes everywhere
+* Heavy offset shadows
+* Excessive monospace typography
+* Oversized hero text
+* Too much empty vertical space
+* Cards feel like old design-system components
+* Buttons are too large and visually heavy
+* Financial information is not presented in the most intuitive hierarchy
+* Mobile screens require too much scrolling
+* The interface feels more like a design experiment than a modern product
+
+Replace this visual language completely.
+
+PRODUCT DIRECTION
+
+SignalRank should feel like a combination of:
+
+* Modern fintech dashboard
+* Product discovery platform
+* Social ranking platform
+* Modern startup directory
+* Financial activity feed
+
+The product should feel:
+
+* Premium
+* Modern
+* Fast
+* Trustworthy
+* Interactive
+* Slightly competitive
+* Data-driven
+* Mobile-first
+
+Do NOT make it look like a banking app.
+Do NOT make it look like a generic SaaS dashboard.
+Do NOT make it look like an old-school brutalist website.
+
+Use a modern 2026 web-app aesthetic.
+
+COLOR SYSTEM
+
+Create a clean color system.
+
+Primary:
+Deep navy / near-black
+
+Accent:
+Electric blue
+
+Positive/support:
+Modern green
+
+Penalty:
+Modern red
+
+Background:
+Very light neutral / soft gray
+
+Cards:
+White
+
+Use color primarily for:
+
+* Ranking
+* Bid/support actions
+* Penalty actions
+* Financial numbers
+* Status
+* Important interactive elements
+
+Do not use bright colors everywhere.
+
+The interface should have plenty of visual breathing room.
+
+TYPOGRAPHY
+
+Remove the excessive monospace typography.
+
+Use a modern sans-serif font system.
+
+Recommended style:
+
+Headings:
+Bold modern sans-serif
+
+Body:
+Clean readable sans-serif
+
+Numbers:
+Strong tabular/financial numerals where appropriate
+
+Small metadata:
+Subtle, compact typography
+
+Do NOT make every piece of text uppercase.
+
+Use sentence case for most UI.
+
+LAYOUT
+
+Create a modern responsive layout.
+
+Desktop:
+
+Top navigation:
+
+Logo | Discover | Rankings | Reviews | Activity | Search | Sign In
+
+Logged-in:
+
+Logo | Discover | Rankings | Activity | My Activity | Profile
+
+Mobile:
+
+Compact top bar with:
+
+Logo
+Search
+Profile/menu
+
+Use a mobile bottom navigation where appropriate:
+
+Discover
+Rankings
+Activity
+Profile
+
+Do not make the header excessively tall.
+
+Do not use giant hero sections.
+
+HOMEPAGE
+
+Replace the current giant:
+
+“THE PUBLIC LEDGER.”
+
+style hero.
+
+Instead create a compact modern hero.
+
+Example:
+
+SignalRank
+
+See what the community is backing.
+
+Discover products, see real community signals, and understand why people support or challenge them.
+
+[Explore Rankings] [Add Listing]
+
+Then immediately show the leaderboard/discovery interface.
+
+The user should reach actual products quickly.
+
+DISCOVERY / LEADERBOARD
+
+This should be the main screen.
+
+Create a modern discovery header:
+
+Discover
+
+Products gaining attention from the community.
+
+Search:
+“Search products, companies, and startups…”
+
+Filters:
+
+Trending
+Top Ranked
+Most Supported
+Most Penalized
+Highest Rated
+New
+
+Avoid the old large bordered filter box.
+
+Use modern pills/tabs.
+
+LISTING CARD
+
+Completely redesign the current listing cards.
+
+Current design:
+
+Large thick border
+Huge #1 box
+Large empty spaces
+Large effective bid section
+
+Replace with a compact modern card.
+
+Example structure:
+
+┌────────────────────────────────────┐
+│ #1   [Logo]  Beacon                │
+│              Productivity           │
+│                                    │
+│              A calmer command       │
+│              center for teams.      │
+│                                    │
+│  $277                             │
+│  Effective bid                     │
+│                                    │
+│  ↑ 12 supporters   ↓ 2 penalties  │
+│  ★ 4.8   24 reviews                │
+│                                    │
+│  ────────────────────────────────  │
+│  Community signal      +$119       │
+│  Penalties              -$22       │
+│                                    │
+│              View →                │
+└────────────────────────────────────┘
+
+But do NOT copy this exact visual structure if a better modern layout is possible.
+
+The most important information should be:
+
+1. Rank
+2. Product
+3. Effective bid
+4. Community support
+5. Penalties
+6. Supporter count
+7. Penalizer count
+8. Review score
+
+Make cards compact enough that users can scan multiple listings quickly.
+
+RANKING VISUALIZATION
+
+Make ranking feel alive.
+
+Rank #1 should be visually special but NOT huge.
+
+Use subtle indicators:
+
+#1
+#2
+#3
+
+Use small movement indicators:
+
+↑ +3
+↓ -2
+NEW
+
+Example:
+
+#3
+Beacon
+↑ 2 positions
+
+Do not create enormous rank boxes.
+
+EFFECTIVE BID
+
+The effective bid is the core metric.
+
+Display it prominently but elegantly:
+
+$277
+Effective bid
+
+Underneath:
+
+$180 owner
++$119 community
+−$22 penalties
+
+Make the calculation visually understandable.
+
+Do not hide the breakdown.
+
+LISTING DETAIL PAGE
+
+Completely redesign the current listing page.
+
+Current page has:
+
+* Huge empty card
+* Giant logo placeholder
+* Large Rank #1 box
+* Large button
+* Large borders
+
+Replace with a modern product profile.
+
+Top section:
+
+[Logo]
+
+Beacon
+
+Productivity
+
+A calmer command center for modern teams.
+
+[Visit website]
+
+Rank #1
+$277 Effective bid
+
+↑ 1.2k community attention
+
+Then show compact statistics:
+
+Owner bid
+$180
+
+Community support
+$119
+
+Penalties
+$22
+
+Supporters
+2
+
+Penalizers
+2
+
+Reviews
+24
+
+Use a responsive grid.
+
+PRIMARY ACTIONS
+
+Instead of huge neon buttons, use modern action buttons.
+
+Primary:
+
+* Support
+
+Secondary/destructive:
+
+− Penalize
+
+Example:
+
+[ + Support ] [ − Penalize ]
+
+Support should use the positive accent.
+
+Penalty should use subtle red.
+
+Do not make the buttons fill the entire mobile screen unless necessary.
+
+SUPPORT FLOW
+
+When the user taps Support:
+
+Open a modern bottom sheet/modal.
+
+Title:
+
+Support Beacon
+
+Current effective bid:
+$277
+
+Amount:
+
+[ $10 ]
+
+Quick amounts:
+
+$5
+$10
+$25
+$50
+$100
+Custom
+
+Then:
+
+Why are you supporting it?
+
+Reason chips:
+
+Great product
+Useful
+Great idea
+Deserves #1
+Supporting the team
+Better than alternatives
+Other
+
+Optional review:
+
+“Tell the community why…”
+
+Show:
+
+Your support: +$10
+New effective bid: $287
+
+[Continue]
+
+PENALTY FLOW
+
+Use the same modern interaction pattern.
+
+Title:
+
+Penalize Beacon
+
+Current effective bid:
+$277
+
+Amount:
+
+[ $10 ]
+
+Quick amounts:
+
+$5
+$10
+$25
+$50
+$100
+Custom
+
+Reason chips:
+
+Poor quality
+Too expensive
+Too many bugs
+Misleading
+Doesn’t deserve this rank
+Supporting another product
+Other
+
+Optional review.
+
+Clearly explain:
+
+“Your penalty reduces this listing’s effective bid by $10. The $10 is paid by you and is not transferred to the listing owner.”
+
+Then:
+
+Your penalty: −$10
+New effective bid: $267
+
+[Continue]
+
+REVIEWS
+
+The current review design is too large and box-heavy.
+
+Create a modern review feed.
+
+Header:
+
+Community reviews
+
+★ 4.8
+24 reviews
+
+Filters:
+
+All
+Supporters
+Penalizers
+
+Each review should look like a modern social review card.
+
+Example:
+
+Mira
+Supporter · 2h
+
+★★★★★
+
+“Great product. It makes a busy week feel much less chaotic.”
+
+Great product
+
+Supported +$20
+
+Helpful   12
+•••
+
+For penalties:
+
+Alex
+Penalizer · 5h
+
+★★☆☆☆
+
+“Too expensive compared with alternatives.”
+
+Too expensive
+
+Penalized −$10
+
+Helpful   3
+•••
+
+Do not make the entire review card surrounded by huge thick borders.
+
+Use subtle separators, cards, or shadows.
+
+FINANCIAL STATE
+
+Redesign the current “FINANCIAL STATE” box.
+
+Make it visually similar to a modern financial summary.
+
+Example:
+
+Financial state
+
+Effective bid
+$277
+
+Owner
+$180
+
+Community
++$119
+
+Penalties
+−$22
+
+────────────────
+
+2 supporters
+2 penalizers
+
+Make the math extremely easy to understand.
+
+COMMUNITY SIGNALS
+
+Create a visual section:
+
+Community signal
+
+↑ 2 supporters
+↓ 1 penalizer
+
+Support:
++$119
+
+Penalties:
+−$22
+
+Net community impact:
++$97
+
+This helps users understand the difference between money and participation.
+
+ACTIVITY FEED
+
+Create a modern activity feed.
+
+Examples:
+
+Mira supported Beacon
++$20
+2m
+
+Alex penalized Beacon
+−$10
+8m
+
+Beacon moved to #1
+12m
+
+Someone supported Wildform
++$50
+15m
+
+Use avatars/initials, icons, timestamps, and subtle colors.
+
+Do not expose private information.
+
+PROFILE / MY ACTIVITY
+
+Create a clean user dashboard.
+
+Overview:
+
+Total supported
+$120
+
+Total penalties
+$45
+
+Listings supported
+18
+
+Listings penalized
+7
+
+Reviews
+23
+
+Then tabs:
+
+Support
+Penalties
+Reviews
+
+Each transaction should have:
+
+Listing
+Action
+Amount
+Date
+Review/reason
+Status
+
+MOBILE-FIRST REQUIREMENTS
+
+This is extremely important.
+
+The screenshots show the application is being viewed on an iPhone.
+
+Design specifically for mobile.
+
+At 390px width:
+
+* No horizontal overflow
+* No oversized text
+* No huge empty areas
+* No clipped tabs
+* No cards wider than viewport
+* No unnecessarily tall buttons
+* No excessive scrolling
+* Touch targets at least 44px
+* Sticky actions where useful
+* Bottom sheets for bid/penalty flows
+* Compact navigation
+
+The first screen should quickly show:
+
+Search
+Filters
+Top listings
+
+Do not force users to scroll through a giant marketing hero first.
+
+DESKTOP
+
+On desktop use a maximum content width around 1200–1400px.
+
+Use:
+
+Left:
+Discovery/listings
+
+Right:
+Trending/activity/sidebar
+
+On listing detail:
+
+Main content
++
+Financial/community sidebar
+
+Do not simply stretch the mobile layout across the desktop.
+
+ANIMATIONS
+
+Add subtle modern interactions:
+
+* Rank movement
+* Number changes
+* Support confirmation
+* Penalty confirmation
+* Review submission
+* Loading skeletons
+* Hover states
+* Button feedback
+
+Avoid excessive animation.
+
+RANK CHANGE
+
+When a listing moves:
+
+Show a subtle animation:
+
+↑ #4 → #2
+
+and optionally:
+
+“Beacon moved up 2 positions”
+
+Do not use flashy arcade-style effects.
+
+EMPTY STATES
+
+Create polished empty states.
+
+Example:
+
+No reviews yet
+
+Be the first person to share a signal.
+
+[Support] [Penalize]
+
+ERROR STATES
+
+Use modern inline error messages.
+
+Do not show raw backend errors.
+
+LOADING
+
+Use skeleton loaders instead of blank screens.
+
+ACCESSIBILITY
+
+Ensure:
+
+* Proper contrast
+* Keyboard navigation
+* Focus states
+* Accessible buttons
+* Accessible forms
+* Screen-reader labels
+* Touch-friendly controls
+
+DESIGN SYSTEM
+
+Create reusable components:
+
+Button
+IconButton
+Card
+ListingCard
+RankBadge
+Stat
+StatGrid
+Tabs
+FilterPill
+ReviewCard
+ActivityItem
+Modal
+BottomSheet
+Input
+SearchBar
+Avatar
+Badge
+Toast
+Skeleton
+EmptyState
+
+Do not create dozens of one-off components with inconsistent styles.
+
+IMPORTANT DESIGN RULES
+
+REMOVE:
+
+* Heavy black borders everywhere
+* Giant offset shadows
+* Giant uppercase headings
+* Excessive monospace typography
+* Oversized neon buttons
+* Giant rank blocks
+* Huge empty white cards
+* Old-school brutalist appearance
+* Excessive rectangular containers
+* Unnecessary decorative elements
+
+ADD:
+
+* Modern spacing
+* Clean hierarchy
+* Subtle borders
+* Soft shadows
+* Rounded corners where appropriate
+* Modern typography
+* Compact information density
+* Better financial visualization
+* Better mobile navigation
+* Clear hierarchy between support and penalty
+* Modern social/review experience
+
+Do NOT blindly use rounded cards everywhere either.
+
+The design should feel intentional and premium.
+
+BRAND
+
+Keep the SignalRank name for now.
+
+Create a cleaner logo treatment.
+
+The current blue upward-arrow icon can be redesigned into a more modern signal/ranking symbol.
+
+Do not make the logo overly complicated.
+
+IMPLEMENTATION
+
+First inspect the current codebase.
+
+Do not delete working backend functionality.
+
+Before changing the UI:
+
+1. Identify all existing routes.
+2. Identify all existing components.
+3. Identify existing API endpoints.
+4. Identify database models.
+5. Identify authentication.
+6. Identify bid/penalty calculations.
+7. Identify existing review functionality.
+8. Identify which parts are mock/sandbox.
+9. Preserve working functionality.
+
+Then rebuild the presentation layer.
+
+Do not duplicate business logic.
+
+The backend should remain the authoritative source for:
+
+* Effective bid
+* Ranking
+* Transaction status
+* User permissions
+* Review ownership
+* Financial calculations
+
+FINAL VALIDATION
+
+After redesign:
+
+Test at minimum:
+
+iPhone/mobile width:
+390px
+375px
+
+Tablet:
+768px
+
+Desktop:
+1440px
+
+Verify:
+
+* No horizontal scrolling
+* No clipped content
+* No broken cards
+* No oversized whitespace
+* Search works
+* Filters work
+* Listing pages work
+* Support flow works
+* Penalty flow works
+* Reviews work
+* Authentication works
+* Ranking works
+* Financial state works
+* Activity works
+
+IMPORTANT:
+
+Do not stop after changing the homepage.
+
+Redesign ALL major user-facing pages so the entire product feels like one coherent modern application.
+
+The goal is:
+
+NOT “old SignalRank with better CSS.”
+
+The goal is:
+
+“A completely modern SignalRank product with the same underlying functionality.”
+
+Before implementation, briefly summarize the current UI problems you found and the new design system you will use, then implement the redesign.

@@ -1,0 +1,574 @@
+UPNDOWNBID.LOL — AUTOMATIC INVOICE SYSTEM
+
+Implement a professional automatic invoice system for ALL successful/confirmed payments.
+
+IMPORTANT:
+Do NOT replace, rewrite, or break the existing payment system.
+Do NOT change payment amounts, bidding logic, campaign logic, ranking logic, or payment-provider integrations.
+First inspect the existing payment architecture and reuse it.
+
+==================================================
+1. WHEN TO GENERATE AN INVOICE
+==================================================
+
+Generate an invoice ONLY after a payment is successfully confirmed.
+
+Invoice must NOT be generated when:
+- checkout is started
+- payment is pending
+- payment fails
+- payment is cancelled
+- payment requires reconciliation
+- payment is refunded unless a separate refund/credit-note system is implemented
+
+The payment record must be the source of truth.
+
+Avoid duplicate invoices if the payment webhook/event is delivered more than once.
+
+Each confirmed payment must have exactly one invoice unless the existing business rules explicitly require otherwise.
+
+==================================================
+2. PAYMENTS THAT REQUIRE INVOICES
+==================================================
+
+Generate invoices for all successful UpDownBid payment types, including:
+
+- Claim / OWNER_BID
+- Boost / COMMUNITY_BID
+- Push Down / PENALTY
+- Any other existing paid transaction type
+
+Do NOT assume only one payment type exists.
+
+Inspect the existing payment enum/types and support all successful paid transaction types.
+
+==================================================
+3. INVOICE DATA
+==================================================
+
+Each invoice must contain:
+
+UPDOWNBID.LOL
+
+Invoice Number
+Invoice Date
+Payment Date
+
+CLIENT / BILL TO:
+- Client name, if available
+- Client email
+- Company/business name, if available
+
+LISTING:
+- Listing name
+- Website/app URL
+- Listing ID
+
+CAMPAIGN:
+- Campaign number/name
+
+PAYMENT:
+- Payment type
+- Description
+- Amount
+- Currency
+- Payment provider
+- Provider transaction/payment ID
+- Payment status
+
+TOTAL:
+- Subtotal
+- Taxes/fees if applicable
+- Total paid
+
+Do NOT invent tax/VAT/GST information.
+
+Only display tax information if the application already has the required tax configuration/data.
+
+==================================================
+4. INVOICE NUMBER
+==================================================
+
+Create a unique sequential invoice number.
+
+Example:
+
+UPB-2026-000001
+UPB-2026-000002
+UPB-2026-000003
+
+The invoice number must be generated server-side.
+
+Never rely on the browser to generate invoice numbers.
+
+Invoice numbers must remain unique even if two payments are confirmed at the same time.
+
+==================================================
+5. DATABASE
+==================================================
+
+Inspect the existing schema first.
+
+Add an invoices table if one does not already exist.
+
+Recommended structure:
+
+invoices
+- id
+- invoice_number
+- payment_id
+- user_id
+- listing_id
+- campaign_id
+- client_name
+- client_email
+- subtotal
+- tax_amount
+- total_amount
+- currency
+- status
+- pdf_path/reference if applicable
+- created_at
+- updated_at
+
+Add a unique constraint on:
+
+invoice_number
+
+and preferably:
+
+payment_id
+
+so duplicate payment webhooks cannot create duplicate invoices.
+
+Use the existing database conventions and ORM/migration system.
+
+Do NOT manually modify production data.
+
+==================================================
+6. PDF INVOICE
+==================================================
+
+Generate a professional PDF invoice.
+
+Keep the design clean and consistent with UpDownBid branding.
+
+Include:
+
+UPDOWNBID.LOL
+Invoice
+
+Invoice #:
+Date:
+
+Bill To:
+Client information
+
+Listing:
+Campaign:
+Payment type:
+
+Description                 Amount
+
+Subtotal                    $XX
+Tax (only if applicable)    $XX
+TOTAL PAID                  $XX
+
+Payment status:
+PAID
+
+Transaction ID:
+
+Footer:
+Thank you for using UpDownBid.
+
+Do not expose internal database IDs unnecessarily.
+
+==================================================
+7. SEND INVOICE TO CLIENT
+==================================================
+
+After the payment is confirmed and invoice PDF is successfully generated:
+
+Send an email to the client's verified/confirmed email address.
+
+Subject:
+
+Payment confirmed — Your UpDownBid invoice [INVOICE NUMBER]
+
+Email body should be professional and concise.
+
+Example:
+
+Hi [Client Name],
+
+Thank you for your payment on UpDownBid.
+
+Your payment has been successfully confirmed.
+
+Invoice: UPB-2026-000001
+Amount: $25
+Payment type: Claim
+Listing: Makunto
+Campaign: #1
+
+Your invoice is attached to this email.
+
+Thank you,
+UpDownBid
+
+Attach the generated PDF invoice.
+
+==================================================
+8. SEND INVOICE/NOTIFICATION TO ADMIN
+==================================================
+
+Send the same invoice PDF to the configured UpDownBid admin email.
+
+IMPORTANT:
+
+Do NOT hardcode a personal email in application code.
+
+Use the existing admin/configuration system.
+
+If the current system has an admin email setting, use that.
+
+Otherwise add:
+
+ADMIN_NOTIFICATION_EMAIL
+
+to the appropriate environment/configuration system.
+
+Never commit the actual email address or credentials into GitHub.
+
+Admin email subject:
+
+New payment received — Invoice [INVOICE NUMBER]
+
+Admin email should contain:
+
+Client:
+Client email:
+Listing:
+Campaign:
+Payment type:
+Amount:
+Currency:
+Payment provider:
+Transaction ID:
+Invoice number:
+Payment status:
+
+Attach the same invoice PDF.
+
+==================================================
+9. EMAIL FAILURE HANDLING
+==================================================
+
+A payment must NOT be marked failed just because invoice email delivery fails.
+
+Payment confirmation and invoice generation are separate concerns.
+
+Correct flow:
+
+Payment confirmed
+      ↓
+Create invoice
+      ↓
+Generate PDF
+      ↓
+Attempt client email
+      ↓
+Attempt admin email
+
+If email fails:
+
+- Keep payment status = successful/confirmed
+- Keep invoice status
+- Record email delivery failure
+- Allow retry
+- Do not charge the customer again
+- Do not create another invoice
+
+==================================================
+10. IDEMPOTENCY
+==================================================
+
+This is extremely important.
+
+Payment providers can send the same webhook multiple times.
+
+The system must prevent:
+
+Payment received
+→ Invoice 1
+
+same webhook repeated
+→ Invoice 2 ❌
+
+Correct:
+
+Payment received
+→ Invoice 1
+
+same webhook repeated
+→ Existing Invoice 1 reused
+→ No duplicate invoice
+→ No duplicate emails unless explicitly retrying delivery
+
+Use payment_id as an idempotency key.
+
+==================================================
+11. PAYMENT HISTORY / PORTAL
+==================================================
+
+In the user's Portal/payment history, add:
+
+Invoice
+
+[ View Invoice ]
+
+[ Download PDF ]
+
+For successful payments.
+
+Example:
+
+Payment
+Claim
+$25
+Paid
+
+Invoice #UPB-2026-000001
+
+[ View Invoice ] [ Download PDF ]
+
+Do not expose invoices belonging to another user.
+
+==================================================
+12. ADMIN PANEL
+==================================================
+
+Add invoice information to the existing admin payment/transaction area.
+
+Admin should be able to see:
+
+Invoice #
+Payment
+Client
+Listing
+Campaign
+Amount
+Payment status
+Invoice status
+Invoice date
+
+Actions:
+
+[ View ]
+[ Download ]
+
+Do not create a completely separate admin system.
+
+Use the existing admin authorization.
+
+==================================================
+13. REFUNDS
+==================================================
+
+Inspect the existing payment/refund functionality.
+
+If refunds already exist:
+
+Do NOT silently mark an invoice as paid forever.
+
+Implement appropriate invoice status handling such as:
+
+PAID
+REFUNDED
+PARTIALLY_REFUNDED
+
+only if the existing payment system supports those states.
+
+Do not invent refund behavior that conflicts with the existing payment provider.
+
+==================================================
+14. RECONCILIATION SAFETY
+==================================================
+
+Payments with:
+
+requires_reconciliation
+pending
+failed
+cancelled
+
+must NOT automatically receive a "PAID" invoice.
+
+A payment that requires reconciliation must remain untouched until successfully confirmed.
+
+This is especially important for the existing legacy payment records.
+
+==================================================
+15. ADMIN NOTIFICATION
+==================================================
+
+For every newly confirmed payment:
+
+CLIENT:
+Receives invoice email + PDF.
+
+ADMIN:
+Receives payment notification + same invoice PDF.
+
+Example:
+
+Client:
+"Your UpDownBid payment has been confirmed."
+
+Admin:
+"New payment received."
+
+Both emails reference the same invoice number.
+
+==================================================
+16. EMAIL DELIVERY LOGGING
+==================================================
+
+Track:
+
+invoice_id
+recipient
+recipient_type:
+- client
+- admin
+
+sent_at
+delivery_status
+error_message if applicable
+
+Possible statuses:
+
+pending
+sent
+failed
+
+Do not store unnecessary sensitive information.
+
+==================================================
+17. SECURITY
+==================================================
+
+Never allow the client to:
+
+- change invoice amount
+- change invoice number
+- change payment status
+- generate a fake paid invoice
+- download another client's invoice
+
+Invoice data must be generated from the verified payment/database records.
+
+All invoice downloads must verify ownership or admin authorization.
+
+==================================================
+18. EXISTING PAYMENTS
+==================================================
+
+Do NOT automatically generate invoices for old historical/test payments unless explicitly requested.
+
+This implementation should apply to NEW confirmed payments.
+
+Existing payments can remain unchanged.
+
+==================================================
+19. PRODUCTION SAFETY
+==================================================
+
+Before implementation:
+
+1. Inspect payment tables.
+2. Inspect payment status handling.
+3. Inspect webhook handling.
+4. Inspect existing email infrastructure.
+5. Inspect existing admin configuration.
+6. Inspect listing/user/campaign relationships.
+7. Inspect whether invoice functionality already exists.
+
+Then implement the smallest safe addition.
+
+Do NOT replace existing payment providers.
+
+Do NOT change payment webhook behavior unnecessarily.
+
+Do NOT delete existing payment records.
+
+Do NOT reset production data.
+
+==================================================
+20. TESTING
+==================================================
+
+Test:
+
+1. Successful Claim payment → invoice generated.
+2. Successful Boost payment → invoice generated.
+3. Successful Push Down payment → invoice generated.
+4. Failed payment → no paid invoice.
+5. Pending payment → no paid invoice.
+6. Requires reconciliation → no paid invoice.
+7. Duplicate webhook → no duplicate invoice.
+8. Client receives invoice email.
+9. Admin receives invoice email.
+10. Both receive the same invoice number.
+11. PDF contains correct payment amount.
+12. PDF contains correct client information.
+13. PDF contains correct listing.
+14. PDF contains correct campaign.
+15. Invoice can be downloaded from Portal.
+16. Admin can view/download invoice.
+17. Client cannot access another client's invoice.
+18. Email failure does not change payment status.
+19. Retry does not create a second invoice.
+20. Existing payment functionality still works.
+
+==================================================
+21. FINAL USER EXPERIENCE
+==================================================
+
+Customer pays $25 for a Claim.
+
+Payment succeeds.
+
+System automatically:
+
+1. Confirms payment.
+2. Creates invoice:
+
+UPB-2026-000001
+
+3. Generates PDF.
+4. Emails client:
+
+"Payment confirmed — Your UpDownBid invoice UPB-2026-000001"
+
+with PDF attached.
+
+5. Emails admin:
+
+"New payment received — Invoice UPB-2026-000001"
+
+with PDF attached.
+
+6. Shows invoice in client's Portal.
+7. Shows invoice in Admin → Transactions.
+8. Allows PDF download.
+
+Everything happens automatically.
+
+IMPORTANT:
+Do not break the existing live payment system.
+Do not alter existing campaign/ranking behavior.
+Do not delete existing data.
+Do not hardcode secrets or admin credentials.
+Use the existing email/payment infrastructure wherever possible.

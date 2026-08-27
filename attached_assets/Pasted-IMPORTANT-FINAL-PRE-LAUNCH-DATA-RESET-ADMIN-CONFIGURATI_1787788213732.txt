@@ -1,0 +1,233 @@
+IMPORTANT — FINAL PRE-LAUNCH DATA RESET + ADMIN CONFIGURATION
+
+I am preparing Upndownbid.lol for public launch.
+
+I previously instructed you to use:
+
+ADMIN EMAIL:
+kevalkadia27@gmail.com
+
+But the application is currently still showing old/test data and the admin configuration is not correct.
+
+I want a CLEAN PRODUCTION START.
+
+DO NOT change the application's core functionality, UI, payment logic, PayPal integration, ranking algorithm, authentication flow, or security unless required to safely perform this reset.
+
+==================================================
+1. ADMIN ACCOUNT
+==================================================
+
+Make this the ONLY platform administrator:
+
+kevalkadia27@gmail.com
+
+Requirements:
+
+- Google authentication must recognize this account as the admin.
+- The admin role must be stored using the application's existing role/authorization system.
+- Do NOT rely only on frontend email checks.
+- Admin authorization must be enforced server-side.
+- If an admin user record already exists for this email, update it to admin.
+- If it does not exist, create the appropriate admin record safely.
+- Do NOT create duplicate admin users.
+- Do NOT make any other existing/test account an administrator.
+- Do NOT hardcode the admin email into multiple frontend components.
+- Use the existing centralized authentication/authorization architecture.
+
+==================================================
+2. REMOVE OLD / TEST DATA
+==================================================
+
+I want the public application to start EMPTY.
+
+Remove old/test application data such as:
+
+- Test listings/products
+- Test campaign entries
+- Test claims
+- Test bids
+- Test boosts
+- Test push-downs
+- Test ratings/reviews
+- Test click-tracking data
+- Test payment records
+- Test PayPal transaction records
+- Test webhook/payment state records
+- Test feedback submissions
+- Test owner/listing relationships
+- Test campaign participation
+- Any other seed/demo/test application data
+
+The new production database should contain NO old test listings.
+
+The campaign system itself must remain functional and ready to accept the first real listing.
+
+IMPORTANT:
+Do NOT delete the administrator account:
+
+kevalkadia27@gmail.com
+
+Do NOT delete required system configuration, application settings, PayPal credentials, webhook configuration, authentication configuration, or database schema.
+
+Do NOT delete real production configuration simply because it is empty.
+
+==================================================
+3. USER ACCOUNT HANDLING
+==================================================
+
+Inspect the database before deleting anything.
+
+Remove old/test user accounts ONLY if they are clearly test/demo accounts and are not required for the new production environment.
+
+Preserve:
+
+kevalkadia27@gmail.com
+
+If there are existing Google-authentication records that cannot safely be deleted because of provider constraints, deactivate/remove their application-level access instead of breaking the authentication system.
+
+Do NOT accidentally delete the admin's Google authentication identity.
+
+==================================================
+4. DATABASE SAFETY
+==================================================
+
+Before making destructive changes:
+
+1. Inspect the complete database schema.
+2. Identify all tables/collections containing application data.
+3. Identify foreign-key relationships and dependencies.
+4. Create a database backup/snapshot if the environment supports it.
+5. Determine the safest order for deleting test data.
+6. Reset only application/test data.
+7. Verify database integrity afterward.
+
+Do NOT use a blind "DROP DATABASE" or destructive schema reset.
+
+Do NOT delete tables.
+
+Do NOT change migrations unnecessarily.
+
+==================================================
+5. EMPTY PRODUCTION STATE
+==================================================
+
+After the reset, verify:
+
+- 0 public listings/products
+- 0 active claims
+- 0 test bids
+- 0 test boosts
+- 0 push-downs
+- 0 reviews/ratings
+- 0 test clicks
+- 0 test payment records
+- 0 test feedback submissions
+- No orphaned listing/user/payment records
+- Campaign #1 can still operate normally
+- New users can sign in with Google
+- New users can create listings
+- Admin can see the admin dashboard
+- Admin can manage listings/campaigns
+- Normal users cannot access admin functionality
+
+The public site should look like a brand-new platform waiting for its first real users.
+
+==================================================
+6. ADMIN VERIFICATION
+==================================================
+
+After implementation, test using:
+
+ADMIN:
+kevalkadia27@gmail.com
+
+Verify:
+
+- Google login works
+- Admin dashboard is accessible
+- Admin permissions work
+- Admin-only routes reject normal users
+- Admin can see the empty production state
+- Admin can manage the campaign
+- Admin can manage/remove listings when appropriate
+
+Then test with a separate normal Google account and verify:
+
+- It is NOT an admin
+- It cannot access admin routes
+- It can browse the public platform
+- It can create/manage only its own listings
+- It cannot edit another user's listing
+- It cannot access another user's owner data
+
+==================================================
+7. DATA ISOLATION
+==================================================
+
+Run a final ownership/isolation check.
+
+User A must NOT be able to:
+
+- edit User B's listing
+- modify User B's bid
+- access User B's owner information
+- access User B's private manage token
+- manipulate User B's payment state
+- access User B's feedback/private data
+
+Admin access should remain separate from normal ownership permissions.
+
+==================================================
+8. DO NOT REINTRODUCE DEMO DATA
+==================================================
+
+After the reset:
+
+- Do NOT seed demo listings.
+- Do NOT automatically create fake products.
+- Do NOT create fake reviews.
+- Do NOT create fake bids.
+- Do NOT create fake ranking activity.
+- Do NOT create fake payment records.
+
+The first listings should come from actual users.
+
+==================================================
+9. FINAL VALIDATION
+==================================================
+
+After completing the reset, run the existing automated test suite.
+
+Then run appropriate database/API tests for:
+
+AUTH
+ADMIN AUTHORIZATION
+ACCOUNT ISOLATION
+LISTING OWNERSHIP
+CAMPAIGN
+RANKING
+CLAIMS
+PAYMENTS
+PAYPAL WEBHOOKS
+FEEDBACK
+SECURITY
+
+Do not claim success unless the tests actually pass.
+
+Report:
+
+1. What data was removed
+2. What data was preserved
+3. Confirmation that kevalkadia27@gmail.com is the ONLY admin
+4. Number of remaining users
+5. Number of remaining listings
+6. Number of remaining campaigns
+7. Number of remaining claims/bids
+8. Whether the database has orphaned records
+9. Test results
+10. Any issue that must be fixed before public launch
+
+IMPORTANT:
+Do not publish/deploy anything yet.
+
+Perform the reset safely, validate everything, and stop after reporting the results.

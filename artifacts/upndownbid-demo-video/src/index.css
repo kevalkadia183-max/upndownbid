@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+/* REPLACE THESE -- define your own palette and fonts for each video */
+:root {
+  --color-primary: #8352f9; /* hsl(258 85% 64%) */
+  --color-secondary: #27ae60; /* hsl(145 63% 42%) */
+  --color-accent: #8352f9;
+  --color-destructive: #e73b3b;
+
+  --color-bg-light: #fdf9f2; /* hsl(35 30% 97%) */
+  --color-bg-dark: #171a21; /* hsl(220 25% 12%) */
+  --color-bg-muted: #f4ede4;
+
+  --color-text-primary: #171a21;
+  --color-text-secondary: #68707d;
+  --color-text-muted: #a0a8b5;
+  --color-text-inverse: #fdf9f2;
+
+  --color-success: #27ae60;
+  --color-warning: #f59e0b;
+  --color-error: #e73b3b;
+
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg-light: var(--color-bg-light);
+  --color-bg-dark: var(--color-bg-dark);
+  --color-bg-muted: var(--color-bg-muted);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-inverse: var(--color-text-inverse);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

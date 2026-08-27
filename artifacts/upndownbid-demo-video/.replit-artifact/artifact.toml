@@ -1,0 +1,28 @@
+kind = "video"
+previewPath = "/upndownbid-demo-video/"
+title = "UpnDownBid Product Demo"
+description = "A polished widescreen product demo showing how communities discover, claim, boost, penalize, and sponsor ranked businesses on UpnDownBid."
+version = "1.0.0"
+id = "artifacts/upndownbid-demo-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/upndownbid-demo-video/" ]
+localPort = 21948
+
+[services.development]
+run = "pnpm --filter @workspace/upndownbid-demo-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/upndownbid-demo-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/upndownbid-demo-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21948"
+BASE_PATH = "/upndownbid-demo-video/"

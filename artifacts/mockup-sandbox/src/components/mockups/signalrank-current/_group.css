@@ -1,0 +1,60 @@
+/* upndownbid app fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* upndownbid theme tokens — light mode */
+.sr-scope {
+  --background: 40 33% 98%;
+  --foreground: 224 100% 10%;
+  --border: 224 20% 85%;
+  --input: 224 20% 85%;
+  --ring: 224 100% 45%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 224 100% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 100% 10%;
+
+  --primary: 224 100% 45%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 75 100% 50%;
+  --secondary-foreground: 224 100% 10%;
+
+  --muted: 224 20% 90%;
+  --muted-foreground: 224 20% 40%;
+
+  --accent: 75 100% 50%;
+  --accent-foreground: 224 100% 10%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --app-font-sans: 'Bricolage Grotesque', sans-serif;
+  --app-font-mono: 'Space Mono', monospace;
+  --radius: 0rem;
+
+  /* Map sandbox @theme vars to upndownbid values */
+  font-family: 'Bricolage Grotesque', sans-serif;
+  background-color: hsl(40 33% 98%);
+  color: hsl(224 100% 10%);
+}
+
+/* Neo-brutalist shadow utilities (replicated from signalrank index.css) */
+.sr-scope .neo-shadow {
+  box-shadow: 4px 4px 0px 0px hsl(224 100% 10%);
+}
+
+.sr-scope .neo-shadow-sm {
+  box-shadow: 2px 2px 0px 0px hsl(224 100% 10%);
+}
+
+.sr-scope .neo-shadow:hover {
+  box-shadow: 6px 6px 0px 0px hsl(224 100% 10%);
+  transform: translate(-2px, -2px);
+}
+
+.sr-scope .neo-shadow:active {
+  box-shadow: 0px 0px 0px 0px hsl(224 100% 10%);
+  transform: translate(4px, 4px);
+}

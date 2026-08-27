@@ -1,0 +1,52 @@
+modules = ["nodejs-24", "python-base-3.13", "postgresql-16"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 300000
+
+[nix]
+channel = "stable-25_05"
+packages = ["glib", "nss", "nspr", "atk", "at-spi2-atk", "cups", "dbus", "expat", "libdrm", "libxkbcommon", "pango", "cairo", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr", "xorg.libxcb", "xorg.libXScrnSaver", "xorg.libXtst", "mesa", "alsa-lib", "chromium", "xorg.libXi", "xorg.libXrender", "gtk3"]
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 80
+
+[[ports]]
+localPort = 18660
+externalPort = 3001
+
+[userenv]
+
+[userenv.shared]
+
+[userenv.production]
+PAYMENTS_LIVE_ENABLED = "true"
+PAYMENT_MODE = "live"
+PAYMENT_PROVIDER = "paypal"
+PAYPAL_ENVIRONMENT = "production"
+
+[userenv.development]
+PAYMENTS_LIVE_ENABLED = "false"
+PAYMENT_MODE = "sandbox"
+PAYMENT_PROVIDER = "paypal"
+PAYPAL_ENVIRONMENT = "sandbox"

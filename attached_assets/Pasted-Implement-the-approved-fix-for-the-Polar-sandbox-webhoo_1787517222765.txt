@@ -1,0 +1,233 @@
+Implement the approved fix for the Polar sandbox webhook orphan-payment bug.
+
+IMPORTANT:
+The forensic diagnosis is complete and confirmed.
+
+Root cause:
+A Polar sandbox checkout was created and successfully paid, but the corresponding internal payment row was not persisted in the database before the checkout was created. Polar sent a valid order.paid event containing the internal payment ID, but the webhook could not find that payment and correctly returned 404. Polar retried 10 times and disabled the webhook.
+
+Do NOT attempt to recover or credit the old orphaned $5 event.
+Do NOT manually modify the ledger.
+Do NOT manually modify ranking power.
+Do NOT replay the old event.
+Do NOT re-enable the Polar webhook yet.
+
+Implement the structural fix safely.
+
+1. PAYMENT-FIRST CHECKOUT CREATION
+
+For every public Polar action:
+
+- Claim
+- Boost
+- Push Down
+
+the server MUST:
+
+A. Validate the request.
+B. Validate USD currency and the allowed amount.
+C. Generate a stable internal payment ID/idempotency key.
+D. Persist the internal payment record BEFORE creating the Polar checkout.
+E. Store all required trusted relationships:
+   - payment ID
+   - listing ID
+   - campaign ID
+   - action
+   - account/owner identifier
+   - amount
+   - currency
+   - provider
+   - provider environment
+F. Only after the database transaction is successfully committed, create the Polar hosted checkout.
+G. Put the same internal payment ID and trusted campaign/action metadata into the Polar checkout metadata.
+H. Save the returned Polar checkout ID/order ID against the existing payment record.
+I. Return the hosted checkout URL.
+
+If Polar checkout creation fails after the internal payment exists:
+- mark the internal payment as failed/cancelled according to the existing payment state machine
+- do NOT create a ledger entry
+- do NOT modify campaign/ranking state
+- do NOT leave an ambiguous "paid" state
+
+2. IDEMPOTENCY
+
+Retries of the same public checkout request MUST NOT create multiple internal payments or multiple Polar checkouts.
+
+Use the existing stable idempotency mechanism.
+
+Verify:
+
+same idempotency key
+→ same internal payment
+→ same checkout result
+
+Concurrent requests must resolve to one payment/checkout.
+
+3. WEBHOOK
+
+Keep the existing Polar Standard Webhooks verification.
+
+Do not weaken signature verification.
+
+For order.paid:
+
+1. Verify signature.
+2. Parse the native Polar event.
+3. Locate the existing internal payment by the trusted internal payment ID.
+4. If it does not exist:
+   - fail closed
+   - do not create a payment automatically
+   - do not credit anything
+   - return the existing safe error behavior.
+
+5. If it exists:
+   - verify provider/environment
+   - verify USD
+   - verify amount
+   - verify trusted metadata
+   - verify the Polar order/checkout relationship
+   - verify idempotency
+   - transition the payment to succeeded exactly once
+   - create exactly one payment event
+   - create exactly one ledger entry
+   - apply exactly one campaign/ranking mutation
+   - create the corresponding audit event
+   - return HTTP 2xx.
+
+4. PAYMENT ENVIRONMENT
+
+Configure the application so sandbox mode is explicit and internally consistent.
+
+Use the existing project's approved environment-variable names, but ensure production sandbox configuration resolves to:
+
+PAYMENT_MODE=sandbox
+PAYMENT_PROVIDER=polar
+POLAR_SANDBOX_ENABLED=true
+
+Do not enable live payments.
+
+Do not put credentials in source code.
+
+Do not commit .env files.
+
+5. DATABASE CONSISTENCY
+
+The payment record must be written to the SAME production database used by the webhook handler.
+
+Verify this explicitly.
+
+Do not assume development and production databases are the same.
+
+Add a safe startup/configuration check that clearly reports:
+
+payment provider
+payment mode
+sandbox/live state
+database target/environment
+
+Never print secrets.
+
+6. REFUNDS
+
+Preserve the existing Polar refund behavior.
+
+Do not synthesize Polar refunds locally.
+
+A Polar refund must remain pending until the corresponding signed Polar refund event is received.
+
+Make sure the refund event can locate the same internal payment.
+
+7. TESTS
+
+Add isolated automated tests for:
+
+A. successful Polar checkout creation
+- payment row exists before provider checkout creation
+
+B. Polar checkout provider failure
+- payment remains non-paid
+- no ledger entry
+- no ranking mutation
+
+C. successful order.paid
+- payment becomes succeeded
+- exactly one payment event
+- exactly one ledger entry
+- exactly one campaign mutation
+
+D. duplicate order.paid
+- no duplicate ledger entry
+- no duplicate ranking mutation
+
+E. concurrent checkout creation
+- one internal payment
+- one provider checkout
+
+F. webhook for nonexistent payment
+- returns safe failure
+- no payment created
+- no ledger mutation
+
+G. amount mismatch
+- rejected
+- no credit
+
+H. currency mismatch
+- rejected
+- no credit
+
+I. wrong campaign/listing metadata
+- rejected
+- no credit
+
+J. refund event
+- correct internal payment located
+- refund processed idempotently
+
+8. REAL SANDBOX VERIFICATION
+
+Do NOT immediately re-enable the Polar webhook.
+
+First run all automated tests.
+
+Then verify:
+
+checkout request
+→ production payment row exists
+→ Polar checkout created
+→ payment completed
+→ signed order.paid received
+→ payment located
+→ payment succeeds
+→ ledger changes exactly once
+→ ranking changes exactly once
+→ audit event created
+→ webhook returns 2xx.
+
+Only after this local/application validation passes should you ask me to re-enable the Polar webhook and perform the real sandbox payment.
+
+9. REQUIRED FINAL REPORT
+
+Before asking me to make another payment, report:
+
+PAYMENT CREATED BEFORE POLAR CHECKOUT: PASS/FAIL
+DATABASE CONSISTENCY: PASS/FAIL
+IDEMPOTENCY: PASS/FAIL
+ORDER.PAID HANDLING: PASS/FAIL
+AMOUNT VALIDATION: PASS/FAIL
+CURRENCY VALIDATION: PASS/FAIL
+METADATA VALIDATION: PASS/FAIL
+REFUND HANDLING: PASS/FAIL
+DUPLICATE WEBHOOK PROTECTION: PASS/FAIL
+CONCURRENT CHECKOUT PROTECTION: PASS/FAIL
+AUTOMATED TESTS: PASS/FAIL
+
+Also provide:
+
+- exact files changed
+- exact tests executed
+- whether production sandbox configuration is aligned
+- whether the Polar webhook is still disabled
+- whether another real payment is required
+
+Do not claim the payment integration is fixed until the tests and real sandbox verification prove it.

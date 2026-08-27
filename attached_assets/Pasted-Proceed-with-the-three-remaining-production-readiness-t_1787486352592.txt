@@ -1,0 +1,226 @@
+Proceed with the three remaining production-readiness tasks in this exact order:
+
+#25 → #18 → #22
+
+Do not integrate real payments yet.
+
+==================================================
+#25 — PROTECT SHARED DEVELOPMENT/TEST DATA
+==================================================
+
+Prevent automated tests and sandbox/test runs from modifying shared
+development or production-like records.
+
+Requirements:
+
+- Tests must use isolated/disposable data wherever possible.
+- Prevent tests from accidentally modifying real campaign records.
+- Prevent tests from changing real users/products/transactions.
+- Verify cleanup after tests.
+- Make test data clearly distinguishable from real data.
+- Never delete or modify real financial history during cleanup.
+- Add regression coverage proving test execution does not modify shared
+  development records.
+
+Run the full test suite after implementation.
+
+==================================================
+#18 — ATOMIC OWNER PAYMENTS + LEADERBOARD UPDATES
+==================================================
+
+This is CRITICAL.
+
+Audit the complete owner payment → owner bid → Ranking Power → leaderboard
+flow.
+
+The system must guarantee that a successful payment cannot result in:
+
+- double credit
+- lost credit
+- over-credit
+- incorrect owner bid
+- incorrect Ranking Power
+- incorrect leaderboard position
+- duplicate transaction effects
+
+Handle concurrent payments/bid updates safely.
+
+Use proper database transactions/locking/idempotency where required.
+
+The payment provider/webhook must remain authoritative for payment success.
+
+The application must not update financial/ranking state merely because the
+frontend says payment succeeded.
+
+Test:
+
+- Two simultaneous owner bid increases
+- Same payment webhook delivered twice
+- Payment retry
+- Concurrent updates to the same product
+- Concurrent updates to different products
+- Failed payment
+- Cancelled payment
+- Successful payment
+- Replay of an already processed payment
+
+Verify:
+
+immutable transaction/ledger amount
+=
+actual applied owner bid change
+
+and:
+
+Owner Bid
++ Boosts
+- Push Downs
+=
+Ranking Power
+
+The displayed leaderboard must match the authoritative database state.
+
+Add regression tests for every discovered race condition.
+
+==================================================
+#22 — OWNER PORTAL AFTER VERIFIED CLAIM
+==================================================
+
+After the owner has successfully created/claimed a product and completed
+the required Clerk verification/authentication flow, verify the complete
+owner experience.
+
+Test and repair where necessary:
+
+1. Owner login
+2. Owner verification
+3. My Products
+4. Product management
+5. Profile updates
+6. Product information updates
+7. Archive actions
+8. Owner feedback/review viewing
+9. Owner replies to feedback
+10. Owner can only access their own products
+11. Owner cannot access another owner's product
+12. Owner cannot modify another owner's reviews
+13. Owner response appears publicly
+14. Archived products behave correctly
+15. Owner session survives refresh
+16. Unauthorized users cannot access owner-only actions
+
+Use server-side authorization.
+
+Do not rely only on frontend route protection.
+
+==================================================
+IMPORTANT PUBLIC USER RULE
+==================================================
+
+Keep the public experience unchanged:
+
+Public users do NOT need login to:
+
+- Browse
+- View products
+- BOOST
+- PUSH DOWN
+- Submit feedback
+- View rankings
+- View winners
+
+Only product owners need authentication for owner management features.
+
+==================================================
+CLERK
+==================================================
+
+Use the existing Clerk implementation.
+
+Do not replace Clerk with another authentication system.
+
+Verify the complete verified-owner flow using the existing architecture.
+
+If a real email verification test requires mailbox access, do not weaken
+verification security just to make the test pass.
+
+==================================================
+CHANGE CONTROL
+==================================================
+
+Before changing code:
+
+1. Inspect the existing implementation.
+2. Run relevant tests.
+3. Identify the actual defect.
+4. Make the smallest safe fix.
+5. Add a regression test.
+6. Re-run the affected tests.
+7. Run the complete suite.
+
+Do not redesign the UI.
+
+Do not add unrelated features.
+
+Do not change the public ranking model.
+
+Do not connect real payment credentials.
+
+==================================================
+FINAL RELEASE GATE
+==================================================
+
+After #25, #18 and #22 are complete, run:
+
+- Full test suite
+- Security suite
+- Typecheck
+- Production build
+- API tests
+- Database tests
+- Concurrency tests
+- Fresh desktop browser test
+- Fresh mobile browser test
+- Owner authentication test
+- Anonymous public-user test
+
+Also inspect workflow/service logs for application errors.
+
+Then provide:
+
+#25 STATUS
+PASS / FAIL
+
+#18 STATUS
+PASS / FAIL
+
+#22 STATUS
+PASS / FAIL
+
+TESTS
+X/X passed
+
+SECURITY
+PASS / FAIL
+
+CONCURRENCY
+PASS / FAIL
+
+OWNER PORTAL
+PASS / FAIL
+
+BUILD
+PASS / FAIL
+
+REMAINING BLOCKERS
+List only actual blockers.
+
+FINAL VERDICT:
+
+READY FOR PAYMENT INTEGRATION
+
+or
+
+NOT READY — [specific blockers]
+
+Do NOT start payment integration automatically even if everything passes.

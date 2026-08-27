@@ -1,0 +1,1462 @@
+UPNDOWNBID.LOL — FINAL PRODUCT REQUIREMENTS
+============================================
+
+IMPORTANT:
+Do not treat this as a normal permanent leaderboard.
+
+UpnDownBid.lol is a WEEKLY PUBLIC BIDDING COMPETITION for websites/apps.
+
+Every campaign lasts exactly 7 days.
+At the end of every campaign:
+- bidding closes
+- a winner is determined
+- the winner is permanently saved to history
+- that winner becomes the "LAST WEEK'S WINNER" shown at the top
+- a completely fresh campaign starts
+- everyone starts again from the minimum bid
+
+Use the existing implementation as the starting point, but make the necessary frontend, backend, database and business-logic changes.
+
+Use Outbid.lol / Polar-style public bidding and checkout flows as UX inspiration only. Do NOT copy proprietary code, branding, assets or exact designs.
+
+==================================================
+1. NO LOGIN / NO ACCOUNTS
+==================================================
+
+REMOVE PUBLIC AUTHENTICATION COMPLETELY.
+
+There must be NO:
+- Login
+- Sign in
+- Sign up
+- Profile
+- User account
+- Password
+- Public user dashboard
+- Profile icon
+
+The person/profile icon currently visible in the header MUST be removed.
+
+The "PROFILE" item in mobile navigation MUST be removed.
+
+Anyone can:
+- browse
+- add a website
+- bid
+- support
+- penalize
+- review
+
+without creating an account.
+
+Collect email during checkout for:
+- payment receipt
+- transaction confirmation
+- listing management link when appropriate
+
+Email is NOT an account.
+
+==================================================
+2. CORE WEEKLY CAMPAIGN MODEL
+==================================================
+
+Every campaign lasts exactly 7 days.
+
+Example:
+
+Campaign #12
+Sunday → next Sunday
+
+When Campaign #12 ends:
+
+1. Freeze Campaign #12.
+2. Stop accepting transactions for Campaign #12.
+3. Calculate final rankings.
+4. Determine winner.
+5. Save winner permanently.
+6. Mark Campaign #12 COMPLETED.
+7. Create Campaign #13.
+8. Campaign #13 starts fresh with the minimum bid.
+9. Campaign #13 becomes LIVE.
+
+The campaign lifecycle MUST be controlled by the backend.
+
+Do NOT rely on browser timers or frontend JavaScript alone.
+
+Use a reliable server-side scheduled process/job and database locking/idempotency.
+
+==================================================
+3. LAST WEEK'S WINNER — IMPORTANT
+==================================================
+
+The most recently completed campaign winner must ALWAYS appear at the top of the homepage.
+
+Create a prominent section:
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+
+Campaign #12 Winner
+
+Final Effective Bid:
+$650
+
+[ VIEW WINNER ]
+
+This is a historical/champion display only.
+
+IMPORTANT:
+
+The previous winner does NOT automatically participate in the new campaign.
+
+Its old:
+- owner bid
+- support
+- penalties
+- effective bid
+- rank
+
+DO NOT carry into the new campaign.
+
+It is displayed at the top so visitors immediately know:
+
+"Who won last week?"
+
+==================================================
+4. CURRENT WEEK BELOW THE WINNER
+==================================================
+
+Immediately below the Last Week's Winner section:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in:
+5D 18H 24M
+
+Minimum bid:
+$5
+
+Then:
+
+LIVE RANKINGS
+
+#1 Product A
+$180
+
+#2 Product B
+$150
+
+#3 Product C
+$100
+
+These rankings belong ONLY to the current campaign.
+
+The previous winner's old financial data must never affect these rankings.
+
+==================================================
+5. NEW WEEK = FRESH START
+==================================================
+
+Every new campaign starts fresh.
+
+Default minimum bid:
+
+$5
+
+Make the minimum bid configurable in admin settings.
+
+Example:
+
+Campaign #12:
+Beacon
+Effective Bid = $650
+Winner
+
+Campaign #13:
+Beacon has NO $650 carried over.
+
+If Beacon wants to compete again:
+
+New campaign bid:
+$5 minimum
+
+The same product can participate every week.
+
+==================================================
+6. WINNER HISTORY
+==================================================
+
+Create a permanent:
+
+/winners
+
+page.
+
+Keep every previous winner.
+
+Example:
+
+WINNER HISTORY
+
+🏆 Campaign #12
+Beacon
+Final Effective Bid: $650
+
+🏆 Campaign #11
+Requesty
+Final Effective Bid: $520
+
+🏆 Campaign #10
+Beacon
+Final Effective Bid: $480
+
+🏆 Campaign #9
+Wildform
+Final Effective Bid: $440
+
+Never delete historical winners.
+
+If the same product wins multiple campaigns, display:
+
+🏆 2-time winner
+
+or:
+
+🏆 5-time winner
+
+Winner history should be permanent.
+
+==================================================
+7. CAMPAIGN HISTORY
+==================================================
+
+Every completed campaign must have its own historical record.
+
+Example:
+
+Campaign #12
+
+Start:
+Aug 23
+
+End:
+Aug 30
+
+Winner:
+Beacon
+
+Final Effective Bid:
+$650
+
+Final rankings:
+
+#1 Beacon — $650
+#2 Requesty — $580
+#3 Wildform — $520
+
+Users should be able to view the campaign's final leaderboard.
+
+==================================================
+8. HOMEPAGE STRUCTURE
+==================================================
+
+Redesign the homepage around the weekly competition.
+
+HEADER:
+
+Logo:
+UpnDownBid
+
+Actions:
+Search
++ Add Product
+Menu
+
+NO LOGIN.
+NO PROFILE ICON.
+
+--------------------------------
+
+HERO:
+
+"Every week, products compete for the top spot."
+
+"Bid, support or penalize — then see who wins."
+
+[ + ADD YOUR PRODUCT ]
+
+--------------------------------
+
+LAST WEEK'S WINNER:
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+
+Campaign #12 Winner
+
+Final Effective Bid:
+$650
+
+[ View Winner ]
+
+--------------------------------
+
+CURRENT CAMPAIGN:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in:
+5D 18H 24M
+
+Minimum:
+$5
+
+--------------------------------
+
+LIVE RANKINGS:
+
+#1
+Product
+Category
+Effective Bid
+Support
+Penalties
+Reviews
+
+#2
+...
+
+#3
+...
+
+--------------------------------
+
+RECENT ACTIVITY:
+
+Someone supported Product A +$25
+
+Someone penalized Product B -$10
+
+Someone bid on Product C +$50
+
+--------------------------------
+
+WINNER HISTORY:
+
+Campaign #12 — Beacon
+Campaign #11 — Requesty
+Campaign #10 — Wildform
+
+[ View All Winners ]
+
+==================================================
+9. ADD YOUR PRODUCT
+==================================================
+
+This is a core feature.
+
+Create a prominent:
+
++ ADD YOUR PRODUCT
+
+button.
+
+The user should NOT search for their product first.
+
+The flow is:
+
+URL
+↓
+CATEGORY
+↓
+OWNER BID
+↓
+PROJECTED RANK
+↓
+EMAIL
+↓
+CHECKOUT
+↓
+PAYMENT VERIFIED
+↓
+PRODUCT ENTERS CURRENT CAMPAIGN
+
+==================================================
+10. WEBSITE URL
+==================================================
+
+The first field must be:
+
+WEBSITE / APP URL
+
+Example:
+
+https://makunto.com
+
+URL is REQUIRED.
+
+Validate the URL.
+
+Normalize URLs where appropriate.
+
+Detect duplicate listings.
+
+Optionally retrieve:
+- title
+- favicon
+- description
+- Open Graph image
+
+Allow the user to edit the displayed title/description before checkout.
+
+==================================================
+11. CATEGORY
+==================================================
+
+After URL:
+
+CATEGORY
+
+Example:
+
+AI & Infrastructure
+
+Other categories:
+
+AI
+SaaS
+Productivity
+Developer Tools
+Marketing
+Finance
+E-commerce
+Education
+Health
+Climate
+Social
+Entertainment
+Other
+
+Categories are for classification.
+
+Do NOT make category a replacement for URL.
+
+==================================================
+12. OWNER BID
+==================================================
+
+Show:
+
+YOUR OPENING BID
+
+[-] $100 [+]
+
+Minimum:
+$5
+
+Immediately calculate:
+
+PROJECTED RANK
+
+#7
+
+Also show:
+
+Current #1:
+$1,420
+
+To currently reach #1:
+$1,425
+
+The projected rank must update dynamically.
+
+The backend must recalculate the final rank before accepting the transaction.
+
+==================================================
+13. EXISTING PRODUCT
+==================================================
+
+If the URL already exists:
+
+"This product is already on the leaderboard."
+
+Show:
+
+Current campaign:
+#13
+
+Current rank:
+#4
+
+Effective bid:
+$830
+
+Buttons:
+
+[ VIEW PRODUCT ]
+
+[ SUPPORT ]
+
+[ APPLY PENALTY ]
+
+Do not create duplicates.
+
+A product can participate again in a future campaign, but every campaign has separate financial records.
+
+==================================================
+14. SUPPORT
+==================================================
+
+Any visitor can support an existing product.
+
+No login.
+
+Click:
+
+SUPPORT
+
+Example:
+
+Current Effective Bid:
+$277
+
+Your Support:
++$25
+
+Projected Effective Bid:
+$302
+
+Projected Rank:
+#2
+
+Then:
+
+[ CONTINUE TO CHECKOUT ]
+
+Support affects ONLY the current campaign.
+
+==================================================
+15. PENALTY
+==================================================
+
+Any visitor can apply a penalty.
+
+No login.
+
+Click:
+
+APPLY PENALTY
+
+Example:
+
+Current Effective Bid:
+$277
+
+Your Penalty:
+-$10
+
+Projected Effective Bid:
+$267
+
+Projected Rank:
+#4
+
+Then:
+
+[ CONTINUE TO CHECKOUT ]
+
+The person paying the penalty does NOT receive the money.
+
+The payment represents a paid penalty signal.
+
+Penalty affects ONLY the current campaign.
+
+==================================================
+16. RANKING FORMULA
+==================================================
+
+The ranking formula is:
+
+EFFECTIVE BID =
+OWNER BID
++
+COMMUNITY SUPPORT
+-
+PENALTIES
+
+Example:
+
+Owner Bid:
+$180
+
+Community Support:
++$119
+
+Penalties:
+-$22
+
+Effective Bid:
+$277
+
+Highest final effective bid = #1.
+
+This formula must be calculated server-side.
+
+Never trust:
+- frontend effective bid
+- frontend rank
+- frontend totals
+
+==================================================
+17. TIE BREAKER
+==================================================
+
+If two products have exactly the same effective bid:
+
+The product that reached that effective bid FIRST wins.
+
+Store the timestamp needed to enforce this.
+
+There must always be a deterministic winner.
+
+==================================================
+18. WEEKLY WINNER
+==================================================
+
+At campaign close:
+
+Find highest final effective bid.
+
+Example:
+
+Product A:
+Owner $500
+Support +$100
+Penalty -$20
+Effective $580
+
+Product B:
+Owner $600
+Support +$10
+Penalty -$100
+Effective $510
+
+Winner:
+
+Product A
+
+because:
+
+$580 > $510
+
+Save:
+
+campaign_id
+listing_id
+final_effective_bid
+final_rank
+declared_at
+
+==================================================
+19. CAMPAIGN CLOSE
+==================================================
+
+At exact end time:
+
+1. Lock campaign.
+2. Stop new transactions.
+3. Finalize verified successful transactions.
+4. Calculate all final effective bids.
+5. Calculate final ranking.
+6. Determine winner.
+7. Save winner.
+8. Mark campaign COMPLETED.
+9. Create next campaign.
+10. Start new campaign.
+11. Make new campaign visible immediately.
+
+Only VERIFIED/SUCCEEDED payments count.
+
+Pending payments do NOT count.
+
+Use database transactions/locking/idempotency to prevent double finalization.
+
+==================================================
+20. CAMPAIGN TIMER
+==================================================
+
+Show on homepage:
+
+CAMPAIGN #13
+
+ENDS IN
+
+5D 18H 24M
+
+When under 24 hours:
+
+23H 45M
+
+When ended:
+
+CAMPAIGN ENDED
+
+Then immediately show:
+
+🏆 WINNER:
+Beacon
+
+And:
+
+🔥 NEW CAMPAIGN IS LIVE
+
+Everyone starts fresh at $5.
+
+The displayed timer is frontend only for presentation.
+
+The backend remains authoritative.
+
+==================================================
+21. BID CHECKOUT
+==================================================
+
+Make checkout simple and similar in concept to the reference screenshots.
+
+Show:
+
+CLAIM YOUR SPOT
+
+Product:
+Makunto.com
+
+Category:
+AI
+
+Your bid:
+$100
+
+Projected rank:
+#7
+
+Current #1:
+$1,420
+
+Email:
+[________________]
+
+Then:
+
+[ CONTINUE TO PAYMENT ]
+
+For support:
+
+SUPPORT THIS PRODUCT
+
+Support:
+$25
+
+Projected rank:
+#2
+
+For penalty:
+
+APPLY PENALTY
+
+Penalty:
+$10
+
+Projected rank:
+#4
+
+==================================================
+22. PAYMENT
+==================================================
+
+For development use SANDBOX / TEST MODE.
+
+Do not require production payment credentials to test the full application.
+
+Production payment architecture should support a proper payment provider.
+
+Never store:
+- card numbers
+- CVV
+- raw payment credentials
+
+Use hosted/tokenized payment checkout.
+
+Only verified payment results update rankings.
+
+==================================================
+23. NO LOGIN AFTER PAYMENT
+==================================================
+
+After payment:
+
+Do NOT ask the user to create an account.
+
+Show:
+
+PAYMENT SUCCESSFUL
+
+Your action:
+Support +$25
+
+or:
+
+Bid:
+$100
+
+or:
+
+Penalty:
+-$10
+
+Then:
+
+[ VIEW PRODUCT ]
+
+[ VIEW CAMPAIGN ]
+
+The user can leave immediately.
+
+==================================================
+24. EMAIL
+==================================================
+
+Collect email during checkout.
+
+Use email for:
+
+- payment receipt
+- transaction confirmation
+- product management link
+- important transaction communication
+
+Do not turn the email into an account.
+
+==================================================
+25. PRODUCT OWNER MANAGEMENT
+==================================================
+
+When someone adds their own product:
+
+After successful payment, email them a secure management link.
+
+Example:
+
+MANAGE YOUR PRODUCT
+
+The link should use a secure random token.
+
+No password required.
+
+The owner can:
+
+- edit product title
+- edit description
+- update website
+- update logo
+- view campaign participation
+- increase owner bid
+- view reviews
+- view activity
+
+The management link must be protected and revocable.
+
+==================================================
+26. REVIEWS
+==================================================
+
+After successful support or penalty:
+
+Show:
+
+"Why are you doing this?"
+
+Support reasons:
+
+Great product
+Great idea
+Useful
+Deserves visibility
+Supporting the founder
+Better than alternatives
+Other
+
+Penalty reasons:
+
+Poor quality
+Too expensive
+Bugs
+Misleading
+Doesn't deserve current position
+Supporting another product
+Rule violation
+Other
+
+Optional written review.
+
+No login required.
+
+Public identity:
+
+Anonymous
+
+or optional display name.
+
+Never publicly display email.
+
+==================================================
+27. PRODUCT PAGE
+==================================================
+
+Product detail should show:
+
+Product logo
+Product name
+Category
+Website
+
+CURRENT CAMPAIGN
+
+Rank #1
+
+Effective Bid:
+$277
+
+Owner Bid:
+$180
+
+Community Support:
++$119
+
+Penalties:
+-$22
+
+Supporters:
+2
+
+Penalizers:
+2
+
+Reviews:
+5
+
+Buttons:
+
+[ SUPPORT ]
+
+[ APPLY PENALTY ]
+
+[ VISIT WEBSITE ]
+
+Then:
+
+CAMPAIGN HISTORY
+
+Campaign #12 — #1 🏆
+Campaign #11 — #4
+Campaign #10 — #2
+
+==================================================
+28. LAST WEEK'S WINNER VS CURRENT RANKING
+==================================================
+
+IMPORTANT UI DISTINCTION.
+
+The top champion section must NOT be confused with the current leaderboard.
+
+Use separate labels:
+
+🏆 LAST WEEK'S WINNER
+
+and:
+
+🔥 THIS WEEK'S LIVE RANKINGS
+
+Example:
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+Campaign #12 Winner
+Final: $650
+
+--------------------------------
+
+🔥 THIS WEEK'S LIVE RANKINGS
+
+Campaign #13
+Ends in 5D 18H
+
+#1 Wildform — $180
+#2 Lumen — $150
+#3 Requesty — $100
+
+The winner section is historical.
+
+The live ranking is current.
+
+Do not combine them.
+
+==================================================
+29. WINNER REPLACEMENT
+==================================================
+
+At the end of every campaign:
+
+Current:
+
+🏆 LAST WEEK'S WINNER
+Beacon
+
+When new campaign finishes:
+
+If Wildform wins:
+
+🏆 LAST WEEK'S WINNER
+Wildform
+
+Beacon moves into:
+
+WINNER HISTORY
+
+Campaign #12 — Beacon
+
+This must happen automatically.
+
+==================================================
+30. WINNER HISTORY
+==================================================
+
+Keep ALL winners forever.
+
+Show:
+
+🏆 WINNER HISTORY
+
+Campaign #12
+Beacon
+$650
+
+Campaign #11
+Requesty
+$520
+
+Campaign #10
+Wildform
+$440
+
+Include:
+- campaign number
+- winner
+- final effective bid
+- date
+- category
+- win count
+
+If a product wins multiple campaigns:
+
+Beacon
+🏆 3-time winner
+
+==================================================
+31. MOBILE NAVIGATION
+==================================================
+
+REMOVE PROFILE COMPLETELY.
+
+Use:
+
+DISCOVER
+RANKINGS
+ACTIVITY
+ADD PRODUCT
+
+or an equivalent clean mobile navigation.
+
+The important point:
+
+NO PROFILE.
+
+NO LOGIN.
+
+ADD PRODUCT must be easily accessible.
+
+==================================================
+32. SEARCH
+==================================================
+
+Search is ONLY for finding existing products/websites.
+
+Placeholder:
+
+Search products and websites...
+
+Do NOT use:
+
+"Search products, companies, or founders"
+
+unless those entities are actually supported.
+
+Adding a website uses:
+
+URL
++
+CATEGORY
++
+BID
+
+Search and Add Product are separate functions.
+
+==================================================
+33. ADMIN
+==================================================
+
+Create a protected admin area separately from the public experience.
+
+Admin can see:
+
+Current campaign
+Start time
+End time
+Minimum bid
+Participants
+Total owner bids
+Total support
+Total penalties
+Current #1
+
+Campaign history
+
+Winner history
+
+Transactions
+
+Reviews
+
+Reports
+
+Moderation
+
+Admin settings
+
+Admin can configure:
+
+Minimum bid
+Campaign duration
+Campaign start day/time
+Categories
+Moderation rules
+
+Completed campaign winners should not be silently editable.
+
+Any correction must create an audit log.
+
+==================================================
+34. DATABASE
+==================================================
+
+Use a proper campaign-based data model.
+
+Campaign:
+
+id
+number
+startAt
+endAt
+status
+minimumBid
+winnerListingId
+winnerEffectiveBid
+createdAt
+completedAt
+
+Listing:
+
+id
+url
+canonicalUrl
+name
+description
+category
+logo
+createdAt
+
+CampaignListing:
+
+id
+campaignId
+listingId
+ownerBid
+supportTotal
+penaltyTotal
+effectiveBid
+rank
+finalRank
+effectiveBidReachedAt
+
+Transaction:
+
+id
+campaignId
+listingId
+type
+amount
+email
+paymentStatus
+providerTransactionId
+createdAt
+
+Types:
+
+OWNER_BID
+SUPPORT
+PENALTY
+
+Winner:
+
+id
+campaignId
+listingId
+finalEffectiveBid
+finalRank
+declaredAt
+
+Review:
+
+id
+campaignId
+listingId
+transactionId
+type
+reason
+text
+displayName
+createdAt
+
+EVERY financial transaction MUST belong to a campaign.
+
+==================================================
+35. SECURITY / ABUSE PROTECTION
+==================================================
+
+Because there are no accounts, implement:
+
+- rate limiting
+- duplicate transaction protection
+- idempotency
+- payment verification
+- review spam protection
+- URL validation
+- transaction fraud signals
+- moderation
+- reporting
+- audit logs
+
+Do not use login as an anti-abuse mechanism.
+
+Do not expose email addresses publicly.
+
+==================================================
+36. DESIGN
+==================================================
+
+The current design should be simplified.
+
+Do NOT copy the current oversized blocks if they make the experience confusing.
+
+Design should feel:
+
+Modern
+Premium
+Clean
+Fast
+Mobile-first
+Financial/competitive
+Easy to understand
+
+Use a strong visual distinction:
+
+GREEN / positive:
+Support
+
+RED / negative:
+Penalty
+
+A neutral/dominant style:
+Current ranking
+
+Special highlight:
+Winner
+
+The most important information should always be:
+
+WHO WON LAST WEEK?
+WHO IS WINNING THIS WEEK?
+WHEN DOES THE CAMPAIGN END?
+HOW CAN I BID?
+WHAT IS THE CURRENT EFFECTIVE BID?
+
+==================================================
+37. FINAL HOMEPAGE EXAMPLE
+==================================================
+
+HEADER
+
+UpnDownBid
+
+Search
+
++ Add Product
+
+Menu
+
+NO LOGIN
+NO PROFILE
+
+--------------------------------
+
+HERO
+
+THE WEEKLY PUBLIC BID RACE.
+
+"Every week, products compete for the top spot."
+
+[ ADD YOUR PRODUCT ]
+
+--------------------------------
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+
+Campaign #12 Winner
+
+Final Effective Bid
+$650
+
+🏆 2-time winner
+
+[ VIEW WINNER ]
+
+--------------------------------
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in:
+5D 18H 24M
+
+Minimum bid:
+$5
+
+"Everyone starts fresh."
+
+--------------------------------
+
+LIVE RANKINGS
+
+#1
+Wildform
+$180
+
+#2
+Lumen
+$150
+
+#3
+Requesty
+$100
+
+--------------------------------
+
+RECENT ACTIVITY
+
+🟢 Wildform +$25 Support
+
+🔴 Lumen -$10 Penalty
+
+🟢 Requesty +$50 Bid
+
+--------------------------------
+
+WINNER HISTORY
+
+Campaign #12 — Beacon 🏆
+Campaign #11 — Requesty 🏆
+Campaign #10 — Wildform 🏆
+
+[ VIEW ALL WINNERS ]
+
+==================================================
+38. FINAL PRODUCT LOOP
+==================================================
+
+EVERY WEEK:
+
+DISCOVER
+↓
+ADD PRODUCT
+↓
+URL
+↓
+CATEGORY
+↓
+BID
+↓
+SUPPORT
+↓
+PENALIZE
+↓
+REVIEWS
+↓
+COMPETE
+↓
+7 DAYS
+↓
+BIDDING CLOSES
+↓
+🏆 WINNER ANNOUNCED
+↓
+WINNER PINNED AS "LAST WEEK'S WINNER"
+↓
+WINNER SAVED TO HISTORY
+↓
+NEW CAMPAIGN
+↓
+$5 MINIMUM
+↓
+EVERYONE STARTS FRESH
+↓
+REPEAT
+
+==================================================
+39. MOST IMPORTANT RULE
+==================================================
+
+The previous week's winner is NOT part of the new week's ranking unless someone explicitly makes a NEW transaction for the new campaign.
+
+The previous winner is displayed at the top ONLY as:
+
+🏆 LAST WEEK'S WINNER
+
+The current campaign has its own completely independent ranking.
+
+At the end of the current campaign, its winner replaces the previous winner in the champion section.
+
+All previous winners remain permanently available in Winner History.
+
+Implement this across the database, backend, ranking engine, campaign scheduler, frontend, product pages, checkout, activity feed and admin panel.
+
+Do not make this a cosmetic UI change.
+
+The weekly campaign lifecycle must actually work end-to-end.

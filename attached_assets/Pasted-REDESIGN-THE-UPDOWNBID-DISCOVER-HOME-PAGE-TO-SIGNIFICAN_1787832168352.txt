@@ -1,0 +1,512 @@
+REDESIGN THE UPDOWNBID DISCOVER/HOME PAGE TO SIGNIFICANTLY REDUCE VERTICAL SPACE WHILE KEEPING ALL IMPORTANT CAMPAIGN, RANKING, DEMO, AND MONETIZATION INFORMATION.
+
+IMPORTANT:
+Do NOT rebuild the entire website.
+Do NOT change the existing ranking/bidding/payment logic.
+Do NOT remove existing functionality.
+This is primarily a UI/UX restructuring and information-density improvement.
+
+REFERENCE:
+Use the currently implemented Discover page and the attached screenshots as the visual reference.
+
+==================================================
+1. REMOVE THE LARGE CAMPAIGN COUNTDOWN SECTION
+==================================================
+
+Currently there is a large standalone section:
+
+"CAMPAIGN #1 IS LIVE"
+"Sunday-to-Sunday • claim with more than $5"
+"Closes in 2d 12h 16m..."
+
+REMOVE this entire large standalone section.
+
+The campaign countdown must NOT occupy its own large card anymore.
+
+Instead, move the countdown into the TOP 4 RANKINGS section header.
+
+Example:
+
+🏆 TOP 4 RANKINGS                         Campaign #1
+
+These are the current top 4 listings in this week's live campaign.
+
+⏱ Ends in 2d 12h 16m 50s
+
+The countdown should be compact and update in real time.
+
+On mobile, make the header responsive:
+
+TOP 4 RANKINGS
+Campaign #1
+⏱ Ends in 2d 12h 16m
+
+Do not create a huge countdown box.
+
+==================================================
+2. TOP 4 RANKINGS BECOMES THE MAIN CAMPAIGN HERO
+==================================================
+
+The TOP 4 RANKINGS section should become the primary campaign section.
+
+Structure:
+
+🏆 TOP 4 RANKINGS
+Campaign #1
+
+These are the current top 4 listings in this week's live campaign.
+
+⏱ Ends in 2d 12h 16m
+
+[4 ranking cards]
+
+At the bottom:
+
+⚡ Want to be seen here?
+
+Claim a live position from $5.
+Higher positions get more visibility.
+
+[ CLAIM A SPOT → ]
+
+Keep this compact.
+
+Do NOT repeat the full campaign explanation.
+
+==================================================
+3. TOP 4 CARD CONTENT
+==================================================
+
+Keep the existing four ranking cards.
+
+Each card should show:
+
+#1 / #2 / #3 / #4
+Logo
+Business/Product name
+Website/domain
+Category or short description
+Demo button IF the listing has a demo
+Current ranking amount
+7 days
+Current status
+
+Example:
+
+#1
+Makunto
+makunto.com
+
+[▶ Demo]
+
+$262
+/ 7 days
+
+🏆 Leading
+
+For listings without a demo URL:
+
+DO NOT show an empty demo area.
+
+Simply omit the Demo button.
+
+==================================================
+4. WINNER STATE VS LIVE CAMPAIGN STATE
+==================================================
+
+There are two states.
+
+STATE A — CURRENT CAMPAIGN IS LIVE
+
+Show:
+
+🏆 TOP 4 RANKINGS
+
+"These are the current top 4 listings in this week's live campaign."
+
+"⏱ Ends in 2d 12h 16m"
+
+The four positions update in real time as bids change.
+
+Use existing ranking logic.
+
+STATE B — CAMPAIGN HAS ENDED / WINNERS CONFIRMED
+
+Change the text to:
+
+🏆 CURRENT CAMPAIGN WINNERS
+
+"These top 4 won this week's campaign."
+
+"🏆 Winners remain featured until the next campaign results."
+
+Show the four winners.
+
+Each winner remains displayed for the entire next campaign period until the next results are finalized.
+
+Do NOT carry old rankings into a new live ranking calculation.
+
+The live campaign and previous winners must remain logically separate.
+
+==================================================
+5. REMOVE THE LARGE "THIS WEEK'S CAMPAIGN" CARD
+==================================================
+
+Currently there is a large section:
+
+"THIS WEEK'S CAMPAIGN"
+"Campaign #1"
+"New spots start at $5..."
+"CLAIM #1 FOR $262"
+large +/- controls
+URL field
+category
+demo URL
+projected rank
+etc.
+
+DO NOT display all of this on the Discover page.
+
+That information belongs in the CLAIM A SPOT workflow.
+
+On the Discover page replace the large card with a compact CTA strip:
+
+------------------------------------------
+
+⚡ WANT MORE VISIBILITY?
+
+Claim a live position from $5.
+
+Current #1: $262
+Next position available: dynamically calculated
+
+[ CLAIM A SPOT → ]
+
+------------------------------------------
+
+Keep it visually attractive but very short.
+
+When the user taps CLAIM A SPOT, open the existing claim workflow/modal/page where they can enter:
+
+- Bid amount
+- Website URL
+- Category
+- Demo video URL
+- Other required information
+
+Do not remove those fields from the actual claim process.
+
+Only remove them from the Discover page.
+
+==================================================
+6. CAMPAIGN COUNTDOWN SHOULD ONLY EXIST ONCE
+==================================================
+
+There must be only ONE visible campaign countdown on the Discover page.
+
+Place it inside the Top 4 Rankings header.
+
+Do not display:
+
+"Closes in..."
+in another separate card.
+
+Avoid duplicate campaign information.
+
+==================================================
+7. FEATURED #1 SPONSOR / WINNER SPOTLIGHT
+==================================================
+
+Keep the previously discussed #1 spotlight feature.
+
+When there is an active #1 paid/featured winner, show a tasteful homepage spotlight/popup when the website loads.
+
+Example:
+
+------------------------------------------
+🏆 FEATURED THIS WEEK
+
+Makunto
+
+#1 in Campaign #1
+
+Featured for 7 days
+
+[ ▶ WATCH DEMO ]
+[ VISIT WEBSITE ]
+
+Sponsored • Featured Placement
+
+                         ×
+------------------------------------------
+
+Requirements:
+
+- Show only when there is an eligible #1 winner/featured sponsor.
+- Do not show the popup repeatedly on every page navigation.
+- Allow the visitor to close it.
+- Do not block the entire website.
+- Use a short, polished entrance animation.
+- Respect mobile screens.
+- Track impressions and clicks.
+- If no winner exists yet, do not show the winner popup.
+- During the first campaign when there are no confirmed winners, use the current #1/top listing as the temporary featured listing if appropriate.
+- Once campaign results are finalized, the confirmed winner becomes the featured listing.
+
+Do not make this popup annoying.
+
+==================================================
+8. DEMO VIDEO / DEMO COUNTER
+==================================================
+
+Keep the existing demo functionality.
+
+On ranking/listing cards:
+
+If a demo URL exists:
+
+[ ▶ Demo ]
+
+Show the demo view count where appropriate.
+
+Example:
+
+👁 128 watched this demo
+
+For the detailed listing page, continue showing:
+
+DEMO VIDEO
+[ ▶ Demo ]
+
+128 people watched this demo
+
+And in the statistics grid:
+
+128
+DEMO VIEWS
+
+Do not show empty demo containers when a listing has no demo.
+
+==================================================
+9. TOP 4 WINNER CARDS SHOULD REMAIN COMPACT
+==================================================
+
+Do not make the cards unnecessarily tall.
+
+Prioritize:
+
+Logo
+Rank
+Name
+Website
+Demo
+Price
+7 days
+Status
+
+Avoid excessive empty whitespace.
+
+On mobile:
+
+Use four compact cards that fit naturally in the available width.
+
+If four cards become too narrow, use a horizontally scrollable Top 4 carousel, but ensure the first card and ranking information are immediately visible.
+
+Do not create page-level horizontal scrolling.
+
+==================================================
+10. REMOVE REDUNDANT INFORMATION
+==================================================
+
+Audit the Discover page for duplicate information.
+
+Do not repeat:
+
+Campaign number
+Campaign countdown
+Campaign explanation
+Current #1 price
+"New spots start at $5"
+
+multiple times.
+
+Each piece of information should have ONE primary location.
+
+Suggested hierarchy:
+
+HEADER
+↓
+CATEGORY FILTERS
+↓
+TOP 4 RANKINGS + CAMPAIGN COUNTDOWN
+↓
+COMPACT "CLAIM A SPOT" CTA
+↓
+LIVE CAMPAIGN RANKINGS
+↓
+LIVE ACTIVITY
+↓
+WINNER HISTORY
+↓
+MARKETPLACE IN NUMBERS
+↓
+FOOTER
+
+==================================================
+11. MAKE THE DISCOVER PAGE MORE MONETIZATION-FOCUSED
+==================================================
+
+The page should make visitors understand that:
+
+1. Businesses can get visibility.
+2. They can compete for ranking positions.
+3. Higher positions get more exposure.
+4. They can add a demo.
+5. Visitors can discover products.
+6. Winners receive continued featured visibility.
+
+Use concise marketing copy.
+
+Example:
+
+"Want your product seen by more people?"
+
+"Claim a live position and compete for the Top 4."
+
+[ CLAIM A SPOT ]
+
+Do not use excessive marketing text.
+
+==================================================
+12. PRESERVE EXISTING FUNCTIONALITY
+==================================================
+
+Do NOT break:
+
+- Live ranking calculations
+- Boosts
+- Push downs
+- Reviews
+- Website clicks
+- Demo views
+- Bid amounts
+- Campaign timers
+- Campaign transitions
+- Winner history
+- Payments
+- Invoice generation
+- Email notifications
+- Admin controls
+- Authentication
+- Claim flow
+- Existing bottom navigation
+- Mobile responsiveness
+
+All existing backend/database functionality must continue working.
+
+==================================================
+13. DATA RULES
+==================================================
+
+The UI must use real database values.
+
+Do NOT hardcode:
+
+- Winner names
+- Bid amounts
+- Demo views
+- Countdown
+- Ranking positions
+- Campaign number
+
+The countdown must come from the active campaign end timestamp.
+
+The Top 4 must come from the existing ranking system.
+
+Winner state must come from finalized campaign results.
+
+Demo view count must come from the actual demo tracking system.
+
+==================================================
+14. MOBILE-FIRST REQUIREMENT
+==================================================
+
+The screenshots show that the website is heavily used on mobile.
+
+Optimize specifically for approximately 320px–430px widths.
+
+Requirements:
+
+- No page-level horizontal scrolling.
+- No huge blank areas.
+- No unnecessary vertical spacing.
+- Buttons remain at least approximately 44px touch height.
+- Text remains readable.
+- Top 4 cards remain usable.
+- Countdown remains compact.
+- Bottom navigation must continue working.
+- Floating help/chat button must not cover important content.
+
+==================================================
+15. FINAL TARGET STRUCTURE
+==================================================
+
+The top of Discover should effectively look like:
+
+------------------------------------------------
+
+[LOGO]                         [SEARCH] [MENU]
+
+[ ALL ] [ SEO & AI ] [ AI AGENTS ]
+
+🏆 TOP 4 RANKINGS                  Campaign #1
+
+These are the current top 4 listings in
+this week's live campaign.
+
+⏱ Ends in 2d 12h 16m
+
+[ #1 CARD ] [ #2 CARD ]
+[ #3 CARD ] [ #4 CARD ]
+
+⚡ WANT TO BE SEEN HERE?
+
+Claim a live position from $5.
+Higher positions get more visibility.
+
+[ CLAIM A SPOT → ]
+
+------------------------------------------------
+
+Then:
+
+LIVE CAMPAIGN RANKINGS
+
+[existing ranking listings]
+
+------------------------------------------------
+
+LIVE ACTIVITY
+
+[existing live activity]
+
+------------------------------------------------
+
+WINNER HISTORY
+
+[existing winner history]
+
+------------------------------------------------
+
+MARKETPLACE IN NUMBERS
+
+[existing statistics]
+
+------------------------------------------------
+
+IMPORTANT:
+The objective is NOT to remove useful functionality.
+
+The objective is to eliminate unnecessary vertical space, eliminate duplicate campaign sections, make Top 4 the visual centerpiece, and move detailed claiming information into the Claim A Spot workflow.
+
+After implementing, test the page on mobile widths and verify that no functionality or database logic was broken.

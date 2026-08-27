@@ -1,0 +1,57 @@
+- [Transaction query serialization](transaction-query-serialization.md) — never overlap queries on one PostgreSQL transaction client; await each statement while retaining the snapshot.
+- [OpenAPI Zod compatibility](zod-openapi-integers.md) — use number + multipleOf and regex patterns; avoid integer and format helpers.
+- [Clerk home rendering](clerk-home-rendering.md) — route gating should render explicit loading and auth states rather than relying on visibility wrappers alone.
+- [Moderator authorization](moderator-authorization.md) — moderator identity comes from a verified Clerk session mapped to a database role, never a browser-supplied identity.
+- [Post-merge setup timing](post-merge-setup-timing.md) — dependency installation can take about three minutes here, so merge setup needs a generous timeout.
+- [Payment ledger finality](payment-ledger-finality.md) — ranks change only from verified payment events, with refunds reversing their linked principal entries.
+- [Security test isolation](security-test-isolation.md) — database-backed security tests must use a disposable database because audit history is intentionally append-only.
+- [Same-origin host validation](same-origin-host-validation.md) — validate Origin against the received Host, not client-supplied forwarded-host headers.
+- [Weekly campaign boundaries](weekly-campaign-boundaries.md) — Sunday-to-Sunday competition windows are server-authoritative UTC instants.
+- [Equal effective bid claims](equal-effective-bid-claim.md) — matching the live top effective bid is eligible for projected #1.
+- [Campaign bid entry threshold](campaign-bid-entry-threshold.md) — public opening bids are editable whole dollars strictly above the campaign minimum.
+- [Bare domain inputs](bare-domain-inputs.md) — public product URLs accept a plain domain and normalize it to HTTPS.
+- [Owner bid target serialization](owner-bid-target-serialization.md) — owner-bid increases must lock before deriving a target delta, so concurrent submissions cannot over-credit the ledger.
+- [Clerk custom sign-up API](clerk-custom-signup-api.md) — installed Clerk React uses SignUpFuture password, verifications, and finalize methods instead of legacy imperative helpers.
+- [Verified owner email binding](verified-owner-email-binding.md) — an account's Clerk-verified email, never a submitted email or profile value, governs legacy ownership association.
+- [Owner claim verification handoff](owner-claim-verification-handoff.md) — use Clerk’s full verification UI and resume only non-secret pending claims after authentication.
+- [Development schema alignment](development-schema-alignment.md) — Drizzle rename prompts need a PTY here; preserve semantic legacy columns when syncing dev schema.
+- [Campaign test fixture isolation](campaign-test-fixture-isolation.md) — archived listings remain in immutable weekly standings, so same-campaign test bids must not eclipse rollover fixtures.
+- [Responsive brand lockup](responsive-brand-lockup.md) — keep the symbol and wordmark in one asset so accessibility magnification cannot split or clip them.
+- [Provider error privacy](provider-error-privacy.md) — payment-provider errors can echo customer data; log only safe classifications, never raw messages.
+- [Ambiguous checkout outcomes](ambiguous-checkout-outcomes.md) — a timeout after an idempotent provider request stays pending and retryable, not marked failed.
+- [Verified webhook audit repair](verified-webhook-audit-repair.md) — duplicate verified events must restore a missing audit entry once, never silently preserve an orphan.
+- [Community bid refund policy](community-bid-refunds.md) — successfully paid COMMUNITY_BID payments are non-refundable and must not receive reversal ledger entries.
+- [TypeScript composite declaration cache](typescript-composite-declaration-cache.md) — after generated contract changes, clean/force-build workspace references before validating consuming artifacts.
+- [PayPal webhook event handling](paypal-webhook-events.md) — 6-event whitelist, CHECKOUT.PAYMENT-APPROVAL.REVERSED nests order id at resource.order_id (not resource.id), no merchant-id check needed.
+- [PayPal sandbox verification](paypal-sandbox-verification.md) — verify sandbox account isolation and secret propagation via live API calls, not dashboard trust; use resend API for webhook replay tests.
+- [Client-side checkout resume storage](client-checkout-resume-storage.md) — persist idempotency key + action details per slug+type in sessionStorage; only reuse the key when details still match.
+- [Campaign-scoped order creation](campaign-scoped-order-creation.md) — gate fresh provider-order creation on the payment's own stored campaign, at the single lib choke point, not on client-supplied campaign data.
+- [Owner claim identity source](owner-claim-identity-source.md) — the public claim flow derives identity solely from the authenticated Clerk session; never re-add email/name form fields.
+- [Clerk testing via programmatic auth](clerk-testing-programmatic-auth.md) — use a `[Clerk Auth]` test-plan step, never script Clerk's hosted UI; it's Cloudflare-gated here.
+- [Pending claim TTL vs campaign mismatch](pending-claim-ttl-vs-campaign-mismatch.md) — TTL expiry discards silently; campaign mismatch shows a toast — seed a recent timestamp to test the toast path.
+- [Orval path+query param collision](orval-path-query-param-collision.md) — a path param and query param on one OpenAPI operation can crash codegen with a TS name collision; omit the query param from the spec instead.
+- [Nested anchor card links](nested-anchor-card-links.md) — a card-as-link wrapper must become a div with role="link" (not an anchor) before nesting a real inner `<a>`.
+- [Dev DB legacy column coexistence](dev-db-legacy-column-coexistence.md) — a prior rename can leave old+new columns coexisting; verify emptiness before drop-via-push-force.
+- [Response schema/serializer drift](response-schema-serializer-drift.md) — a new required field on a shared schema breaks every serializer building it, not just the one you touched; grep all consumers.
+- [Clerk fake auth for HTTP contract tests](clerk-fake-auth-http-contract-tests.md) — brand a fake `req.auth` function to impersonate a signed-in session in real HTTP route tests, no Clerk network calls.
+- [SignalRank admin confirm() dialog](signalrank-admin-confirm-dialog.md) — admin moderation/status/role actions gate on window.confirm(); an unhandled dialog in e2e tests looks like a broken feature but isn't.
+- [Deferred resource creation via payment draft](deferred-resource-creation-via-payment-draft.md) — stash a full resource draft in payment metadata; materialize it exactly once at finalize via ON CONFLICT DO NOTHING, loser goes to requires_reconciliation.
+- [Cleanup script FK joins, not heuristics](cleanup-script-fk-join-not-heuristics.md) — join every child row to its real FK before deleting; timestamp/naming proximity to test fixtures is not proof it's disposable.
+- [Ledger vs review stats scoping](ledger-stats-vs-review-stats-scoping.md) — ledger dollar totals/rank stay unfiltered by later ban status (rollover finality); review-derived rating/reviewCount must exclude banned users.
+- [Campaign test cross-suite concurrency](campaign-test-cross-suite-concurrency.md) — api-server test files share one live DB concurrently; never force a real campaign rollover for a fixture, hand-insert instead.
+- [Orval response schema naming](orval-response-schema-naming.md) — zod codegen names responses from the operationId, not the component `$ref`; verify each generator's actual export separately.
+- [Security suite added test files](security-suite-added-test-files.md) — new api-server security test files must be added to test-security.mjs's hardcoded list or they silently never run.
+- [New table restrictive FK test audit](new-table-restrictive-fk-test-audit.md) — a table with onDelete:"restrict" FKs to payments/users breaks every existing test's cleanup, not just the new one's.
+- [Resend connector usage](resend-connector-usage.md) — Resend integration proxies via @replit/connectors-sdk identity auth, not a RESEND_API_KEY env var.
+- [Drizzle push check-constraint gap](drizzle-push-check-constraint-gap.md) — editing a check() clause on an existing table isn't applied by push; verify pg_constraint and manually ALTER if stale.
+- [Analytics event dedup choice](analytics-event-dedup-choice.md) — repeatable events (clicks, impressions) log every occurrence; one-time-per-visitor counters need a unique index.
+- [Cross-component expand trigger](cross-component-expand-trigger.md) — open a distant, self-contained stateful widget via a shared custom window event, not prop drilling.
+- [Tax-inclusive invoice breakdown](tax-inclusive-invoice-breakdown.md) — invoice totalCents always equals the real charge; tax is a derived subtotal+tax split, never an add-on.
+- [Availability snapshot before fixture manipulation](availability-snapshot-before-fixture-manipulation.md) — take before/after occupancy snapshots around the real code path, never after backdating the fixture's own timestamps.
+- [users.email column is never the identity source](users-email-column-not-identity.md) — always blank by design; promote/lookup test users by clerk_user_id or id, never by email.
+- [Admin settings effective default display](admin-settings-effective-default-display.md) — an admin editor for an optional setting must show the live resolved default, not a blank input, when unconfigured.
+- [PayPal sandbox e2e automation limits](paypal-sandbox-e2e-automation-limits.md) — autonomous e2e can verify up through PayPal's real login screen appearing, not completion; don't paste buyer secrets into a subagent prompt.
+- [Advisory lock symmetric serialization](advisory-lock-symmetric-serialization.md) — every writer of a lock-guarded resource's status (not just its scheduled sweep) must take the same lock, or activation and sweep can race.
+- [Fire-and-forget delivery vs test cleanup races](fire-and-forget-delivery-test-cleanup-race.md) — a background delivery job can insert a child row after cleanup's SELECT; retry the delete, don't couple production code to it.
+- [Sponsorship demo seed vs. test isolation](sponsorship-demo-seed-test-isolation.md) — demo sponsorship seeding must skip NODE_ENV=test or it exhausts the 4-slot cap that sponsorships.test.ts relies on being free.
+- [SignalRank listing-creation surfaces](signalrank-listing-creation-surfaces.md) — several listing create/edit files and routes exist but aren't routed; verify reachability via App.tsx/call sites before editing.

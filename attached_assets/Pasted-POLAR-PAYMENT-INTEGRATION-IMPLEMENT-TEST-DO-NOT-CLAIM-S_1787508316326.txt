@@ -1,0 +1,258 @@
+POLAR PAYMENT INTEGRATION — IMPLEMENT, TEST, DO NOT CLAIM SUCCESS PREMATURELY
+
+We have confirmed that the current generic route:
+
+POST /api/payments/webhooks/:provider
+
+exists, but it is NOT a complete Polar integration.
+
+Do NOT simply tell me the route exists.
+Do NOT claim Polar is integrated until an actual end-to-end sandbox payment has been tested.
+
+Implement a proper Polar integration for UpnDownBid.
+
+IMPORTANT:
+- Keep the existing payment architecture and ledger protections.
+- Do not break the existing sandbox mode.
+- Do not enable live payments.
+- Use Polar's official current webhook/API behavior and SDK/documentation.
+- Do not invent Polar event names or signature handling.
+- Verify Polar webhook signatures using the correct Polar mechanism.
+- Make webhook processing idempotent.
+- Never allow duplicate webhook deliveries to create duplicate ledger/payment effects.
+- Preserve existing audit/security protections.
+
+1. POLAR WEBHOOK
+
+Create/complete a dedicated Polar webhook handler.
+
+Production endpoint must be:
+
+POST /api/payments/webhooks/polar
+
+The handler must:
+- accept Polar's actual webhook payload format
+- verify the webhook authenticity/signature using Polar's documented method
+- reject invalid signatures
+- safely parse the Polar event
+- record the Polar event ID
+- be idempotent
+- return the correct HTTP status codes
+- never trust client-provided payment status
+- never credit a campaign/owner merely because a webhook request reaches the endpoint
+
+2. POLAR EVENT MAPPING
+
+Inspect Polar's CURRENT webhook event documentation and implement the events actually required for UpnDownBid.
+
+At minimum determine how Polar represents:
+
+- successful checkout/order/payment
+- failed payment
+- expired checkout
+- refund
+- subscription events if subscriptions are used
+- cancellation if applicable
+
+Map Polar events into the application's existing internal payment states.
+
+Do not assume Stripe event names such as:
+checkout.session.completed
+payment_intent.succeeded
+charge.succeeded
+
+unless Polar actually sends those exact events.
+
+3. PAYMENT ↔ CAMPAIGN MAPPING
+
+UpnDownBid needs to know exactly which campaign/user/payment a Polar purchase belongs to.
+
+Use Polar-supported metadata/external identifiers when creating the checkout.
+
+The checkout must carry enough trusted server-generated information to associate the purchase with:
+
+- UpnDownBid user/owner
+- campaign ID
+- intended action (claim/boost/push-down if applicable)
+- internal payment/order ID
+
+Do not rely on arbitrary browser parameters after checkout.
+
+4. PAYMENT FLOW
+
+Implement:
+
+UpnDownBid action
+→ server creates Polar checkout
+→ Polar checkout
+→ customer pays in Polar sandbox
+→ Polar webhook
+→ verified webhook
+→ internal payment/order updated
+→ ledger/action finalized exactly once
+
+The UI must not mark the payment successful merely because the customer returns from the checkout page.
+
+The webhook is the source of truth for payment confirmation.
+
+5. REFUNDS
+
+Implement Polar refund handling according to the current Polar webhook model.
+
+Refunds must:
+- be idempotent
+- update the internal payment state correctly
+- create the correct ledger reversal
+- never create duplicate reversals
+
+6. SECURITY
+
+Add/verify tests for:
+
+- invalid webhook signature → rejected
+- missing signature → rejected
+- malformed payload → rejected
+- unknown event → safely ignored/rejected as appropriate
+- duplicate event ID → no duplicate effect
+- replayed valid webhook → no duplicate effect
+- wrong campaign metadata → rejected
+- wrong owner metadata → rejected
+- client cannot mark payment successful
+- client cannot modify ledger
+- refund cannot be processed twice
+
+7. SANDBOX ONLY
+
+Keep everything in Polar sandbox/test mode.
+
+Do not request or add live credentials.
+
+Use environment variables for Polar credentials/secrets.
+
+Never commit secrets to Git.
+
+8. TESTING — THIS IS CRITICAL
+
+Do NOT tell me "fixed" based only on:
+- TypeScript passing
+- build passing
+- route existing
+- HTTP GET returning something
+- static code inspection
+
+Actually test the complete integration.
+
+Run:
+
+A. Typecheck
+B. Unit tests
+C. API/security tests
+D. Production build
+E. Start the production build
+F. POST a realistic Polar webhook test payload
+G. Test invalid signature
+H. Test duplicate webhook
+I. Test refund
+J. Test checkout creation
+K. Test complete Polar SANDBOX payment if the environment supports it
+
+For the sandbox test, verify the actual database/ledger state before and after payment.
+
+Show:
+
+before payment:
+payment = pending
+ledger = unchanged
+
+after successful Polar sandbox payment:
+payment = succeeded/paid
+ledger = exactly one expected entry
+campaign action = completed
+
+send the same webhook again:
+ledger = STILL exactly one entry
+
+send refund:
+refund = processed
+ledger = exactly one reversal
+
+send refund again:
+NO additional reversal
+
+9. REAL BROWSER TEST
+
+Use a real browser, not only unit tests.
+
+Test:
+
+Desktop:
+1440x900
+
+Mobile:
+390x844
+375x812
+320x844
+
+Extreme accessibility/zoom case:
+118x844
+
+For every viewport verify:
+- no horizontal document overflow
+- header remains visible
+- logo remains intact
+- campaign cards fit
+- claim/boost/push-down controls fit
+- checkout/payment UI does not overflow
+- dialogs can open and close
+- no console errors
+- no failed API requests caused by responsive layout
+
+Also test:
+- anonymous user
+- logged-in owner
+- wrong owner attempting access
+- admin access
+
+10. PAYMENT UI
+
+The payment UI must clearly show:
+
+Pending
+Processing
+Successful
+Failed
+Cancelled
+Refunded
+
+Do not show "Payment successful" until the verified backend payment state confirms it.
+
+Handle delayed webhooks gracefully.
+
+11. PRODUCTION WEBHOOK URL
+
+After implementation, verify that this endpoint exists:
+
+https://upndownbid.lol/api/payments/webhooks/polar
+
+Test it with POST.
+
+Do not rely on GET.
+
+12. FINAL REPORT
+
+Only report PASS if all required tests actually pass.
+
+If ANY test fails, report:
+
+FAIL
+
+and provide:
+- exact failing test
+- exact error
+- exact root cause
+- exact file/route responsible
+- what remains to fix
+
+Do not say "fixed", "ready", or "production-ready" if any required test is failing.
+
+Before making changes, inspect the existing payment/ledger implementation and preserve its security guarantees.

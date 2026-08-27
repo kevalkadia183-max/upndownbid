@@ -1,0 +1,47 @@
+I’ll review the attached live-enablement audit first, then compare its requirements with the newly merged changes and current runtime state. I won’t create a live checkout or alter production financial data while evaluating it.
+The attached instructions authorize a staged live-enablement process, but they explicitly require stopping before the first real charge. I’m starting with Phase 1 only: clean-tree/commit checks, build and payment tests, secret/artifact checks, and a recoverability check. I’ll stop before any production payment configuration change if a prerequisite fails or if live credentials are unavailable.
+Task #38 is merged, and the latest source now contains a live/sandbox Polar selector. I’m re-running the attached Phase 1 gates against that merged state before touching production configuration: working-tree integrity, tests, typechecks, production builds, tracked-secret checks, and recoverability evidence.
+Phase 1 has failed, so I am stopping before any production configuration or deployment action. The failures are actionable: the tree contains the attached audit file as an untracked file, API typecheck has a missing generated response export, and the frontend production build requires the workflow-provided PORT when run directly. I’m doing only read-only diagnosis of the typecheck failure so I can report the exact repair point.
+The merged code’s live selector is present, but Phase 1 remains blocked by a real generated-contract mismatch—not by missing Polar functionality. The payment/security tests pass, while the API and frontend typechecks fail because the new public payment-environment contract is not consistently exported through api-zod and api-client-react. I’m checking the package entrypoints once to identify the exact stale generation boundary, then I’ll stop without changing production settings.
+Live Polar enablement stopped at Phase 1
+
+I did not change production payment configuration, deploy, create a checkout, replay a webhook, or modify financial data.
+
+Phase 1 results
+
+Latest merged implementation: 70bb08a — live Polar selector is present.
+Payment/security tests: 27 passed, 0 failed
+Security cleanup/isolation tests: 14 passed, 0 failed
+Shared library typecheck: passed
+API typecheck: failed
+Frontend typecheck: failed
+Production build: not completed because the direct command lacked the required PORT and BASE_PATH environment variables.
+Working tree: not clean because the attached audit file is untracked: attached_assets/Pasted-FINAL-LIVE-POLAR-PAYMENT-ENABLEMENT-All-sandbox-payment_1787555790749.txt
+Blocking typecheck errors
+
+API:
+
+src/routes/signalrank.ts:23
+Module "@workspace/api-zod" has no exported member "GetPublicPaymentEnvironmentResponse"
+Frontend:
+
+src/App.tsx:200
+Property "environment" does not exist on type "PublicPaymentReceipt"
+src/lib/public-api.ts:16
+Module "@workspace/api-client-react" has no exported member "PaymentEnvironment"
+The generated API contract files contain the new environment definitions, but the packages consumed by the API and frontend are not resolving those definitions consistently. This must be repaired before live configuration.
+
+Current safety status
+
+The merged payment implementation now includes:
+
+Explicit Polar sandbox versus production SDK selection
+Separate live and sandbox credentials/product/return URL configuration
+Live webhook-secret selection
+Live-mode checkout safeguards
+Existing signature, amount, metadata, campaign, idempotency, ledger, ranking, audit, and refund protections
+However, the attached instructions require stopping on any Phase 1 failure. Therefore:
+
+Live payments are not enabled, and the application is not yet cleared for production payment configuration.
+
+The next safe step is to repair the generated API contract/typecheck mismatch, run the production build with the workflow-provided environment, and repeat Phase 1 from a clean working tree.

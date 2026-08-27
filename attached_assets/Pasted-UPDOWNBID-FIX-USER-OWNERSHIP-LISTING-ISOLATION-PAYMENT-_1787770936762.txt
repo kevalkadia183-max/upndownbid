@@ -1,0 +1,846 @@
+UPDOWNBID — FIX USER OWNERSHIP, LISTING ISOLATION, PAYMENT STATE, AND OWNER PROFILE EDITING
+
+I found several account-isolation problems during testing. Fix them properly without breaking the existing PayPal, Google authentication, campaign, ranking, or admin functionality.
+
+IMPORTANT:
+Do NOT just hide UI elements.
+Fix the underlying database ownership, authorization, pending-checkout, and profile persistence logic.
+
+==================================================
+BUG 1 — LISTING CREATED BY ONE USER APPEARS AS OWNER/PAYMENT STATE FOR ANOTHER USER
+==================================================
+
+I created a listing using a separate test email/account.
+
+That listing is visible from another account/admin account.
+
+Public listings are supposed to be visible to everyone, so PUBLIC VISIBILITY IS NOT THE PROBLEM.
+
+The problem is that account-specific owner/payment state is leaking between users.
+
+Example:
+
+User B creates/submits listing:
+
+listing.ownerUserId = User B
+
+User A/Admin logs in.
+
+User A/Admin must NOT receive User B's:
+
+- pending checkout
+- payment retry
+- claim state
+- owner state
+- private profile state
+- ownership controls
+- payment session
+- checkout intent
+
+Admin may see the listing because Admin has administrative visibility, but Admin must not become the owner of that listing.
+
+==================================================
+2. LISTING OWNERSHIP MUST BE EXPLICIT
+==================================================
+
+Inspect the listings/products schema.
+
+Every owner-created listing must have a permanent owner identity such as:
+
+ownerUserId
+
+or the existing equivalent.
+
+It must reference the authenticated user's internal ID.
+
+DO NOT use:
+
+- email as the primary ownership key
+- browser localStorage as ownership
+- a global variable
+- current admin user
+- listing slug alone
+- website URL alone
+
+Ownership must be based on the authenticated account/user ID.
+
+When User B creates a listing:
+
+listing.ownerUserId = authenticatedUser.id
+
+When User A views the listing:
+
+listing.ownerUserId remains User B.
+
+Never overwrite it simply because another authenticated user is viewing the listing.
+
+==================================================
+3. PUBLIC LISTING VS OWNER ACCESS
+==================================================
+
+Separate these concepts:
+
+PUBLIC VISIBILITY
+and
+OWNER ACCESS.
+
+A public visitor can see:
+
+- listing
+- product name
+- website/domain
+- category
+- ranking
+- boosts
+- push downs
+- click count
+- public information
+
+But only the actual owner can access:
+
+- edit product
+- owner profile controls related to their account
+- private payment history
+- owner checkout state
+- owner receipts
+- owner dashboard data
+- private listing management
+
+Admin can access/manage listings through explicit ADMIN authorization.
+
+Do NOT treat Admin as the owner.
+
+==================================================
+4. FIX "TRY PAYMENT AGAIN" LEAK
+==================================================
+
+The screenshot shows:
+
+"Your account is ready. We couldn't start payment yet. Try payment again."
+
+This type of payment state MUST be scoped to the authenticated user and the specific checkout intent.
+
+Do not display another user's pending payment to Admin or another account.
+
+Pending checkout must be associated with:
+
+userId
++
+listingId
++
+campaignId
++
+intentId
+
+For example:
+
+pendingCheckout.userId = authenticatedUser.id
+
+When loading pending checkout:
+
+WHERE
+pendingCheckout.userId = currentAuthenticatedUser.id
+
+AND
+pendingCheckout.status = pending
+
+AND
+pendingCheckout.expiresAt > now
+
+Do NOT query pending checkout globally by listing slug alone.
+
+Do NOT query only by listingId.
+
+Do NOT query only by action type.
+
+Do NOT use a global pending checkout object.
+
+==================================================
+5. FIX PAYMENT RETRY
+==================================================
+
+"Try payment again" must only appear if:
+
+- the current authenticated user owns the pending checkout OR legitimately initiated that checkout
+- the checkout belongs to the current user
+- the listing/campaign still exists
+- the campaign is still active
+- the checkout has not expired
+- the payment has not already succeeded
+
+If the current user did NOT create the checkout:
+
+DO NOT show:
+
+"Try payment again"
+
+Instead show the normal public listing state.
+
+==================================================
+6. ADMIN ACCOUNT
+==================================================
+
+Admin should be able to see listings for moderation/management.
+
+But:
+
+ADMIN VIEW ≠ OWNER VIEW.
+
+Do not automatically assign ownership to the admin account.
+
+If Admin opens a listing created by User B:
+
+show the listing as owned by User B internally.
+
+Admin may have administrative controls.
+
+But Admin must not receive User B's pending payment state.
+
+==================================================
+7. CHECK ALL DATABASE QUERIES
+==================================================
+
+Audit all listing/payment/claim queries.
+
+Look for code such as:
+
+findFirst()
+findMany()
+getListing()
+getProduct()
+getPendingCheckout()
+getPendingPayment()
+getOwnerListing()
+getClaim()
+getCheckout()
+
+Check whether user ownership is being omitted from the query.
+
+For private/account-specific data, enforce:
+
+currentUserId
+
+at the server/API boundary.
+
+Do not rely only on frontend filtering.
+
+==================================================
+8. SERVER-SIDE AUTHORIZATION
+==================================================
+
+Every owner-specific API endpoint must verify the authenticated user.
+
+For example:
+
+GET /api/owner/listings
+GET /api/owner/profile
+PATCH /api/owner/profile
+GET /api/owner/payments
+GET /api/checkout/pending
+POST /api/checkout/retry
+PATCH /api/listings/:id
+
+Before returning/modifying private data:
+
+authenticate request
+
+→ get authenticated user ID
+
+→ authorize against resource ownerUserId
+
+→ continue
+
+Otherwise return:
+
+401 if not authenticated
+
+403 if authenticated but not authorized
+
+Do not return another user's private data.
+
+==================================================
+9. FIX OWNER PROFILE EDITING
+==================================================
+
+The Owner Profile/Edit Profile screen currently shows fields such as:
+
+DISPLAY NAME
+PHOTO URL
+LOCATION
+COMPANY
+ROLE
+WEBSITE
+SOCIAL LINKS
+BIO
+
+But editing/saving is not working correctly.
+
+Make every optional profile field properly editable.
+
+The form must load the currently authenticated user's profile.
+
+It must NOT load:
+
+- admin profile
+- another user's profile
+- a global default profile
+
+The database record must be associated with:
+
+authenticatedUser.id
+
+==================================================
+10. PROFILE DATA MODEL
+==================================================
+
+Inspect the existing profile schema.
+
+If a profile table already exists, reuse it.
+
+It should conceptually contain:
+
+userId
+displayName
+photoUrl
+location
+company
+role
+website
+socialLinks
+bio
+updatedAt
+
+with:
+
+userId UNIQUE
+
+Do not create duplicate profiles for the same user.
+
+If profile data already exists, update it.
+
+If it doesn't exist, create it for the authenticated user.
+
+==================================================
+11. PROFILE FORM BEHAVIOR
+==================================================
+
+When user opens:
+
+PORTAL → Edit Profile
+
+load:
+
+GET current authenticated user's profile
+
+Populate the fields.
+
+All optional fields should be editable.
+
+Examples:
+
+Display Name
+Photo URL
+Location
+Company
+Role
+Website
+Social Links
+Bio
+
+The inputs must not accidentally have:
+
+disabled
+readOnly
+
+unless there is a specific security reason.
+
+==================================================
+12. SAVE CHANGES
+==================================================
+
+When clicking:
+
+SAVE CHANGES
+
+perform:
+
+PATCH/PUT profile endpoint
+
+with only the allowed profile fields.
+
+The server must obtain the user ID from the authenticated session.
+
+DO NOT accept userId from the client as an authority.
+
+Example concept:
+
+const userId = session.user.id
+
+update profile where userId = session.user.id
+
+Never:
+
+update profile where userId = request.body.userId
+
+without authorization.
+
+==================================================
+13. PROFILE VALIDATION
+==================================================
+
+Validate optional fields.
+
+Website/photo URL:
+
+- accept valid http/https URLs
+- reject dangerous protocols such as javascript:
+- normalize safely
+
+Social links:
+
+- validate URLs where appropriate
+- allow multiple links if the current UI supports them
+
+Bio:
+
+- enforce reasonable maximum length
+
+Display name:
+
+- reasonable maximum length
+
+Do not overcomplicate the profile.
+
+==================================================
+14. PROFILE SAVE FEEDBACK
+==================================================
+
+After successful save:
+
+show:
+
+"Profile updated successfully."
+
+Keep the user on the profile/portal screen.
+
+Refresh the displayed profile data immediately.
+
+Do not redirect to homepage.
+
+If saving fails:
+
+show a clear error.
+
+Do not silently fail.
+
+==================================================
+15. PROFILE SECURITY
+==================================================
+
+User A must NEVER be able to modify User B's profile by changing:
+
+userId
+email
+listingId
+
+in the browser request.
+
+The server must derive identity from authentication.
+
+Admin profile editing should only be possible through an explicit admin feature if one already exists.
+
+Do not mix normal owner profile editing with admin user management.
+
+==================================================
+16. LISTING CREATION
+==================================================
+
+Audit the listing creation flow.
+
+When a logged-in user creates/submits a listing:
+
+1. authenticate user
+2. obtain user.id
+3. create listing
+4. assign ownerUserId = user.id
+5. save
+
+Do not use:
+
+adminUserId
+defaultUserId
+environment email
+hardcoded owner
+browser-stored email
+
+as the listing owner.
+
+==================================================
+17. IMPORTANT — GOOGLE AUTH
+==================================================
+
+This must work correctly with the Google login flow we just fixed.
+
+After:
+
+Claim
+→ Google login
+
+the authenticated user must be identified using the final authenticated session.
+
+The pending checkout must be associated with that user.
+
+Then:
+
+Google login
+→ authenticated session
+→ restore pending checkout for THIS USER
+→ payment page
+
+Do not restore another user's checkout.
+
+==================================================
+18. PENDING CHECKOUT OWNERSHIP
+==================================================
+
+Review the existing pending-checkout implementation.
+
+The pending checkout must be scoped to the user.
+
+Conceptually:
+
+{
+  id,
+  userId,
+  listingId,
+  campaignId,
+  actionType,
+  amount,
+  status,
+  createdAt,
+  expiresAt
+}
+
+Before restoring:
+
+require authenticated user
+
+find pending checkout where:
+
+intent.userId === authenticatedUser.id
+
+Do not restore a pending intent simply because:
+
+intent.listingId === currentListingId
+
+==================================================
+19. PREVENT CROSS-ACCOUNT DATA LEAKS
+==================================================
+
+Test with three accounts:
+
+ACCOUNT A:
+Admin
+
+ACCOUNT B:
+Test Owner 1
+
+ACCOUNT C:
+Test Owner 2
+
+Test:
+
+B creates listing X.
+
+Expected:
+
+B:
+- can manage own listing
+- can edit own profile
+- sees own pending checkout/payment state
+
+C:
+- can see listing X publicly
+- cannot edit listing X
+- cannot see B's payment state
+- cannot see B's private information
+
+A/Admin:
+- can see/manage listing X through admin permissions
+- must not inherit B's owner/payment state
+- must not become listing owner
+
+==================================================
+20. PUBLIC WEBSITE CLICK TRACKING
+==================================================
+
+Preserve the existing public website/domain click tracking.
+
+Anyone can click the listing's website/domain.
+
+Track clicks normally.
+
+But click analytics must not accidentally be treated as ownership.
+
+Keep:
+
+listing ownership
+separate from
+public click analytics.
+
+==================================================
+21. TEST PROFILE EDITING
+==================================================
+
+Test:
+
+Account B logs in.
+
+Open:
+
+PORTAL → Edit Profile.
+
+Change:
+
+Display Name:
+Test Owner B
+
+Company:
+Test Company
+
+Role:
+Founder
+
+Location:
+Ahmedabad, India
+
+Website:
+https://example.com
+
+Bio:
+Test profile
+
+Click:
+
+SAVE CHANGES
+
+Expected:
+
+success message
+
+close/reload profile
+
+data remains saved.
+
+Then log into Account C.
+
+Expected:
+
+Account C does NOT see Account B's profile data.
+
+==================================================
+22. TEST LISTING OWNERSHIP
+==================================================
+
+Account B:
+
+create listing.
+
+Log out.
+
+Account C:
+
+open the public listing.
+
+Expected:
+
+listing visible publicly.
+
+But:
+
+NO owner editing controls.
+
+NO private payment state.
+
+NO Account B profile data.
+
+Log into Account B:
+
+Expected:
+
+owner controls visible.
+
+==================================================
+23. TEST PAYMENT RETRY
+==================================================
+
+Account B starts a claim and creates a pending payment.
+
+Log out.
+
+Log into Account C.
+
+Expected:
+
+NO "Try payment again".
+
+Log into Admin.
+
+Expected:
+
+Admin may see listing X.
+
+But should NOT see Account B's pending payment as its own.
+
+Log back into Account B.
+
+Expected:
+
+pending payment can be restored if still valid.
+
+==================================================
+24. CAMPAIGN VALIDATION
+==================================================
+
+When restoring payment retry:
+
+validate:
+
+- correct user
+- correct listing
+- correct campaign
+- campaign still active
+- checkout not expired
+- payment not already completed
+
+If campaign expired:
+
+discard/mark the pending checkout expired.
+
+Do not allow payment against an old campaign.
+
+==================================================
+25. DO NOT BREAK EXISTING PAYPAL
+==================================================
+
+Do NOT change PayPal credentials.
+
+Do NOT replace PayPal.
+
+Do NOT change the existing:
+
+create order
+→ approval
+→ capture
+→ verification
+→ ledger
+→ receipt
+
+architecture unless required.
+
+Payment must remain server-verified and idempotent.
+
+==================================================
+26. TEST DATABASE ISOLATION
+==================================================
+
+Inspect the database directly where appropriate.
+
+Verify:
+
+listing.ownerUserId
+
+matches the actual creator.
+
+Verify:
+
+pendingCheckout.userId
+
+matches the user who initiated it.
+
+Verify:
+
+profile.userId
+
+matches the authenticated account.
+
+Verify no global/default/admin ownership is being assigned accidentally.
+
+==================================================
+27. RUN TESTS
+==================================================
+
+Run:
+
+TypeScript check
+existing unit tests
+authentication tests
+listing ownership tests
+authorization tests
+profile tests
+pending checkout tests
+payment tests
+idempotency tests
+build
+
+Add regression tests for:
+
+1. User B creates listing.
+2. User C can view public listing but cannot manage it.
+3. Admin can manage listing without becoming owner.
+4. User B's pending checkout is invisible to User C.
+5. User B's pending checkout is invisible as an owner state to Admin.
+6. User B can restore own payment.
+7. User B can edit own profile.
+8. User C cannot edit User B's profile.
+9. Duplicate profile records are not created.
+10. Google login restores the correct user's pending checkout.
+
+==================================================
+28. DO NOT JUST PATCH THE UI
+==================================================
+
+This is critical.
+
+Do NOT solve this by:
+
+- hiding buttons
+- checking email only in React
+- checking admin role in frontend
+- clearing localStorage randomly
+- changing labels
+- hardcoding the test account
+- hardcoding the admin account
+- refreshing the page
+
+Fix the underlying:
+
+AUTHENTICATION
++
+DATABASE OWNERSHIP
++
+SERVER AUTHORIZATION
++
+PENDING CHECKOUT SCOPING
++
+PROFILE PERSISTENCE
+
+==================================================
+29. FINAL REPORT
+==================================================
+
+When finished report:
+
+1. Root cause of listing ownership leakage.
+2. Root cause of the "Try payment again" state appearing for the wrong account.
+3. Root cause of profile editing failure.
+4. Database/schema changes, if any.
+5. API authorization changes.
+6. Authentication/pending checkout changes.
+7. Files changed.
+8. Tests added.
+9. Tests passed.
+10. Exact manual test results using separate accounts.
+
+Do not make unrelated UI changes.
+Do not deploy production automatically.

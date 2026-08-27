@@ -1,0 +1,82 @@
+After the current Polar payment-first implementation finishes, add only the following missing webhook-event handling requirements. Do not redo work already completed by the current task.
+
+NEW REQUIREMENTS FROM THE LATEST POLAR DASHBOARD EVIDENCE:
+
+1. Legitimate Polar lifecycle events must NOT return HTTP 400 merely because they are not payment-credit events.
+
+For validly signed Polar events that the application does not need to process financially, acknowledge them with HTTP 2xx.
+
+At minimum:
+
+checkout.created → 2xx
+checkout.updated → 2xx
+order.created → 2xx
+order.updated → 2xx
+customer.created → 2xx
+customer.state_changed → 2xx
+member.created → 2xx
+
+These events must NOT:
+- create payments
+- mark payments paid
+- create ledger entries
+- modify rankings
+- modify campaign balances
+
+2. Keep strict security behavior:
+
+Invalid/missing webhook signature → HTTP 401.
+Malformed/invalid request → appropriate 4xx.
+Do NOT weaken Polar Standard Webhooks verification.
+
+3. Unknown but validly signed Polar event:
+
+If the signature is valid and the payload is structurally valid but the event type is not currently relevant to UpDownBid, safely acknowledge it with HTTP 2xx.
+
+Do not perform any financial mutation.
+
+4. order.paid remains special:
+
+Only order.paid should enter the payment-credit processing path.
+
+It must still:
+- locate the pre-existing internal payment
+- validate trusted metadata
+- validate amount
+- validate currency
+- validate provider/environment
+- validate Polar checkout/order relationship
+- enforce idempotency
+- update payment exactly once
+- create exactly one ledger entry
+- apply exactly one ranking/campaign mutation
+- create exactly one audit event
+- return 2xx after successful processing
+
+If the internal payment does not exist, do NOT create one from the webhook and do NOT credit anything.
+
+5. Add/extend automated webhook tests specifically for these new requirements:
+
+- checkout.created returns 2xx with no financial mutation
+- checkout.updated returns 2xx with no financial mutation
+- order.created returns 2xx with no financial mutation
+- order.updated returns 2xx with no financial mutation
+- customer.created returns 2xx with no financial mutation
+- customer.state_changed returns 2xx with no financial mutation
+- member.created returns 2xx with no financial mutation
+- unknown validly signed event returns 2xx with no financial mutation
+- invalid signature returns 401
+
+6. Do NOT replay the existing Polar events.
+Do NOT make another sandbox payment.
+Do NOT manually modify production ledger/ranking/payment records.
+Do NOT re-enable the disabled Polar webhook yet.
+
+After implementing these additional requirements, report only:
+- which files changed
+- tests added/updated
+- test results
+- response status for each event category
+- whether the existing payment-first work remains intact
+
+Do not claim the complete Polar integration is production-verified until the real sandbox payment test is completed separately.

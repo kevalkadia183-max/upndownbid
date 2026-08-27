@@ -1,0 +1,60 @@
+The owner-bid concurrency blocker has now been fixed and the parallel regression passes.
+
+Before declaring the application READY FOR PAYMENT INTEGRATION, perform one final independent release-gate verification.
+
+DO NOT integrate payments yet.
+
+Verify all of the following from the current implementation:
+
+1. Run the complete test/security suite.
+2. Run all workspace typechecks.
+3. Run the production builds using the correct workflow environment.
+4. Verify both affected services are healthy.
+5. Verify owner-bid concurrency:
+   - simultaneous bids cannot over-credit
+   - displayed owner bid equals the authoritative ledger
+   - effective bid is correct
+6. Verify support/bid replay/idempotency.
+7. Verify penalty replay/idempotency.
+8. Verify concurrent support + penalty operations.
+9. Verify ranking calculation after concurrent operations.
+10. Verify product card BID and PENALTY buttons open the correct dialogs.
+11. Verify anonymous users can perform the intended public flows.
+12. Confirm there is no login/signup/profile requirement.
+13. Verify product URL and category submission.
+14. Verify the $5 minimum.
+15. Verify the $250 → #1 scenario.
+16. Verify campaign countdown.
+17. Verify campaign expiration and winner-selection logic.
+18. Verify previous winners are preserved.
+19. Verify a new campaign starts fresh.
+20. Verify the previous winner remains visible as historical/latest winner.
+21. Verify no production test/demo data is accidentally being treated as real data.
+22. Check for any remaining critical/high-severity security issues.
+23. Check workflow logs for application errors.
+24. Perform a final fresh-browser desktop and mobile smoke test.
+
+IMPORTANT:
+Do not make cosmetic/UI redesign changes.
+Do not add new features.
+Do not connect Stripe, Polar, or any other real payment provider.
+Do not use real money.
+
+If anything fails, fix it and rerun the relevant regression.
+
+Only after everything passes, give exactly one final verdict:
+
+READY FOR PAYMENT INTEGRATION
+
+or
+
+NOT READY — [specific blockers]
+
+If READY, provide a concise list of:
+- tests passed
+- security checks passed
+- concurrency checks passed
+- campaign/winner checks passed
+- remaining non-blocking follow-ups
+
+Do not begin payment integration automatically.

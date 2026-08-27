@@ -1,0 +1,192 @@
+Implement the weekly TOP 4 / WINNERS display exactly as follows.
+
+IMPORTANT: Do not change the existing payment, ranking, bidding, authentication, campaign, or security logic unless required to implement this feature. Preserve all existing functionality.
+
+GOAL
+
+At the top of the public homepage, create a TOP 4 section.
+
+There are two states:
+
+STATE 1 — NO PREVIOUS CAMPAIGN WINNERS
+
+If this is the first campaign and there is no completed previous campaign with winners:
+
+Display:
+
+"TOP 4 RANKINGS"
+
+Subtext:
+"These are the current top 4 listings in this week's live campaign."
+
+Show the current live #1, #2, #3 and #4 listings.
+
+These must be dynamic and must reflect the existing ranking system.
+
+Do NOT call these listings "winners" yet.
+
+If rankings change during the campaign, the displayed top 4 should update accordingly.
+
+Example:
+
+#1 Makunto
+#2 Lumen
+#3 Product A
+#4 Product B
+
+The ranking values must come from the existing ranking system. Do not create a second ranking algorithm.
+
+STATE 2 — PREVIOUS CAMPAIGN HAS FINISHED
+
+When a campaign ends:
+
+1. Determine the FINAL ranking of that campaign using the existing ranking system.
+2. Take the final #1, #2, #3 and #4 listings.
+3. Save/freeze those four listings as that campaign's official winners.
+4. Do not allow later ranking changes, boosts, push-downs, or new campaigns to modify that historical winner snapshot.
+
+During the NEXT campaign, display:
+
+"CAMPAIGN #[previous campaign number] WINNERS"
+
+Subtext:
+
+"These were the top 4 listings from Campaign #[previous campaign number]."
+
+Display the exact four frozen winners:
+
+#1
+#2
+#3
+#4
+
+These four remain displayed for the ENTIRE duration of the current campaign.
+
+They must NOT change when the current campaign rankings change.
+
+Meanwhile, the current campaign continues normally underneath with its own live ranking/bidding system.
+
+WHEN THE NEXT CAMPAIGN ENDS
+
+Repeat the same process:
+
+- Take the final top 4 from the completed campaign.
+- Save them as that campaign's winners.
+- During the following campaign, display those four winners.
+- Replace the previous winner display only after the new campaign has completed.
+
+TIMELINE EXAMPLE
+
+Campaign #1:
+No previous winners → show current live Top 4 Rankings.
+
+Campaign #1 ends:
+Final #1–#4 are saved as Campaign #1 Winners.
+
+Campaign #2:
+Top section shows frozen Campaign #1 Winners.
+Current Campaign #2 rankings continue separately underneath.
+
+Campaign #2 ends:
+Final #1–#4 are saved as Campaign #2 Winners.
+
+Campaign #3:
+Top section now shows frozen Campaign #2 Winners.
+
+Continue this indefinitely for every campaign.
+
+IMPORTANT DATA REQUIREMENTS
+
+Use persistent database data for winner snapshots.
+
+Do NOT calculate historical winners from the current ranking after the campaign has ended.
+
+Do NOT overwrite historical winners when rankings change.
+
+A winner snapshot should contain at minimum:
+
+- campaign ID
+- listing ID
+- final rank (1–4)
+- snapshot/finalized timestamp
+
+Prefer using the existing campaign/winner tables if they already exist.
+
+The existing schema reportedly has campaign winner support, including campaigns.winner_listing_id and campaign_winners. Inspect the existing schema first and reuse the existing structures where appropriate rather than creating duplicate tables.
+
+EDGE CASES
+
+1. If fewer than 4 listings exist:
+Show only the available listings.
+
+2. If exactly 4 or more listings exist:
+Show four.
+
+3. If there are no previous winners:
+Show current live Top 4 Rankings.
+
+4. Once winners exist:
+Show the frozen previous campaign winners during the current campaign.
+
+5. Never mix current live ranking data into the frozen winner display.
+
+6. Never allow a later boost, push-down, claim, or ranking change to modify historical winners.
+
+7. If the campaign has not ended yet, do not finalize winners early.
+
+8. Winner finalization must happen exactly once per campaign and must be idempotent. Re-running the finalization process must not create duplicate winner records.
+
+9. Preserve the existing campaign schedule and Sunday-to-Sunday behavior.
+
+UI
+
+Keep the existing updownbid.lol design language.
+
+Use the existing purple/white visual style, cards, typography, icons, spacing, and mobile navigation.
+
+At the top of the homepage, remove the current campaign countdown panel from that location if necessary to make room for the Top 4/Winners section.
+
+The section should be visually prominent but not misleading.
+
+For the first campaign use wording such as:
+
+"TOP 4 RANKINGS"
+"Current leaders in this week's campaign."
+
+Once a previous campaign exists use:
+
+"CAMPAIGN #1 WINNERS"
+"These were the final top 4 from Campaign #1."
+
+Show rank badges #1, #2, #3 and #4.
+
+For winners, clearly indicate that these are FINAL WINNERS from the previous campaign.
+
+Do not show a countdown for individual winners because the four winners are displayed for the duration of the current campaign.
+
+TESTING
+
+Add/update automated tests covering:
+
+1. First campaign with no previous winners → current live top 4 displayed.
+2. Current ranking changes → live top 4 changes during first campaign.
+3. Campaign ends → final top 4 are captured.
+4. Winner snapshot is persisted.
+5. Next campaign displays the previous campaign's frozen four winners.
+6. Changing the current campaign ranking does NOT change displayed previous winners.
+7. New campaign completion replaces the previous winner set.
+8. Winner finalization is idempotent.
+9. Fewer than four listings works correctly.
+10. Existing ranking, payment, authentication, account isolation, and campaign behavior remains unaffected.
+
+Before making changes, inspect the existing campaign, campaign_winners, ranking, and campaign-finalization implementation and reuse it wherever possible.
+
+Do not remove existing production data.
+
+Do not modify payment credentials.
+
+Do not change PayPal behavior.
+
+Do not introduce Polar.
+
+Run the relevant tests after implementation and report exactly what was changed and what passed.

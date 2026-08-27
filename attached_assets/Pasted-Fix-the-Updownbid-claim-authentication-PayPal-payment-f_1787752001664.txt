@@ -1,0 +1,281 @@
+Fix the Updownbid claim → authentication → PayPal payment flow completely.
+
+IMPORTANT: Do not redesign unrelated parts of the application. Inspect the existing implementation first, understand the current claim, authentication, pending-checkout/session, and PayPal flow, then make the smallest robust changes needed.
+
+CURRENT PROBLEM
+The current new-user flow is confusing and broken:
+
+1. User clicks "CLAIM #1".
+2. The page eventually asks for Owner Email and Your Name.
+3. User creates an account.
+4. Google authentication can return the user to the wrong screen / login screen.
+5. After authentication, the user may have to sign in again.
+6. Even after authentication succeeds, the user is returned to the claim page instead of continuing directly to payment.
+7. There are currently multiple buttons such as "CLAIM #1", "PREVIEW YOUR CLAIM", and "CONTINUE TO PAYMENT", creating an unnecessarily complicated flow.
+8. The application is asking for information that can already be obtained from the authenticated user's account.
+
+NEW REQUIRED FLOW
+
+For a NEW user:
+
+CLAIM → LOGIN/SIGN UP → PAYPAL → PAYMENT SUCCESS → CLAIM CONFIRMED
+
+For an EXISTING logged-in user:
+
+CLAIM → PAYPAL → PAYMENT SUCCESS → CLAIM CONFIRMED
+
+There must be NO profile-information form between authentication and payment.
+
+AUTHENTICATION REQUIREMENTS
+
+When the user clicks "CLAIM #1":
+
+- If the user is NOT authenticated:
+  - Preserve the complete pending claim securely.
+  - Send the user to the login/sign-up screen.
+  - Allow Google login and normal email/password authentication.
+  - After successful authentication, automatically restore the exact pending claim.
+  - Immediately continue to PayPal checkout.
+  - Do NOT send the user back to the beginning of the claim flow.
+  - Do NOT make the user click Claim again.
+  - Do NOT make the user log in a second time.
+  - Do NOT ask for their name or email again.
+
+- If the user IS already authenticated:
+  - Skip authentication entirely.
+  - Go directly to PayPal checkout.
+
+CRITICAL:
+The pending claim must survive the authentication redirect, including Google OAuth redirects/reloads.
+
+Do not rely only on React component state for pending checkout state.
+
+Use the application's existing server/session/auth architecture where appropriate. If sessionStorage is currently being used, make sure the pending claim is validated against the current campaign/listing before resuming it and cannot be resumed against an expired/closed campaign.
+
+PROFILE REQUIREMENTS
+
+Remove Owner Email and Your Name from the claim/payment form.
+
+Do NOT ask users to complete their profile before payment.
+
+The authenticated account already provides the user's identity/email.
+
+The user can optionally add or edit additional information later from:
+
+Owner Profile / Account Settings
+
+Optional profile fields may include:
+- Full name
+- Phone
+- Company/business name
+- Website
+- Address
+- Country
+- Other business information
+
+Profile completion must NOT block:
+- claiming
+- PayPal checkout
+- payment
+- claim confirmation
+
+Only information genuinely required by the payment provider or legal requirements may block payment.
+
+CLAIM BUTTON REQUIREMENTS
+
+There should be ONE clear primary action for starting the claim.
+
+Do not have a meaningless "CLAIM" button followed by another confusing "CONTINUE TO PAYMENT" button.
+
+Recommended UX:
+
+On the listing:
+
+[ CLAIM #1 ]
+
+After clicking:
+
+If logged out:
+[ Continue with Google ]
+[ Continue with Email ]
+
+After successful login:
+Automatically open PayPal checkout.
+
+If logged in:
+Automatically open PayPal checkout immediately.
+
+The user should not have to click "Continue to payment" after authentication.
+
+If a payment review/confirmation step is genuinely required, make it extremely clear and use only one final payment action.
+
+Remove redundant claim/payment buttons from the same flow.
+
+PAYMENT REQUIREMENTS
+
+Keep the existing PayPal implementation.
+
+Do NOT replace PayPal.
+
+Keep the existing architecture:
+
+claim initiation
+→ /api/paypal/create-order
+→ PayPal approval
+→ /api/paypal/capture-order
+→ server-side verification
+→ ledger/receipt
+→ effective bid update
+→ claim/payment confirmation
+
+Do not bypass server-side verification.
+
+Do not trust the browser for:
+- payment amount
+- campaign ID
+- listing ID
+- payment status
+- claim ownership
+- bid value
+
+The server must recalculate/validate the claim against the current campaign before creating the PayPal order.
+
+IMPORTANT CAMPAIGN SAFETY
+
+A pending claim must never be resumed against a campaign that has already ended.
+
+Before resuming a pending checkout:
+
+- Verify the listing still exists.
+- Verify the campaign still exists.
+- Verify the campaign is still active.
+- Verify the claim/bid is still valid.
+- Verify the requested amount is still valid.
+- If the campaign ended, discard the stale pending checkout and show a clear message such as:
+  "This campaign has ended. Please start a new claim in the current campaign."
+
+Never offer to resume a PayPal checkout created for an expired campaign.
+
+AUTHENTICATION RETURN HANDLING
+
+Implement a reliable post-authentication continuation mechanism.
+
+The intended behavior is:
+
+User clicks Claim
+→ pending claim saved
+→ authentication
+→ auth callback completes
+→ server/client restores pending claim
+→ immediately create/open PayPal checkout
+→ user pays
+→ payment verified
+→ claim confirmed
+
+Do not redirect the user to a generic dashboard or listing page after login when a valid pending claim exists.
+
+After the pending claim has been consumed successfully, clear it so refreshing the page cannot create a duplicate checkout.
+
+IDEMPOTENCY
+
+Maintain strong idempotency.
+
+Repeated clicks, browser refreshes, OAuth redirects, or duplicate webhook events must NOT create:
+- duplicate PayPal orders unnecessarily
+- duplicate ledger entries
+- duplicate receipts
+- duplicate claim records
+- duplicate bid increases
+
+Use the existing payment/order idempotency architecture.
+
+ERROR HANDLING
+
+If PayPal checkout cannot be created:
+
+Show a clear user-facing error and keep the claim recoverable.
+
+If authentication succeeds but payment initialization fails:
+
+Do NOT send the user back through authentication.
+
+Show:
+"Your account is ready. We couldn't start payment yet. Try payment again."
+
+Provide ONE clear "Try payment again" action.
+
+If payment succeeds:
+
+Show a clear confirmation:
+
+"Claim submitted successfully"
+
+Include:
+- listing/product
+- campaign
+- amount paid
+- claim/bid status
+
+TESTING
+
+After implementation, test the COMPLETE flow.
+
+Test 1 — New Google user:
+Claim → Google login → return from Google → PayPal opens automatically.
+
+Test 2 — New email/password user:
+Claim → signup/login → PayPal opens automatically.
+
+Test 3 — Existing user:
+Claim → PayPal opens immediately.
+
+Test 4 — Google OAuth:
+Make sure the user does NOT have to log in twice.
+
+Test 5 — Refresh:
+Refreshing during authentication/pending checkout must not lose the claim.
+
+Test 6 — Expired campaign:
+A stale pending claim must NOT resume.
+
+Test 7 — Double click:
+Double-clicking Claim must not create duplicate payment/claim records.
+
+Test 8 — PayPal:
+Create order → approve → capture → verify → ledger → receipt → bid update.
+
+Test 9 — Payment failure:
+No ledger entry or bid increase should occur on failed payment.
+
+Test 10 — Successful payment:
+Exactly one ledger/receipt/claim transaction and exactly one effective bid increase.
+
+Run the existing automated tests and TypeScript checks.
+
+Also inspect the existing implementation for any dead/duplicate UI states related to:
+- Claim #1
+- Preview Your Claim
+- Confirm Campaign Claim
+- Continue to Payment
+- Owner Email
+- Your Name
+- Create account & claim
+
+Remove or simplify these states so the user experience follows the single flow described above.
+
+IMPORTANT:
+Do not break the existing PayPal integration.
+Do not remove webhook verification.
+Do not weaken server-side payment verification.
+Do not hardcode credentials.
+Do not expose PayPal secrets/client secrets in frontend code.
+Do not make profile completion mandatory.
+
+At the end, report:
+1. Files changed
+2. Exact authentication flow implemented
+3. Exact payment flow implemented
+4. How pending claims survive OAuth
+5. How expired campaigns are prevented from resuming
+6. Tests run and results
+7. Any remaining issue that requires manual PayPal sandbox testing

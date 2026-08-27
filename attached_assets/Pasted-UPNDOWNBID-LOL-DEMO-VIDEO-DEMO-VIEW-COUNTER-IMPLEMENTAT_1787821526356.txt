@@ -1,0 +1,842 @@
+UPNDOWNBID.LOL — DEMO VIDEO + DEMO VIEW COUNTER IMPLEMENTATION
+
+IMPORTANT:
+Do NOT redesign the existing application.
+Do NOT remove or change existing ranking, campaign, bidding, payment, boost, push-down, review, authentication, or admin functionality.
+
+Use the existing UI, typography, spacing, colors, cards, icons, responsive behavior, and component architecture.
+
+The screenshots provided in this task are the visual reference for the desired placement.
+
+==================================================
+1. DEMO VIDEO — LISTING DATA
+==================================================
+
+Add an optional Demo Video URL to every listing.
+
+The field must be OPTIONAL.
+
+Supported examples:
+- YouTube
+- YouTube Shorts
+- Vimeo
+- Other valid video URLs if the existing architecture supports them
+
+Recommended database field:
+
+demo_video_url TEXT NULL
+
+Existing listings must remain valid when demo_video_url is NULL.
+
+DO NOT require every listing to have a demo.
+
+If no demo exists:
+- Do not show an empty video box
+- Do not show "No demo"
+- Do not show a broken player
+- Simply hide the demo UI
+
+==================================================
+2. LISTING CREATION / CLAIM FORM
+==================================================
+
+Where the user submits their website/app URL and listing information, add:
+
+DEMO VIDEO
+Optional
+
+[ YouTube / Vimeo / demo URL ]
+
+Placeholder:
+youtube.com/... or https://...
+
+Helper text:
+"Add a short demo so visitors can see your product in action."
+
+This must be optional.
+
+Validate the URL before saving.
+
+Do not prevent a listing from being created if the field is empty.
+
+==================================================
+3. LISTING CARD — LIVE CAMPAIGN RANKINGS
+==================================================
+
+On the Live Campaign Rankings listing card, use the available right-side space for the Demo section.
+
+For listings WITH a demo:
+
+DEMO VIDEO
+
+[ ▶ Demo ]
+
+👁 128 people watched this demo
+
+The actual number must come from the database.
+
+Do NOT hardcode 128.
+
+For listings WITHOUT a demo:
+
+Hide the entire Demo Video section.
+
+Do not leave an empty placeholder.
+
+Desktop:
+Keep the demo section on the right side of the listing information, similar to the provided reference screenshot.
+
+Mobile:
+Stack the demo section cleanly underneath or beside the listing information depending on available width.
+
+Do not make the card excessively tall.
+
+==================================================
+4. DEMO BUTTON BEHAVIOR
+==================================================
+
+The Demo button must open the actual submitted demo video.
+
+For YouTube:
+- Convert supported YouTube URLs into the appropriate watch/embed URL where necessary.
+- Open/play the video safely.
+- Prefer an in-app modal/player if the existing application architecture supports it.
+- Otherwise open the video safely in a new tab.
+
+Do NOT expose unsafe HTML injection through the URL.
+
+Sanitize and validate submitted URLs.
+
+==================================================
+5. DEMO VIEW COUNTER
+==================================================
+
+Create persistent demo view tracking.
+
+Recommended fields:
+
+listings.demo_view_count INTEGER NOT NULL DEFAULT 0
+
+However, do NOT simply increment the number every time someone repeatedly clicks the button.
+
+The displayed number should represent PEOPLE/VISITORS who watched the demo as reasonably as possible.
+
+Use the existing visitor/session tracking architecture if available.
+
+Recommended behavior:
+
+- First meaningful demo watch by a visitor/session = +1
+- Repeated opening by the same visitor/session within a reasonable period should NOT continuously inflate the count.
+- Do not require login to count a demo view.
+- Do not expose visitor IP addresses or other private information publicly.
+
+If the existing application already has anonymous visitor/session tracking, reuse it instead of creating a second unrelated tracking system.
+
+==================================================
+6. CREATE DEMO VIEW TRACKING ENDPOINT
+==================================================
+
+Add a secure backend endpoint, for example:
+
+POST /api/listings/:listingId/demo-view
+
+The endpoint should:
+
+1. Verify the listing exists.
+2. Verify that the listing has a demo URL.
+3. Register a demo view using the existing visitor/session mechanism.
+4. Prevent obvious duplicate counting from the same visitor/session.
+5. Increment the demo view count safely.
+6. Return the updated count.
+
+Example response:
+
+{
+  "success": true,
+  "demoViews": 129
+}
+
+Do not trust a client-provided counter.
+
+The server/database must be the source of truth.
+
+Prevent race conditions when multiple visitors watch simultaneously.
+
+==================================================
+7. DEMO VIEW COUNT DISPLAY
+==================================================
+
+Use the existing visual language.
+
+Example:
+
+👁 128 people watched this demo
+
+Keep the number prominent but not oversized.
+
+Use the existing gray/purple styling.
+
+Do NOT use fake/random numbers.
+
+If the count is 0:
+
+"0 people watched this demo"
+
+If the listing has no demo:
+hide the count entirely.
+
+==================================================
+8. LISTING DETAIL PAGE
+==================================================
+
+On the individual listing/detail page, add Demo Video information near the main listing information.
+
+For a listing with a demo:
+
+DEMO VIDEO
+
+[ ▶ Demo ]
+
+👁 128 people watched this demo
+
+The reference screenshot shows this area on the right side of the main listing card.
+
+Preserve the existing:
+- Ranking Power
+- Boosts
+- Push Downs
+- Reviews
+- Rating
+- Website Clicks
+- Submit Signal
+
+Add:
+
+DEMO VIEWS
+
+128
+
+to the statistics grid.
+
+Therefore the stats can become:
+
+BOOSTS
+0
+
+PUSH DOWNS
+0
+
+REVIEWS
+0
+
+RATING
+0.0/5
+
+WEBSITE CLICKS
+2
+
+DEMO VIEWS
+128
+
+Do not remove any existing statistic.
+
+If no demo exists:
+- Do not show the Demo button
+- Do not show Demo Views
+- Do not show an empty demo section
+
+==================================================
+9. TOP 4 RANKINGS
+==================================================
+
+On the Top 4 Rankings / Current Campaign Winners section:
+
+Each of the four winner cards should have ONLY a compact:
+
+[ ▶ Demo ]
+
+button
+
+when that listing has a demo.
+
+Example:
+
+#1
+Makunto
+makunto.com
+
+[ ▶ Demo ]
+
+$149
+/ 7 days
+
+Winning
+
+Do NOT display the demo view count inside the Top 4 cards.
+
+The Top 4 section should stay compact.
+
+If a winner has no demo:
+do not show the Demo button.
+
+==================================================
+10. CURRENT CAMPAIGN / WINNER SECTION
+==================================================
+
+Keep the current campaign countdown.
+
+The campaign section should show:
+
+CURRENT CAMPAIGN #1
+
+Sunday-to-Sunday • claim with more than $5
+
+TIME REMAINING
+
+2d 21h 26m 50s
+
+[ View Full Rankings → ]
+
+Do NOT bring back the old:
+
+"LIVE PAYMENTS — REAL FUNDS ARE TRANSFERRED"
+
+banner.
+
+That banner should remain removed.
+
+==================================================
+11. TOP 4 WINNERS LOGIC
+==================================================
+
+The Top 4 section must continue using the existing campaign/ranking system.
+
+Before campaign results are finalized:
+show the current live Top 4 rankings.
+
+Example heading:
+
+TOP 4 RANKINGS
+
+These are the current top 4 listings in this week's live campaign.
+
+When the campaign ends and results are finalized:
+show the four winning listings.
+
+Use wording:
+
+"Winners will remain until next results."
+
+The four winners remain displayed throughout the winner period until the next campaign produces finalized results.
+
+Do NOT manually hardcode the four winners.
+
+The data must come from the campaign/ranking database.
+
+==================================================
+12. CAMPAIGN RESULT TRANSITION
+==================================================
+
+Do NOT break the existing Sunday-to-Sunday campaign system.
+
+Expected lifecycle:
+
+ACTIVE CAMPAIGN
+        ↓
+Current live Top 4
+        ↓
+Campaign ends
+        ↓
+Results finalized
+        ↓
+Top 4 winners become the displayed winners
+        ↓
+Winners remain displayed
+        ↓
+Next campaign ends
+        ↓
+Replace with new Top 4 winners
+
+The system must automatically transition.
+
+No manual database editing should be required every week.
+
+==================================================
+13. WINNER DISPLAY
+==================================================
+
+Use the existing winner design from the provided reference.
+
+Top 4 cards should show:
+
+#1
+Logo
+Listing Name
+Website
+Demo button if available
+Winning amount
+/ 7 days
+Winning
+
+Same for:
+
+#2
+#3
+#4
+
+Keep the four cards visually equal.
+
+Do not distort logos.
+
+Do not change the existing ranking calculation.
+
+==================================================
+14. DEMO URL EDITING
+==================================================
+
+The listing owner should be able to add/change/remove their demo URL from the existing listing management/portal interface.
+
+Add:
+
+Demo Video URL
+
+[ current URL ]
+
+[ Save ]
+
+and allow:
+
+[ Remove Demo ]
+
+When removed:
+
+demo_video_url = NULL
+
+Do not delete the listing.
+
+Do not reset other listing data.
+
+==================================================
+15. ADMIN PANEL
+==================================================
+
+Add Demo information to the existing admin listing view.
+
+Admin should be able to see:
+
+Listing
+Owner
+Ranking
+Website
+Demo
+Demo Views
+Status
+
+Admin should NOT need to manually edit the demo view counter.
+
+Demo views must remain server-controlled.
+
+If the existing admin panel has listing editing functionality, allow the admin to edit/remove the demo URL through that existing interface.
+
+Do not create a separate unnecessary admin system.
+
+==================================================
+16. SECURITY
+==================================================
+
+Do not trust the frontend for:
+
+- demo view count
+- listing ownership
+- ranking
+- winner status
+- campaign status
+
+All important values must come from the backend/database.
+
+Validate demo URLs.
+
+Prevent XSS through submitted URLs.
+
+Prevent arbitrary HTML/iframe injection.
+
+Do not allow users to modify another user's demo.
+
+Use the existing authentication/authorization architecture.
+
+==================================================
+17. DATABASE SAFETY
+==================================================
+
+Before changing the database:
+
+1. Inspect the existing schema.
+2. Identify existing listing, campaign, visitor/session, and analytics tables.
+3. Reuse existing tracking infrastructure where possible.
+4. Create a migration instead of manually modifying production tables.
+5. Make demo fields nullable/default-safe.
+
+Existing production listings MUST NOT be deleted or modified unnecessarily.
+
+Existing demo_view_count should default to 0.
+
+Existing listings should continue working exactly as before.
+
+==================================================
+18. IMPORTANT — DO NOT RESET EXISTING DATA
+==================================================
+
+Do NOT delete:
+
+- listings
+- users
+- payments
+- bids
+- boosts
+- push downs
+- reviews
+- campaign records
+- website clicks
+- site visits
+- audit events
+
+This task is ONLY for adding the demo functionality and connecting it to the existing campaign UI.
+
+==================================================
+19. RESPONSIVE DESIGN
+==================================================
+
+Desktop:
+Demo appears in the right side of the listing card where there is available space.
+
+Mobile:
+Do not squeeze the listing information and demo together.
+
+Stack naturally:
+
+Listing information
+        ↓
+Demo
+        ↓
+Ranking metrics
+        ↓
+Website clicks
+        ↓
+Boost / Push Down
+
+Keep the existing mobile bottom navigation unchanged.
+
+Do not allow the Demo section to cover:
+- buttons
+- floating support icon
+- bottom navigation
+- website URL
+- ranking information
+
+==================================================
+20. EMPTY STATES
+==================================================
+
+No demo:
+
+Do NOT display:
+
+"Demo unavailable"
+
+Do NOT display an empty box.
+
+Simply omit the Demo UI.
+
+Demo exists:
+
+Show Demo button + view count.
+
+==================================================
+21. PERFORMANCE
+==================================================
+
+Do not load an actual video iframe/player for every listing on the rankings page.
+
+Use a lightweight Demo button/thumbnail.
+
+Only load/play the actual video after the user clicks Demo.
+
+This is important for page speed.
+
+The Top 4 cards should only have:
+
+[ ▶ Demo ]
+
+not embedded players.
+
+==================================================
+22. ANALYTICS
+==================================================
+
+Use the existing analytics/tracking system if possible.
+
+Track:
+
+- demo opened/watched
+- listing ID
+- timestamp
+- visitor/session identifier where available
+
+Do not publicly expose private visitor information.
+
+The owner should eventually be able to see the total Demo Views for their listing.
+
+==================================================
+23. UI TEXT
+==================================================
+
+Use these exact labels where appropriate:
+
+DEMO VIDEO
+
+Demo
+
+people watched this demo
+
+DEMO VIEWS
+
+TOP 4 RANKINGS
+
+These are the current top 4 listings in this week's live campaign.
+
+Winners will remain until next results.
+
+CURRENT CAMPAIGN
+
+TIME REMAINING
+
+View Full Rankings →
+
+==================================================
+24. VISUAL REFERENCE
+==================================================
+
+Use the screenshots supplied with this task as the UI reference.
+
+The desired overall structure is:
+
+CURRENT CAMPAIGN
+    Campaign countdown
+    View Full Rankings
+
+TOP 4 RANKINGS
+    #1   #2   #3   #4
+    Demo button where available
+    Winning amount
+    / 7 days
+    Winning
+
+THIS WEEK'S CAMPAIGN
+    Existing claim/bid interface
+
+LISTING CARD
+    Listing information
+    DEMO VIDEO → Demo button
+    Demo view count
+    Ranking Power
+    Boosts
+    Push Downs
+    Rating
+    Website Clicks
+
+LISTING DETAIL
+    Demo Video
+    Demo button
+    Demo Views statistic
+
+==================================================
+25. IMPLEMENTATION PROCESS
+==================================================
+
+Before coding:
+
+- Inspect the current codebase.
+- Identify the existing listing schema.
+- Identify campaign/winner logic.
+- Identify existing visitor/site-visit tracking.
+- Identify existing admin listing management.
+- Identify existing listing detail components.
+- Identify all places where listings are rendered.
+
+Then implement the smallest clean change necessary.
+
+Do NOT duplicate components unnecessarily.
+
+Create reusable components where appropriate, for example:
+
+DemoButton
+DemoVideoSection
+DemoViewCounter
+
+Use the existing design system/components.
+
+==================================================
+26. TESTING
+==================================================
+
+Add/execute tests for:
+
+1. Listing can be created without a demo.
+2. Listing can be created with a valid demo URL.
+3. Invalid demo URLs are rejected safely.
+4. Demo button is hidden when no demo exists.
+5. Demo button appears when demo exists.
+6. Demo view increments correctly.
+7. Same visitor/session does not repeatedly inflate the count.
+8. Multiple visitors can increment the count safely.
+9. Demo views appear on listing detail page.
+10. Demo button appears on Top 4 listings.
+11. Demo view count does NOT appear on Top 4 cards.
+12. Existing website click counter still works.
+13. Existing ranking calculations are unchanged.
+14. Existing campaign countdown still works.
+15. Existing winner logic is unchanged.
+16. Existing admin authorization still works.
+17. Existing payment/bid functionality still works.
+18. Mobile layout does not overlap navigation/support UI.
+
+==================================================
+27. DEPLOYMENT SAFETY
+==================================================
+
+Do not directly modify production data.
+
+First:
+
+- implement migration
+- run tests
+- verify development
+- verify database migration
+- verify listing creation
+- verify demo view tracking
+- verify campaign/winner rendering
+
+Then prepare for production deployment.
+
+Do not commit:
+- .env
+- secrets
+- API keys
+- database credentials
+- logs
+
+Use GitHub as the source of truth.
+
+Before deployment, show exactly:
+- files changed
+- database migration added
+- API endpoints added
+- tests added
+- any configuration changes
+
+Do not deploy automatically if there is a migration that could affect existing production data without verification.
+
+==================================================
+FINAL ACCEPTANCE CRITERIA
+==================================================
+
+The finished system must behave like this:
+
+A listing owner enters:
+
+Demo Video:
+https://youtube.com/...
+
+↓
+
+Listing is saved.
+
+↓
+
+Live Campaign Rankings:
+
+#1
+Makunto
+makunto.com
+
+DEMO VIDEO
+
+[ ▶ Demo ]
+
+👁 128 people watched this demo
+
+↓
+
+User clicks Demo.
+
+↓
+
+Video opens/plays.
+
+↓
+
+Server records the demo view.
+
+↓
+
+Counter becomes:
+
+👁 129 people watched this demo
+
+↓
+
+Listing detail page shows:
+
+DEMO VIDEO
+[ ▶ Demo ]
+
+and:
+
+DEMO VIEWS
+129
+
+↓
+
+Top 4 Rankings shows:
+
+#1 Makunto
+[ ▶ Demo ]
+
+#2 Keval Kadia
+[ ▶ Demo ]
+
+#3 GreenLeaf
+[ ▶ Demo ]
+
+#4 NextGen
+[ ▶ Demo ]
+
+No demo counters inside the Top 4 cards.
+
+↓
+
+Campaign ends.
+
+↓
+
+The four winners are finalized.
+
+↓
+
+The Top 4 winner section displays those four winners.
+
+↓
+
+"Winners will remain until next results."
+
+↓
+
+Next campaign ends.
+
+↓
+
+New winners replace them automatically.
+
+IMPORTANT:
+Preserve all existing application functionality and production data.
+This is an additive feature implementation, not a rewrite.

@@ -1,0 +1,66 @@
+KEEP BOTH "Makunto" AND "Kevalkadia".
+
+They are real live listings and have post-cutoff activity, so they must NOT be deleted.
+
+Proceed with the SAFE production cleanup using the exact read-only findings you provided.
+
+Requirements:
+
+1. Promote the production user for:
+   kevalkadia27@gmail.com
+   to role = 'admin'
+   and status = 'active'.
+
+2. Delete ONLY the confirmed old/test fixtures:
+   - 5 seed listings:
+     Beacon
+     Wildform
+     Lumen
+     Arcade North
+     Kite
+   - 5 automated-test-suite listings owned by @example.com
+   - Their associated test/fixture payments and ledger records where deletion is confirmed safe.
+   - All 6 reviews belonging exclusively to those deleted test listings.
+   - The 3 seed users that are exclusively associated with those fixtures.
+   - The 1 confirmed test report.
+
+3. DO NOT DELETE:
+   - Makunto
+   - Kevalkadia
+   - Tuktuk
+   - Rahini
+   - Campaign #1
+   - Any post-cutoff activity
+   - Any listing clicks
+   - Any audit events
+   - Any unresolved/reconciliation payment
+   - The kevalkadia27@gmail.com account
+   - Any genuinely active user
+   - Any PayPal/webhook data
+
+4. Use the actual foreign-key relationships and existing cascade behavior.
+   Do not manually delete unrelated records.
+
+5. Before executing DELETE statements:
+   run the exact SELECT/count preview again and verify that every record in the deletion set matches the previously identified test fixtures.
+
+6. Execute the admin promotion and cleanup in a transaction where possible.
+
+7. After completion, run verification queries showing:
+   - kevalkadia27@gmail.com → admin
+   - Makunto still exists
+   - Kevalkadia still exists
+   - Campaign #1 still exists
+   - post-cutoff clicks still exist
+   - post-cutoff site visits still exist
+   - audit events still exist
+   - unresolved reconciliation payment still exists
+   - no protected account/listing was deleted
+   - no remaining @example.com test fixture listings remain
+   - no old seed listings remain
+
+8. DO NOT modify application code.
+9. DO NOT redeploy.
+10. DO NOT touch development data.
+
+Proceed with the production database cleanup now, because I have explicitly approved the above scope.

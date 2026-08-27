@@ -1,0 +1,751 @@
+CRITICAL CORRECTION — THE CURRENT IMPLEMENTATION STILL HAS TWO WRONG FEATURES.
+
+I am attaching a screenshot of the current mobile UI.
+
+You MUST fix the issues below before doing anything else.
+
+1. COMPLETELY REMOVE LOGIN / PROFILE
+
+The screenshot still shows a person/profile icon in the header and “PROFILE” in the bottom navigation.
+
+REMOVE BOTH.
+
+There must be NO:
+
+* Login
+* Sign In
+* Sign Up
+* Profile
+* User account
+* User dashboard
+* Authentication
+* Password
+* Registration
+* Profile icon
+
+The public product does NOT use accounts.
+
+The header should NOT contain a person icon.
+
+The mobile bottom navigation should NOT contain “PROFILE”.
+
+Remove the entire Profile navigation item.
+
+Do not hide it.
+
+DELETE it.
+
+⸻
+
+2. MOBILE NAVIGATION
+
+The current bottom navigation shows:
+
+DISCOVER
+PROTOCOL
+ACTIVITY
+PROFILE
+
+Change it to:
+
+DISCOVER
+ACTIVITY
+ADD PRODUCT
+MENU
+
+OR use:
+
+DISCOVER
+RANKINGS
+ACTIVITY
+ADD PRODUCT
+
+There must be NO PROFILE tab.
+
+The most important mobile action should be:
+
++ ADD PRODUCT
+
+⸻
+
+3. DO NOT CONFUSE DISCOVERY SEARCH WITH ADDING A PRODUCT
+
+There are TWO completely different concepts.
+
+A. DISCOVER EXISTING PRODUCTS
+
+The homepage can have a search field:
+
+“Search products, websites, companies…”
+
+This is only for finding products that are already listed.
+
+It must NOT be used to add a product.
+
+⸻
+
+B. ADD YOUR WEBSITE / PRODUCT
+
+This is a separate flow.
+
+The user must enter:
+
+WEBSITE / PRODUCT URL
+
+Example:
+
+https://makunto.com
+
+Then:
+
+CATEGORY
+
+Example:
+
+AI Agents & Infrastructure
+
+Then:
+
+BID
+
+Example:
+
+$100
+
+Then:
+
+PROJECTED RANK
+
+Example:
+
+Your $100 bid would currently place this product at:
+
+#7
+
+Then:
+
+EMAIL
+
+Example:
+
+you@example.com
+
+Then:
+
+CHECKOUT
+
+This is the actual listing/claim flow.
+
+⸻
+
+4. ADD PRODUCT BUTTON
+
+Create a large, highly visible button:
+
++ ADD YOUR PRODUCT
+
+Do NOT call this:
+
+“Add Category”
+
+“Submit”
+
+“Profile”
+
+or anything ambiguous.
+
+The user must immediately understand:
+
+I can put my website/app on the leaderboard here.
+
+⸻
+
+5. ADD PRODUCT PAGE
+
+When the user clicks:
+
++ ADD YOUR PRODUCT
+
+Open a dedicated page.
+
+Header:
+
+Put your website on the leaderboard.
+
+Subtitle:
+
+Enter your URL, choose a category, and make your opening bid.
+
+Then:
+
+WEBSITE URL
+
+[ https://yourwebsite.com ]
+
+CATEGORY
+
+[ Select a category ▼ ]
+
+YOUR BID
+
+[ − ] $100 [ + ]
+
+Then immediately show:
+
+PROJECTED RANK
+
+#7
+
+“Based on the current leaderboard.”
+
+Also show:
+
+Current #1: $1,420
+
+To currently reach #1: $1,425
+
+The rank must update dynamically when the bid changes.
+
+⸻
+
+6. URL IS REQUIRED
+
+The product cannot be added without a URL.
+
+Required field:
+
+Website URL
+
+Validate:
+
+* Valid URL
+* HTTP/HTTPS
+* Safe URL format
+* Normalize URL
+* Detect duplicate listings
+
+Example:
+
+https://makunto.com
+
+When entered, optionally retrieve:
+
+* Website title
+* Favicon
+* Open Graph image
+* Description
+
+Allow the user to edit the displayed title/description.
+
+⸻
+
+7. CATEGORY IS REQUIRED
+
+Category is a classification of the website.
+
+It is NOT the search mechanism.
+
+Example categories:
+
+AI Agents & Infrastructure
+AI
+SaaS
+Productivity
+Developer Tools
+Marketing
+Finance
+E-commerce
+Education
+Health
+Climate
+Social
+Entertainment
+Other
+
+The user selects one category after entering the URL.
+
+⸻
+
+8. DO NOT PUT CATEGORY FILTER IN THE ADD-PRODUCT SEARCH BOX
+
+The homepage’s:
+
+“Search products, companies, or founders”
+
+is for DISCOVERY.
+
+Keep it if useful.
+
+But adding a website must always use:
+
+URL
++
+Category
++
+Bid
+
+Do not make the user search for their website name to create it.
+
+⸻
+
+9. EXISTING URL DETECTION
+
+If the user enters:
+
+https://example.com
+
+and it already exists:
+
+Show:
+
+This website is already on the leaderboard.
+
+Current:
+
+Rank #4
+Effective Bid $830
+
+Then:
+
+[ View Listing ]
+
+[ Support ]
+
+If the user is the original listing owner, their secure management link can allow:
+
+[ Manage Product ]
+
+Do not create a duplicate listing.
+
+⸻
+
+10. CLAIM / BID FLOW
+
+The Add Product flow should feel like the reference screenshots I provided.
+
+The important sequence is:
+
+Claim your spot
+
+Current bid:
+
+$250
+
+Projected rank:
+
+#7
+
+Product:
+
+example.com
+
+Category:
+
+AI Agents & Infrastructure
+
+Email:
+
+[________________]
+
+Then:
+
+Continue to Checkout
+
+The user does not need to create an account.
+
+⸻
+
+11. SUPPORT EXISTING PRODUCT
+
+This is separate from adding a product.
+
+On an existing product page:
+
+Support this product
+
+User enters:
+
+$25
+
+Show:
+
+Current Effective Bid:
+$277
+
+Your Support:
++$25
+
+Projected Effective Bid:
+$302
+
+Projected Rank:
+#2
+
+Then:
+
+Continue to Checkout
+
+No login.
+
+⸻
+
+12. PENALIZE EXISTING PRODUCT
+
+On an existing product page:
+
+Apply Penalty
+
+User enters:
+
+$10
+
+Show:
+
+Current Effective Bid:
+$277
+
+Your Penalty:
+-$10
+
+Projected Effective Bid:
+$267
+
+Projected Rank:
+#4
+
+Then:
+
+Continue to Checkout
+
+No login.
+
+⸻
+
+13. HOMEPAGE STRUCTURE
+
+The homepage should NOT be dominated by the current oversized “public ledger” section.
+
+Use this hierarchy:
+
+HEADER
+
+Logo
+Search
+Menu
+
+* Add Product
+
+↓
+
+HERO
+
+The public leaderboard for products.
+
+“Products rise with support, fall with penalties.”
+
+[ + Add Your Product ]
+
+↓
+
+LIVE STATS
+
+Total Support
+Total Penalties
+Products Listed
+Reviews
+
+↓
+
+DISCOVER
+
+Search existing products
+
+[ Search products and websites… ]
+
+↓
+
+FILTERS
+
+Rank
+Trending
+New
+Support
+Penalty
+
+↓
+
+LIVE RANKINGS
+
+#1 Product
+#2 Product
+#3 Product
+etc.
+
+⸻
+
+14. SEARCH
+
+The search bar should search EXISTING listings.
+
+Placeholder:
+
+Search products and websites…
+
+Do NOT use:
+
+“Search products, companies, or founders”
+
+unless founders are actually a supported discovery entity.
+
+Keep the system focused on:
+
+Products
+Apps
+Websites
+Businesses
+
+⸻
+
+15. HEADER
+
+Remove the current profile/person button.
+
+Header should be:
+
+[LOGO]       Search       + Add Product       ☰
+
+Mobile:
+
+[LOGO]     🔍     +     ☰
+
+No person icon.
+
+No Sign In.
+
+No Login.
+
+⸻
+
+16. BOTTOM NAVIGATION
+
+Remove:
+
+PROFILE
+
+Replace with:
+
+ADD PRODUCT
+
+The mobile navigation should be:
+
+Discover | Rankings | Activity | Add Product
+
+or:
+
+Discover | Activity | Add Product | Menu
+
+Choose whichever produces the cleaner UX.
+
+⸻
+
+17. PRODUCT CARD
+
+Each ranking card should show:
+
+#1
+
+Product logo
+
+Product name
+
+Category
+
+Short description
+
+Effective Bid
+
+Support count
+
+Penalty count
+
+Review score
+
+Example:
+
+#1
+
+requesty.ai
+
+AI Agents & Infrastructure
+
+$14,023
+Effective Bid
+
+13 supporters
+4 penalizers
+4.8 ★
+
+[View →]
+
+⸻
+
+18. PRODUCT DETAIL
+
+Product page:
+
+Logo
+
+requesty.ai
+
+AI Agents & Infrastructure
+
+#1
+
+$14,023
+
+Effective Bid
+
+Financial State:
+
+Owner Bid       $10,000
+Community       +$4,500
+Penalties       -$477
+
+Community:
+
+13 Supporters
+4 Penalizers
+28 Reviews
+
+Actions:
+
+[ ↑ SUPPORT ]
+
+[ ↓ APPLY PENALTY ]
+
+⸻
+
+19. ADD PRODUCT CTA MUST BE VISIBLE
+
+Add this CTA in multiple logical locations:
+
+Have a website?
+
+Put it on the leaderboard.
+
+[ + Add Your Product ]
+
+This is a core business action.
+
+Do not bury it in the menu.
+
+⸻
+
+20. NO LOGIN — FINAL RULE
+
+Search the entire codebase for:
+
+login
+signin
+sign-in
+signup
+sign-up
+profile
+account
+authentication
+auth
+user dashboard
+
+Remove the PUBLIC authentication flow.
+
+Do not leave the UI remnants.
+
+There must be:
+
+NO profile icon
+NO Sign In button
+NO Sign Up
+NO Profile tab
+NO Login modal
+
+The only information required from a public participant should be collected during the transaction/checkout flow.
+
+⸻
+
+21. IDENTITY WITHOUT ACCOUNTS
+
+Use:
+
+Email + transaction ID + secure management token.
+
+When someone creates a product, email them a secure management link.
+
+Example:
+
+“Manage your listing”
+
+The link allows the original product owner to manage their listing without having an account.
+
+Do NOT create a traditional user account.
+
+⸻
+
+22. FINAL CORE MODEL
+
+The entire platform should revolve around:
+
+ADD WEBSITE
+↓
+URL
+↓
+CATEGORY
+↓
+BID
+↓
+PROJECTED RANK
+↓
+CHECKOUT
+↓
+LISTED
+
+Then:
+
+COMMUNITY DISCOVERS WEBSITE
+↓
+SUPPORT
+or
+PENALIZE
+↓
+CHECKOUT
+↓
+RANKING CHANGES
+↓
+REVIEW
+
+Formula:
+
+OWNER BID
++
+COMMUNITY SUPPORT
+
+PENALTIES
+
+EFFECTIVE BID
+
+⸻
+
+23. IMPORTANT IMPLEMENTATION INSTRUCTION
+
+Do not simply make cosmetic changes.
+
+Inspect the current application and remove the incorrect authentication/profile architecture from the PUBLIC experience.
+
+Then implement the URL → Category → Bid → Projected Rank → Checkout flow as a first-class feature.
+
+The attached screenshot is the current implementation that is WRONG.
+
+The final result should make it immediately obvious:
+
+“I have a website. I enter its URL, choose its category, choose how much I want to bid, and pay to put it on the leaderboard.”
+
+That is the primary product flow.

@@ -1,0 +1,371 @@
+Implement a clickable website/domain display and click analytics system for the Updownbid live campaign ranking cards.
+
+IMPORTANT:
+Do not change the existing ranking, boost, push-down, campaign, authentication, or PayPal logic.
+Do not redesign the entire page.
+Modify only the listing/ranking-card UI and add the required secure click-tracking backend.
+
+CURRENT UI
+
+Each ranking card currently displays approximately:
+
+#1
+Makunto
+AI
+AI tools
+
+BOOSTS
+PUSH DOWNS
+RATING
+RANKING POWER
+
+BOOST
+PUSH DOWN
+
+I want the website/domain displayed directly under the product name/category information.
+
+NEW CARD DISPLAY
+
+Example:
+
+#1
+
+Makunto   [AI]
+
+makunto.com ↗
+
+AI tools
+
+BOOSTS     PUSH DOWNS     RATING       RANKING POWER
+0          0              0.0           $251
+
+BOOST                         PUSH DOWN
+
+👥 127 people clicked
+
+DOMAIN DISPLAY
+
+Use the listing's existing website/app URL field.
+
+Display only a clean domain/hostname where possible.
+
+Examples:
+
+https://www.makunto.com → makunto.com
+https://makunto.com/products → makunto.com
+https://www.olbeez.com → olbeez.com
+
+Do not display the full long URL unless there is no valid hostname.
+
+The domain must be visually recognizable as a clickable link.
+
+Example:
+
+makunto.com ↗
+
+Clicking the domain must open the actual destination website.
+
+IMPORTANT:
+Do not simply use a normal <a href="external-url"> if that means clicks cannot be reliably tracked.
+
+Use a tracking route such as:
+
+/api/listings/:listingId/click
+
+The tracking endpoint should:
+
+1. Validate the listing exists.
+2. Retrieve the canonical website URL from the database/server-side listing record.
+3. Validate that the URL uses http:// or https://.
+4. Record the click.
+5. Redirect the visitor to the actual website.
+
+The destination URL must NEVER be accepted directly from an untrusted browser request.
+
+CLICK ANALYTICS
+
+Add click tracking for each listing.
+
+We need two concepts internally:
+
+1. totalClicks
+2. uniqueClicks
+
+The public card should display:
+
+👥 X people clicked
+
+Use UNIQUE clicks for the displayed "people clicked" number.
+
+Do not display "people" if the implementation only counts raw requests.
+
+If unique visitor identification is implemented, use a privacy-conscious anonymous identifier such as a server-generated/session-based anonymous visitor ID.
+
+Do NOT store unnecessary personal information.
+
+Do NOT store:
+- email address
+- Google account information
+- passwords
+- PayPal information
+- IP addresses permanently unless there is already a justified privacy-compliant analytics mechanism
+
+Prefer an anonymous visitor/session identifier and listing ID.
+
+CLICK COUNTING RULES
+
+A click should be recorded when the user actually clicks the domain link.
+
+Do NOT count:
+- page views
+- rendering the listing
+- hovering over the link
+- search engine indexing
+- server-side rendering
+- simply loading the listing page
+
+Prevent obvious duplicate counting from rapid repeated clicks by the same anonymous visitor.
+
+For example, the same visitor repeatedly clicking the same listing within a short window should count as one unique click, while totalClicks can still be retained separately.
+
+If the database already has an analytics/event system, reuse it rather than creating a duplicate analytics architecture.
+
+DATABASE
+
+Inspect the existing schema first.
+
+If there is already a listing analytics/event table, extend it appropriately.
+
+Otherwise create a minimal click analytics structure.
+
+Suggested conceptual structure:
+
+listing_clicks:
+- id
+- listingId
+- anonymousVisitorId or equivalent privacy-safe identifier
+- createdAt
+
+Add appropriate indexes, especially:
+
+listingId
+listingId + anonymousVisitorId
+
+If the application already uses another database/schema pattern, follow the existing architecture instead of blindly creating this exact table.
+
+API
+
+Create a secure endpoint similar to:
+
+GET /api/listings/:listingId/click
+
+Behavior:
+
+1. Find listing.
+2. Verify listing is publicly viewable.
+3. Get its stored website URL.
+4. Validate destination protocol.
+5. Record click analytics.
+6. Return an HTTP redirect to the canonical website.
+
+Do not allow open-redirect vulnerabilities.
+
+Never do:
+
+/click?url=https://anything.com
+
+Instead use:
+
+/api/listings/<LISTING_ID>/click
+
+and resolve the destination URL entirely from the database.
+
+ANALYTICS RESPONSE
+
+The listing data returned to the ranking UI should include something like:
+
+clickAnalytics: {
+  totalClicks: number,
+  uniqueClicks: number
+}
+
+The UI should primarily display:
+
+👥 {uniqueClicks} people clicked
+
+For zero:
+
+👥 0 people clicked
+
+For one:
+
+👤 1 person clicked
+
+For multiple:
+
+👥 127 people clicked
+
+Make the click count subtle but visible. It should not overpower the ranking power or BOOST/PUSH DOWN controls.
+
+REAL-TIME / REFRESH
+
+After a click occurs, the listing analytics should eventually reflect the new count.
+
+Do not reload the entire application unnecessarily.
+
+If the current architecture supports optimistic/local updates, increment the displayed count safely after the tracking request succeeds.
+
+However, never allow the browser to permanently decide the analytics count. The server/database remains the source of truth.
+
+EXTERNAL LINK BEHAVIOR
+
+On mobile:
+
+- tapping the domain should open the external website normally.
+- preserve the existing Updownbid page in browser history where practical.
+- do not accidentally trigger BOOST or PUSH DOWN.
+- do not accidentally trigger the entire listing card click handler if one exists.
+
+On desktop:
+
+- clicking the domain should open the destination website.
+- preferably open in a new tab if that matches the existing UX conventions.
+
+Add appropriate accessibility:
+
+aria-label="Visit makunto.com"
+
+Use a recognizable external-link indicator such as ↗ or an existing icon library icon.
+
+IMPORTANT UI LAYOUT
+
+The domain should appear immediately below the product name.
+
+Example:
+
+Makunto     AI
+
+makunto.com ↗
+
+AI tools
+
+Do NOT put the domain at the bottom of the card.
+
+Do NOT replace the product name with the domain.
+
+Do NOT show the raw URL.
+
+Do NOT make the entire card clickable to the external website.
+
+Only the domain/link should navigate externally.
+
+CLICK COUNT PLACEMENT
+
+Place the click statistic underneath the existing BOOST / PUSH DOWN / RATING / RANKING POWER area and before the action buttons, or in another visually balanced location within the card.
+
+Example:
+
+BOOSTS       PUSH DOWNS       RATING       RANKING POWER
+↗ 0          ↘ 0              ☆ 0.0        $251
+
+👥 127 people clicked
+
+[ BOOST ]              [ PUSH DOWN ]
+
+Keep it compact and mobile friendly.
+
+SECURITY
+
+Do not trust client-provided:
+- destination URLs
+- listing IDs for analytics attribution
+- click counts
+- unique visitor counts
+
+The server must determine the destination from the listing record.
+
+Prevent:
+- open redirects
+- arbitrary URL injection
+- analytics count manipulation
+- duplicate event spam
+- cross-listing visitor-ID abuse
+
+Use existing authentication/session infrastructure where appropriate, but clicking a public website link should NOT require the visitor to log in.
+
+A public visitor must be able to click the website without creating an Updownbid account.
+
+TESTING
+
+Test all of the following:
+
+1. Listing with valid https URL:
+   domain displays correctly and opens the website.
+
+2. Listing with www URL:
+   display clean domain without unnecessary www if appropriate.
+
+3. Listing with URL path:
+   display hostname but redirect to the complete stored URL.
+
+4. User clicks domain:
+   click event is recorded.
+
+5. Same visitor repeatedly clicks:
+   unique click count is not artificially inflated.
+
+6. Different visitors click:
+   unique click count increases appropriately.
+
+7. Listing has no website:
+   do not display a broken link.
+   Hide the domain section or show appropriate "No website provided" state.
+
+8. Invalid/non-http URL:
+   do not redirect.
+   Handle safely.
+
+9. Malicious URL parameter:
+   endpoint must NOT become an open redirect.
+
+10. Page refresh:
+    analytics count remains database-backed.
+
+11. Mobile:
+    domain is easy to tap and does not interfere with BOOST/PUSH DOWN.
+
+12. Desktop:
+    external website navigation works.
+
+13. Existing ranking:
+    ranking power and ordering remain unchanged.
+
+14. Existing payment:
+    PayPal flow remains completely unchanged.
+
+15. Existing authentication:
+    no regression.
+
+Run:
+- existing tests
+- TypeScript check
+- database/schema validation
+- relevant API tests
+- relevant frontend tests
+
+Before changing anything, inspect the existing listing schema, ranking card component, website URL field, analytics/event system, and API routing architecture.
+
+Reuse existing infrastructure wherever possible.
+
+At the end, report:
+
+1. Files changed
+2. Database changes
+3. New click-tracking endpoint
+4. How unique clicks are calculated
+5. How open redirects are prevented
+6. How the domain is displayed
+7. Tests performed and results
+8. Any migration/deployment steps required
+
+Do not make unrelated changes.

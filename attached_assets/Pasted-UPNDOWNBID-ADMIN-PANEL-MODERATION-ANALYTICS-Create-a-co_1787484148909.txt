@@ -1,0 +1,843 @@
+UPNDOWNBID — ADMIN PANEL + MODERATION + ANALYTICS
+
+Create a completely separate, secure ADMIN PANEL for UpnDownBid.
+
+IMPORTANT:
+This is an ADMIN-ONLY area.
+
+Normal public users must never have access to the admin panel.
+
+Do not change the public no-login experience.
+
+==================================================
+1. ADMIN LOGIN
+==================================================
+
+Create:
+
+/admin
+
+The admin panel must require secure authentication.
+
+Do NOT use the public owner login for admin access.
+
+Admin authentication must be separate.
+
+Use secure password hashing and sessions.
+
+Never expose admin credentials.
+
+Add server-side authorization to EVERY admin API endpoint.
+
+Never rely only on hiding admin UI elements.
+
+==================================================
+2. ADMIN DASHBOARD
+==================================================
+
+Create a dashboard showing:
+
+TOTAL USERS
+TOTAL PRODUCTS
+ACTIVE CAMPAIGN
+TOTAL TRANSACTIONS
+TOTAL BOOSTS
+TOTAL PUSH DOWNS
+TOTAL OWNER CLAIMS
+TOTAL REVENUE
+THIS WEEK REVENUE
+TODAY REVENUE
+
+Also show:
+
+CURRENT #1
+LAST WEEK'S WINNER
+ACTIVE PRODUCTS
+PENDING REVIEWS/REPORTS
+SUSPENDED PRODUCTS
+
+==================================================
+3. REVENUE ANALYTICS
+==================================================
+
+Create a financial overview.
+
+Show:
+
+Total Revenue
+Owner Claim Revenue
+Community Boost Revenue
+Push Down Revenue
+
+Example:
+
+TOTAL REVENUE
+$12,450
+
+OWNER CLAIMS
+$7,200
+
+BOOSTS
+$3,850
+
+PUSH DOWNS
+$1,400
+
+Also show:
+
+Today
+7 days
+30 days
+All time
+
+Use charts where useful.
+
+IMPORTANT:
+
+Do not call gross payment volume "profit".
+
+Clearly distinguish:
+
+Gross Revenue
+Refunds
+Fees
+Net Revenue
+
+If payment-provider fees are not yet available, show them as unavailable rather than inventing them.
+
+==================================================
+4. USER MANAGEMENT
+==================================================
+
+Create:
+
+USERS
+
+Show:
+
+Name
+Email
+Products
+Joined date
+Status
+Total spent
+Total received/owner contributions where applicable
+Last activity
+
+Admin actions:
+
+[ VIEW ]
+
+[ SUSPEND ]
+
+[ DELETE ]
+
+[ RESTORE ]
+
+Do NOT permanently delete financial transaction records when deleting a user.
+
+Use soft deletion/deactivation where appropriate.
+
+Historical financial records must remain intact for accounting/audit purposes.
+
+==================================================
+5. USER DETAILS
+==================================================
+
+When admin opens a user:
+
+USER DETAILS
+
+Name
+Email
+Created
+Status
+
+PRODUCTS
+
+Product A
+Product B
+Product C
+
+FINANCIAL ACTIVITY
+
+Owner Claims
+Boosts
+Push Downs
+Total paid
+
+ACTIVITY
+
+Recent transactions
+Reviews
+Product changes
+Admin actions
+
+The admin should be able to understand everything associated with that user.
+
+==================================================
+6. PRODUCT MANAGEMENT
+==================================================
+
+Create:
+
+PRODUCTS
+
+Show:
+
+Product
+URL
+Owner
+Category
+Current campaign rank
+Ranking Power
+Boosts
+Push Downs
+Reviews
+Status
+Created date
+
+Actions:
+
+[ VIEW ]
+[ EDIT ]
+[ SUSPEND ]
+[ REMOVE ]
+
+==================================================
+7. PRODUCT MODERATION
+==================================================
+
+Admin must be able to remove/suspend websites that violate platform rules.
+
+Examples:
+
+- Pornographic websites
+- Scam websites
+- Phishing websites
+- Malware
+- Illegal content
+- Fraudulent websites
+- Malicious downloads
+- Spam
+- Misleading/fake websites
+- Other prohibited content
+
+Do NOT automatically classify a website as illegal solely from an automated guess.
+
+Allow:
+
+Flag
+Review
+Confirm
+Suspend
+Remove
+
+==================================================
+8. REMOVE PRODUCT
+==================================================
+
+When admin chooses:
+
+REMOVE PRODUCT
+
+Show confirmation:
+
+"Are you sure you want to remove this product?"
+
+Require:
+
+Removal reason
+
+Example:
+
+Pornographic content
+Scam
+Phishing
+Malware
+Spam
+Illegal content
+Misleading
+Other
+
+Optional admin note.
+
+Store:
+
+product_id
+admin_id
+reason
+note
+timestamp
+
+Create an audit record.
+
+==================================================
+9. SUSPEND VS DELETE
+==================================================
+
+Prefer:
+
+SUSPEND
+
+for temporary moderation.
+
+Suspended products:
+
+- disappear from active rankings
+- cannot receive new Boosts
+- cannot receive Push Downs
+- cannot participate in active campaigns
+- remain visible to admins
+- retain historical transactions
+
+Permanent removal should be reserved for confirmed violations.
+
+Do NOT destroy financial history.
+
+==================================================
+10. MODERATION QUEUE
+==================================================
+
+Create:
+
+MODERATION
+
+Show:
+
+Reported Products
+Reported Reviews
+Suspicious Activity
+Recently Flagged
+
+Each item should show:
+
+Product
+URL
+Reason
+Reporter if available
+Date
+Status
+
+Actions:
+
+[ REVIEW ]
+
+[ DISMISS ]
+
+[ SUSPEND ]
+
+[ REMOVE ]
+
+==================================================
+11. COMMUNITY REPORTING
+==================================================
+
+Allow public users to report a product or review.
+
+Keep this separate from Push Down.
+
+Example:
+
+[ REPORT ]
+
+Reasons:
+
+Scam
+Phishing
+Pornographic content
+Malware
+Spam
+Misleading
+Other
+
+Admin receives the report.
+
+Do NOT automatically remove a product because of one report.
+
+==================================================
+12. REVIEW MODERATION
+==================================================
+
+Admin can see all:
+
+Boost feedback
+Push Down feedback
+Owner replies
+
+Admin can remove reviews that violate platform rules.
+
+Examples:
+
+Spam
+Harassment
+Threats
+Illegal content
+Personal information
+Malicious links
+Abuse
+
+Do not allow admins to silently change legitimate financial records.
+
+If a review is removed:
+
+Keep an internal moderation record.
+
+==================================================
+13. CAMPAIGN MANAGEMENT
+==================================================
+
+Create:
+
+CAMPAIGNS
+
+Show:
+
+Campaign number
+Start
+End
+Status
+Participants
+Total Owner Claims
+Total Boosts
+Total Push Downs
+Total Revenue
+Winner
+
+Admin can view completed campaigns.
+
+Admin should NOT casually edit completed campaign rankings.
+
+If a correction is necessary:
+
+Require an admin reason.
+
+Create an audit log.
+
+==================================================
+14. WINNER HISTORY
+==================================================
+
+Admin can see:
+
+Campaign #1
+Winner
+Final Ranking Power
+Revenue
+
+Campaign #2
+Winner
+Final Ranking Power
+Revenue
+
+Keep permanent history.
+
+Do not allow accidental deletion of winners.
+
+==================================================
+15. TRANSACTIONS
+==================================================
+
+Create:
+
+TRANSACTIONS
+
+Show:
+
+Transaction ID
+User
+Product
+Campaign
+Type
+Amount
+Payment status
+Payment provider ID
+Date
+
+Types:
+
+OWNER_CLAIM
+BOOST
+PUSH_DOWN
+
+Statuses:
+
+PENDING
+SUCCEEDED
+FAILED
+CANCELLED
+REFUNDED
+
+Admin can filter by:
+
+- Date
+- User
+- Product
+- Campaign
+- Type
+- Status
+
+==================================================
+16. FINANCIAL SAFETY
+==================================================
+
+Admin must NOT be able to manually change:
+
+- transaction amount
+- payment status
+- payment provider transaction ID
+
+through a normal editable field.
+
+Financial records must come from the payment system/server-side verification.
+
+If a correction is required, use a controlled adjustment/refund process with an audit trail.
+
+==================================================
+17. ANALYTICS
+==================================================
+
+Create an ANALYTICS section.
+
+Show:
+
+Users over time
+Products added over time
+Owner claims over time
+Boosts over time
+Push Downs over time
+Revenue over time
+Active products
+Campaign participation
+Average transaction value
+Average Ranking Power
+Top categories
+Top products
+Most boosted products
+Most pushed-down products
+Most active users
+
+Date filters:
+
+Today
+7 days
+30 days
+90 days
+All time
+
+==================================================
+18. CAMPAIGN ANALYTICS
+==================================================
+
+For every campaign show:
+
+Participants
+New products
+Returning products
+Owner claim revenue
+Boost revenue
+Push Down revenue
+Total revenue
+Number of transactions
+Average transaction amount
+Highest Ranking Power
+Winner
+
+This will help understand whether weekly campaigns are becoming more active.
+
+==================================================
+19. PRODUCT ANALYTICS
+==================================================
+
+When admin opens a product:
+
+PRODUCT ANALYTICS
+
+Show:
+
+Current rank
+Ranking Power
+Owner Claim total
+Boost total
+Push Down total
+Number of Boosts
+Number of Push Downs
+Reviews
+Views if analytics tracking exists
+Website clicks if tracking exists
+
+Campaign history:
+
+Campaign #10 — #4
+Campaign #11 — #2
+Campaign #12 — #1 🏆
+Campaign #13 — #3
+
+==================================================
+20. CATEGORY ANALYTICS
+==================================================
+
+Show:
+
+AI
+SaaS
+Developer Tools
+Marketing
+etc.
+
+For each:
+
+Products
+Transactions
+Revenue
+Average Ranking Power
+Boosts
+Push Downs
+
+This helps determine which categories are most popular.
+
+==================================================
+21. ADMIN AUDIT LOG
+==================================================
+
+Every sensitive admin action must be logged.
+
+Examples:
+
+Admin suspended product
+Admin removed review
+Admin suspended user
+Admin restored product
+Admin changed category
+Admin removed product
+
+Store:
+
+Admin ID
+Action
+Target
+Reason
+Timestamp
+
+Admin audit logs should not be editable through the normal UI.
+
+==================================================
+22. USER SUSPENSION
+==================================================
+
+Admin can suspend an owner account.
+
+When suspended:
+
+- Owner cannot log in
+- Owner cannot manage products
+- Owner cannot reply to reviews
+- Owner cannot create additional products
+
+Existing historical financial records remain intact.
+
+Admin should be able to restore the account.
+
+==================================================
+23. PRODUCT OWNER VS PUBLIC USERS
+==================================================
+
+Remember:
+
+PUBLIC USERS:
+No account required.
+
+PRODUCT OWNERS:
+Account required because they need product management and review replies.
+
+ADMINS:
+Separate secure admin authentication.
+
+Do not mix these roles.
+
+==================================================
+24. ADMIN SEARCH
+==================================================
+
+Add global admin search.
+
+Search:
+
+User
+Email
+Product
+URL
+Transaction ID
+Campaign
+Review
+
+This should make moderation fast.
+
+==================================================
+25. DASHBOARD ALERTS
+==================================================
+
+Show important alerts:
+
+⚠ New reports
+⚠ Suspicious activity
+⚠ Products awaiting moderation
+⚠ Failed payments
+⚠ Refunds
+⚠ High-volume activity
+⚠ Campaign ending soon
+
+Clicking an alert should take the admin directly to the relevant item.
+
+==================================================
+26. SECURITY
+==================================================
+
+Admin panel must have strong access control.
+
+Implement:
+
+- Server-side admin authorization
+- Secure sessions
+- Rate limiting
+- CSRF protection where applicable
+- Input validation
+- XSS protection
+- Audit logging
+- Secure cookies
+- No admin credentials in frontend code
+- No sensitive data exposed through public APIs
+
+Never trust:
+
+admin_id
+user_id
+product_id
+transaction_id
+
+from the frontend without authorization checks.
+
+==================================================
+27. ADMIN NAVIGATION
+==================================================
+
+Use:
+
+DASHBOARD
+
+USERS
+
+PRODUCTS
+
+CAMPAIGNS
+
+TRANSACTIONS
+
+REVIEWS
+
+REPORTS
+
+ANALYTICS
+
+WINNERS
+
+SETTINGS
+
+AUDIT LOG
+
+Keep navigation simple.
+
+==================================================
+28. MODERATION RULES
+==================================================
+
+Create platform moderation rules that admins can reference.
+
+Prohibited examples:
+
+Pornographic content
+Scams
+Phishing
+Malware
+Fraud
+Illegal services
+Malicious downloads
+Spam
+Impersonation
+Deceptive websites
+
+Do not automatically assume a site is prohibited merely because its category/name contains a sensitive word.
+
+Give admins the ability to review evidence before removal.
+
+==================================================
+29. IMPORTANT — DO NOT DESTROY DATA
+==================================================
+
+Deleting a user/product from the public experience must NOT destroy:
+
+- financial transactions
+- campaign history
+- winner history
+- audit logs
+
+Use:
+
+active
+suspended
+removed
+deleted
+
+states where appropriate.
+
+Historical financial data must remain available to admins.
+
+==================================================
+30. FINAL TESTING
+==================================================
+
+After implementing the admin panel, test:
+
+1. Public user cannot access /admin.
+2. Product owner cannot access admin-only functions.
+3. Admin can log in.
+4. Admin can see users.
+5. Admin can see a user's products.
+6. Admin can see transactions.
+7. Admin can see revenue.
+8. Admin can see analytics.
+9. Admin can suspend a user.
+10. Admin can restore a user.
+11. Admin can suspend a product.
+12. Admin can restore a product.
+13. Admin can remove a prohibited product.
+14. Removal requires a reason.
+15. Financial history remains intact after removal.
+16. Admin can moderate reviews.
+17. Admin can view reports.
+18. Admin can view campaign history.
+19. Admin can view winners.
+20. Admin audit log records sensitive actions.
+21. Public users remain login-free.
+22. Owner login still works.
+23. Owner cannot access another owner's products.
+24. Run typecheck.
+25. Run security tests.
+26. Run production build.
+
+Do NOT integrate real payment processing as part of this task.
+
+Do NOT redesign the public website.
+
+Do NOT change the existing weekly campaign/ranking/Boost/Push Down logic.
+
+Build the admin system around the existing data and architecture wherever possible.
+
+At completion, provide:
+
+- Files changed
+- Database changes
+- Admin features implemented
+- Security checks performed
+- Tests passed
+- Any remaining issues

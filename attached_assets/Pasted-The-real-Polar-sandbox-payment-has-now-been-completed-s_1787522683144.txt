@@ -1,0 +1,63 @@
+The real Polar sandbox payment has now been completed successfully using Polar/Stripe's test card.
+
+The user was redirected back to:
+updownbid.lol
+
+The app now shows:
+“Sandbox payment needs reconciliation. No unverified ranking change has been applied.”
+
+This is the next issue to diagnose.
+
+IMPORTANT:
+- Do NOT create another payment.
+- Do NOT replay the webhook.
+- Do NOT re-enable/disable the Polar webhook unless the diagnosis proves it is necessary.
+- Do NOT weaken payment verification.
+- Do NOT manually credit the ranking.
+- Do NOT modify production financial records just to make the UI pass.
+- Do NOT repeat the previously completed webhook acknowledgement, Claim a Spot validation, or Polar concurrency work.
+
+TASK: Trace this exact completed sandbox payment from checkout creation → database payment record → Polar order.paid event → webhook lookup → reconciliation/verification → leaderboard mutation.
+
+Use the payment/checkout identifiers from the current completed sandbox transaction and determine exactly why the application is showing “needs reconciliation” instead of applying the verified $5+ claim/boost.
+
+Specifically verify:
+
+1. Whether the payment row was created in the SAME production database used by the webhook.
+2. Whether that payment row still exists after checkout creation.
+3. Whether its provider/environment fields match the Polar sandbox event.
+4. Whether the internal payment ID in the Polar metadata matches the database payment ID.
+5. Whether the Polar order ID and checkout ID match the stored payment record.
+6. Whether amount/currency/action/campaign/listing metadata match.
+7. Whether the webhook actually arrived after this payment.
+8. What HTTP status the webhook returned.
+9. If the webhook returned 404, determine exactly why the payment lookup failed.
+10. If the webhook succeeded but reconciliation remained pending, trace the status transition and identify the exact condition preventing the leaderboard update.
+11. Check whether the return URL/payment-status polling is seeing a different payment state from the webhook/database state.
+12. Confirm whether production and development are accidentally using different databases or payment environments.
+
+PAYMENT SAFETY:
+The correct behavior is:
+Polar payment verified
+→ matching internal payment found
+→ payment marked succeeded exactly once
+→ ledger updated exactly once
+→ campaign/ranking updated exactly once
+→ audit event created exactly once.
+
+If any verification condition fails, keep the ranking unchanged and report the exact reason.
+
+Do not fix anything yet if the root cause is not fully established.
+
+FIRST provide a read-only diagnosis containing:
+- Polar checkout ID
+- Polar order ID
+- internal payment ID
+- database/payment status
+- webhook delivery status + HTTP response
+- exact reconciliation failure
+- whether any financial/ranking mutation occurred
+- confirmed root cause
+- minimal proposed fix
+
+Only after the root cause is confirmed should implementation be proposed.

@@ -1,0 +1,45 @@
+FINAL PRE-LIVE PAYMENT AUDIT
+
+We have completed the sandbox payment proof and intentionally removed refund handling because COMMUNITY_BID payments are non-refundable.
+
+Do NOT create another payment and do NOT modify production financial records during this audit.
+
+Before enabling real-money payments, perform a complete read-only production-readiness audit of the payment system.
+
+Verify:
+
+1. COMMUNITY_BID checkout requires an authenticated user.
+2. Checkout amount, listing_id, campaign_id, user ownership, and currency are validated server-side.
+3. Polar webhook signature verification is enforced.
+4. Gross customer-paid amount (totalAmount/dueAmount) is used for verification, not netAmount.
+5. Invalid amount, currency, payment type, listing, campaign, or ownership fails closed and does not create a ledger credit.
+6. A valid order.paid event creates exactly one verified ledger entry.
+7. Duplicate delivery of the same provider event is idempotent and cannot create another ledger entry.
+8. Leaderboard/communitySupport increases exactly once by the verified bid amount.
+9. Reconciliation status is used for uncertain/mismatched events rather than awarding credit.
+10. Anonymous users cannot create COMMUNITY_BID payments.
+11. A user cannot submit a payment for another user's listing/account.
+12. Campaign isolation is enforced.
+13. Database transactions prevent partial payment/ledger/ranking mutations.
+14. The published frontend correctly reflects the server-side payment state.
+15. Refreshing/reloading the leaderboard does not duplicate or lose the contribution.
+16. Secrets/API keys are server-side only and are not exposed to the browser.
+17. Production webhook endpoint is configured correctly.
+18. Production Polar environment is clearly separated from sandbox.
+19. Logging does not expose payment secrets or sensitive credentials.
+20. No refund flow should be implemented for COMMUNITY_BID.
+
+Run the existing automated tests, typecheck, and relevant security/integration tests.
+
+Do not create a new checkout.
+Do not replay a production webhook.
+Do not modify any production financial record.
+
+At the end, report:
+
+- PASS/FAIL for every item
+- Any remaining blocker
+- Exact files/configuration requiring changes
+- Whether the system is safe to enable real-money COMMUNITY_BID payments
+
+Do not claim production-ready if any critical payment-security or ledger-integrity check fails.

@@ -1,0 +1,243 @@
+PRODUCTION DATABASE ONLY — LOCAL IS ALREADY CORRECT
+
+IMPORTANT:
+
+The local environment is now correct:
+
+- Local admin works.
+- Local old/test data has been removed.
+- Local database is clean.
+
+BUT the live production site:
+
+https://upndownbid.lol
+
+still shows the old data and does not recognize:
+
+kevalkadia27@gmail.com
+
+as the Upndownbid administrator.
+
+This proves the local and production environments are using different database state/configuration.
+
+DO NOT change the local database.
+
+DO NOT reset the local database.
+
+DO NOT redeploy the application.
+
+DO NOT modify PayPal.
+
+DO NOT modify Google/Clerk authentication.
+
+We need to fix the PRODUCTION DATABASE ONLY.
+
+==================================================
+STEP 1 — IDENTIFY PRODUCTION DATABASE
+==================================================
+
+Determine exactly which database the published production application uses.
+
+Inspect the production environment configuration and identify:
+
+- production DATABASE_URL / database connection
+- database host/provider
+- database name
+- production vs development database separation
+- which database the live API server actually connects to
+
+Do NOT expose passwords, connection strings, or secrets in the response.
+
+IMPORTANT:
+
+Do not assume the local database is the production database.
+
+Do not execute anything against the local database.
+
+==================================================
+STEP 2 — VERIFY LIVE DATABASE
+==================================================
+
+Using the production database, perform READ-ONLY checks first.
+
+Verify:
+
+1. Does kevalkadia27@gmail.com exist?
+2. What role does that user currently have?
+3. How many listings exist?
+4. How many campaigns exist?
+5. How many claims exist?
+6. How many bids exist?
+7. How many boosts exist?
+8. How many push-downs exist?
+9. How many reviews exist?
+10. How many feedback records exist?
+11. How many payment records exist?
+
+Compare this with the local database only for understanding the difference.
+
+Do NOT modify anything yet.
+
+==================================================
+STEP 3 — ADMIN
+==================================================
+
+Production must have:
+
+kevalkadia27@gmail.com
+
+as the ONLY Upndownbid administrator.
+
+Use the SAME admin mechanism that is already working correctly locally.
+
+Do not invent a new admin system.
+
+Do not hardcode frontend access.
+
+Do not create duplicate users.
+
+After confirming the production user identity, prepare the production database change required to make this account admin.
+
+==================================================
+STEP 4 — TIME-BASED DATA CLEANUP
+==================================================
+
+The application is now publicly advertised.
+
+Therefore we MUST preserve all production activity created at or after:
+
+27 August 2026
+05:00 AM
+Asia/Kolkata / IST
+
+Exact cutoff:
+
+2026-08-27T05:00:00+05:30
+
+Delete ONLY old/test application data from BEFORE that cutoff, subject to safety checks.
+
+PRESERVE EVERYTHING created at or after 05:00 IST.
+
+This includes:
+
+- real users
+- real listings
+- claims
+- bids
+- boosts
+- push-downs
+- reviews
+- ratings
+- clicks
+- feedback
+- payment records
+- PayPal records
+- webhook records
+- campaign activity
+
+==================================================
+STEP 5 — IMPORTANT USER SAFETY RULE
+==================================================
+
+Do NOT blindly delete users based only on creation date.
+
+If an account created before 05:00 has legitimate activity after 05:00:
+
+PRESERVE IT.
+
+If deleting an old user would delete/cascade into post-05:00 production data:
+
+DO NOT DELETE IT.
+
+Preserve it and report it.
+
+==================================================
+STEP 6 — PAYMENT SAFETY
+==================================================
+
+NEVER delete a payment/PayPal/webhook record if it could relate to a real production transaction.
+
+If uncertain:
+
+PRESERVE IT.
+
+==================================================
+STEP 7 — PREVIEW FIRST
+==================================================
+
+Before executing any production DELETE/UPDATE:
+
+Generate a READ-ONLY preview showing:
+
+- records to delete
+- records to preserve
+- affected tables
+- affected users
+- affected listings
+- affected claims
+- affected ranking activity
+- affected payment records
+- possible orphan records
+
+Verify that:
+
+NO record created at or after 05:00 IST will be deleted.
+
+Verify that:
+
+kevalkadia27@gmail.com
+
+will never be deleted.
+
+STOP and show me the preview before destructive operations.
+
+==================================================
+STEP 8 — AFTER MY APPROVAL
+==================================================
+
+Only after approval:
+
+1. Backup production database if possible.
+2. Apply the admin promotion.
+3. Apply the safe time-based cleanup.
+4. Preserve all post-05:00 production data.
+5. Verify foreign-key/data integrity.
+6. Verify no orphan records.
+7. Verify admin access.
+8. Verify normal user access.
+9. Verify account/listing isolation.
+10. Verify campaign functionality.
+11. Verify PayPal configuration remains unchanged.
+12. Run automated tests.
+
+==================================================
+FINAL PRODUCTION VERIFICATION
+==================================================
+
+After the operation, verify LIVE:
+
+https://upndownbid.lol
+
+using:
+
+kevalkadia27@gmail.com
+
+Confirm:
+
+- Admin panel appears.
+- Admin account works.
+- Old/test data is gone where appropriate.
+- Post-05:00 data remains.
+- Campaign #1 remains functional.
+- Public listings remain functional.
+- Normal users cannot access admin.
+- Listing ownership remains isolated.
+- Payment functionality remains intact.
+
+DO NOT touch local data.
+
+DO NOT deploy.
+
+DO NOT modify application code.
+
+STOP after the READ-ONLY production preview and wait for approval.

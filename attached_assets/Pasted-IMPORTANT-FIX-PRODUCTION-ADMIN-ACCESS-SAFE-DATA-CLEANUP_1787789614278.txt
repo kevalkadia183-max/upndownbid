@@ -1,0 +1,187 @@
+IMPORTANT — FIX PRODUCTION ADMIN ACCESS + SAFE DATA CLEANUP
+
+I can now confirm that production is running the latest deployment, but when I log into Upndownbid I do NOT see the admin panel and I can still see the old/test data.
+
+The previous investigation confirmed that the admin promotion/data cleanup was never actually executed against the production database.
+
+DO NOT republish or redeploy anything.
+
+DO NOT delete data yet.
+
+First inspect the current production application and database and determine exactly what is missing.
+
+==================================================
+1. ADMIN ACCOUNT
+==================================================
+
+The ONLY Upndownbid administrator must be:
+
+kevalkadia27@gmail.com
+
+Inspect the existing authentication and authorization implementation.
+
+Determine:
+
+- How admin users are currently identified.
+- Where the admin role is stored.
+- Whether an admin panel already exists in the application.
+- Which route/path is used for the admin panel.
+- Whether the admin panel is hidden because the database role is missing.
+- Whether the admin panel is hidden because the frontend is checking the wrong identity.
+- Whether server-side admin authorization already exists.
+- Whether the current Google/Clerk user identity is correctly mapped to the application user.
+
+IMPORTANT:
+
+Do NOT assume the Replit Google login screen means the application user is incorrect.
+
+Use the authenticated Clerk user identity/email after login.
+
+==================================================
+2. ADMIN PROMOTION
+==================================================
+
+If the existing application already has an admin role system:
+
+Set:
+
+kevalkadia27@gmail.com → admin
+
+Do this using the existing database/user-role architecture.
+
+Do NOT create a second authorization system.
+
+Do NOT hardcode admin access into frontend components.
+
+Do NOT make admin access depend only on a frontend email comparison.
+
+Server-side authorization must enforce admin access.
+
+If the admin user does not yet exist in the application database, determine the correct safe way to create/link the application user to the authenticated Clerk identity.
+
+==================================================
+3. ADMIN PANEL
+==================================================
+
+After the admin role is correctly established, verify that:
+
+kevalkadia27@gmail.com
+
+can access the existing admin panel.
+
+Find the actual admin route and verify:
+
+- Admin dashboard loads.
+- Listings can be viewed.
+- Campaign data can be viewed.
+- Users can be viewed where intended.
+- Feedback can be viewed where intended.
+- Payment records can be viewed where intended.
+- Admin-only functionality is protected server-side.
+
+Do NOT expose admin functionality to normal users.
+
+Test with a separate normal user and confirm they cannot access admin routes.
+
+==================================================
+4. DO NOT DELETE DATA YET
+==================================================
+
+I have already started advertising Upndownbid.
+
+Therefore we MUST preserve all production activity created from:
+
+27 August 2026, 05:00 AM IST
+
+onward.
+
+DO NOT execute any DELETE/TRUNCATE/DROP statements yet.
+
+Instead, inspect the database and prepare a cleanup preview.
+
+==================================================
+5. CLEANUP PREVIEW
+==================================================
+
+Use:
+
+CUT-OFF:
+2026-08-27T05:00:00+05:30
+Timezone: Asia/Kolkata
+
+Prepare a READ-ONLY report showing:
+
+- Users before cutoff
+- Users after cutoff
+- Listings before cutoff
+- Listings after cutoff
+- Claims before cutoff
+- Claims after cutoff
+- Bids before cutoff
+- Bids after cutoff
+- Boosts before cutoff
+- Boosts after cutoff
+- Push-downs before cutoff
+- Push-downs after cutoff
+- Reviews/ratings before cutoff
+- Reviews/ratings after cutoff
+- Click tracking before cutoff
+- Click tracking after cutoff
+- Feedback before cutoff
+- Feedback after cutoff
+- Payment records before cutoff
+- Payment records after cutoff
+
+Also identify records that have relationships crossing the cutoff.
+
+==================================================
+6. ADMIN MUST NEVER BE DELETED
+==================================================
+
+Regardless of creation timestamp:
+
+NEVER delete:
+
+kevalkadia27@gmail.com
+
+Also preserve any production records belonging to this account.
+
+==================================================
+7. PRODUCTION SAFETY
+==================================================
+
+Before proposing deletion:
+
+- Verify database schema.
+- Verify timestamps and timezone handling.
+- Verify foreign-key relationships.
+- Verify payment relationships.
+- Verify listing ownership.
+- Verify campaign relationships.
+- Identify potential orphan records.
+
+If a record is ambiguous, PRESERVE IT.
+
+Do not guess.
+
+==================================================
+8. FINAL RESPONSE
+==================================================
+
+Do NOT modify or delete production data yet.
+
+Report:
+
+A. Current admin implementation.
+B. Why kevalkadia27@gmail.com currently doesn't see the admin panel.
+C. Exact admin route.
+D. Whether the account exists in the application database.
+E. Whether the account can safely be promoted to admin.
+F. Read-only cleanup preview.
+G. Number of records that could potentially be removed.
+H. Number of records that MUST be preserved.
+I. Any risks or ambiguities.
+
+STOP after the report.
+
+WAIT FOR MY APPROVAL BEFORE EXECUTING THE DATABASE CLEANUP.

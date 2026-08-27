@@ -1,0 +1,200 @@
+UpDownBid — PayPal-only payment implementation
+
+IMPORTANT:
+This is for the UpDownBid project only. Do NOT modify Makunto or any other project.
+
+We are abandoning Razorpay for now. PayPal must be the ONLY payment provider for UpDownBid.
+
+First, inspect the existing payment implementation and determine exactly how PayPal is currently configured. Do NOT rewrite working PayPal code unnecessarily.
+
+GOAL:
+Use PayPal for:
+1. Bid payments / bid boosts
+2. Payment confirmation
+3. Payment records
+4. Updating the effective bid only after PayPal confirms successful payment
+5. Receipts / transaction records
+6. Production PayPal payments later
+
+CURRENT STATUS:
+The PayPal SANDBOX payment flow has already been successfully tested.
+The successful test showed:
+- successVisible: true
+- exactly one payment/receipt/ledger entry
+- the listing's effective bid increased
+- PayPal sandbox review/payment page was reached successfully
+
+Therefore, preserve this working flow.
+
+TASKS:
+
+1. AUDIT CURRENT PAYMENT CODE
+- Find every Razorpay integration.
+- Find every PayPal integration.
+- Identify the actual payment creation, approval, capture, webhook, and database/ledger logic.
+- Do not make assumptions.
+- Report what currently happens before changing anything.
+
+2. REMOVE RAZORPAY FROM THE ACTIVE PAYMENT FLOW
+- Do not delete unrelated Razorpay code immediately.
+- First make sure no UpDownBid checkout/bid flow depends on Razorpay.
+- Replace active Razorpay payment paths with PayPal where appropriate.
+- Remove Razorpay UI buttons/options from the user-facing UpDownBid payment flow.
+- Remove Razorpay environment-variable requirements from the active runtime.
+- Keep code clean and avoid dead payment paths.
+
+3. PAYPAL CONFIGURATION
+Use environment variables/secrets only. Never hard-code credentials.
+
+Expected configuration should support:
+
+PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET
+PAYPAL_MERCHANT_ID
+PAYPAL_ENVIRONMENT
+
+Use:
+- sandbox for development/testing
+- live for production
+
+Do not expose CLIENT_SECRET or other secrets to the browser.
+
+IMPORTANT:
+PAYPAL_MERCHANT_ID must correspond to the PayPal account associated with the Client ID/Secret being used.
+
+4. PAYMENT FLOW
+Implement/retain this architecture:
+
+User selects bid amount
+→ server creates PayPal order
+→ user is redirected/shown PayPal approval
+→ user approves
+→ server captures the PayPal order
+→ server verifies the PayPal response
+→ server verifies the captured amount/currency/order status
+→ server prevents duplicate processing
+→ database records exactly one successful payment
+→ ledger/receipt is created exactly once
+→ effective bid is increased exactly once
+→ UI displays successful payment
+
+Never increase the bid merely because the user reached the PayPal approval page.
+
+Only a verified successful capture should change the bid.
+
+5. IDEMPOTENCY / DUPLICATE PROTECTION
+This is extremely important.
+
+A PayPal capture/order must never result in:
+- two payments
+- two receipts
+- two ledger entries
+- two bid increases
+
+Use the PayPal order ID / capture ID as a unique transaction reference.
+
+If the same callback/capture is processed twice:
+- return the existing successful transaction
+- do NOT create another payment
+- do NOT increase the bid again
+
+6. DATABASE
+Inspect the existing schema first.
+
+Reuse the existing payment/receipt/ledger/listing structures where appropriate.
+
+Do not create duplicate tables if an existing payment system can safely support PayPal.
+
+Store appropriate PayPal identifiers such as:
+- order ID
+- capture ID
+- payer information that is safe and necessary
+- amount
+- currency
+- payment status
+- timestamps
+
+Never store PayPal secrets.
+
+7. WEBHOOKS
+Inspect whether UpDownBid currently has PayPal webhook support.
+
+If appropriate, implement PayPal webhook verification and processing.
+
+Webhook processing must also be idempotent.
+
+Do not trust arbitrary client-side success messages.
+
+8. CURRENCY
+Inspect the existing UpDownBid bid currency configuration.
+
+Do not silently convert currencies.
+
+The PayPal order amount must exactly match the amount displayed to the user and the amount recorded by the server.
+
+9. SECURITY
+- PayPal secrets must remain server-side.
+- Validate all payment amounts server-side.
+- Never accept the final bid amount directly from an untrusted browser request.
+- Validate listing ID and user authorization server-side.
+- Prevent users from modifying another user's payment/listing data.
+- Verify PayPal order/capture status with PayPal's API.
+- Never mark a payment successful solely because the frontend says it succeeded.
+
+10. UI
+Make the UpDownBid checkout clearly say:
+
+"Pay securely with PayPal"
+
+Do not show Razorpay as an option.
+
+Keep the existing successful UX where possible.
+
+11. TESTING
+Before declaring completion, run tests covering:
+
+A. Successful PayPal sandbox payment
+B. User cancels PayPal payment
+C. Payment failure
+D. Duplicate capture/callback
+E. Refresh after successful payment
+F. Repeated callback/webhook
+G. Incorrect amount
+H. Incorrect listing/user authorization
+I. PayPal order that is not captured
+J. Server restart during payment processing
+
+Verify after a successful test:
+
+exactly ONE payment
+exactly ONE receipt
+exactly ONE ledger entry
+exactly ONE effective-bid increase
+
+12. PRODUCTION READINESS
+Keep sandbox and live configuration clearly separated.
+
+Do NOT switch to live credentials yet.
+
+Create a clear configuration path so that when we are ready:
+
+PAYPAL_ENVIRONMENT=live
+
+and the production PayPal Client ID, Secret and Merchant ID can be supplied through Replit Secrets without code changes.
+
+13. FINAL REPORT
+After implementation, give me:
+
+- files changed
+- Razorpay code removed/disabled
+- PayPal flow used
+- environment variables required
+- database changes
+- tests performed
+- test results
+- any remaining production blockers
+
+IMPORTANT:
+Do not claim the system is production-ready until the complete PayPal flow and duplicate-payment protection have actually been tested.
+Do not expose any secret values in logs or your response.
+Do not ask me to create another PayPal account if the existing sandbox setup already works.

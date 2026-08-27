@@ -1,0 +1,696 @@
+STOP PATCHING THE CHECKOUT ONE ISSUE AT A TIME.
+
+The login + adding bid/claim flow is STILL BROKEN after the previous changes.
+
+I need a proper root-cause audit and fix of the COMPLETE flow.
+
+Do not create another workaround or add arbitrary delays.
+
+==================================================
+THE ACTUAL USER JOURNEY THAT MUST WORK
+==================================================
+
+A completely new visitor opens a live campaign.
+
+They see:
+
+[ CLAIM #1 ]
+
+They click it.
+
+They enter/select:
+
+- bid/claim amount
+- website/product
+- category if required
+- owner email
+- owner name
+
+Then they continue.
+
+If they are not authenticated:
+
+→ Google login OR email authentication
+
+After authentication succeeds:
+
+→ the SAME campaign must be restored
+→ the SAME listing/product must be restored
+→ the SAME bid amount must be restored
+→ the SAME action (claim/boost/push-down) must be restored
+→ the authenticated user must be recognized immediately
+→ PayPal checkout must start automatically
+
+There must NOT be:
+
+login
+→ return to login
+→ login again
+→ return to claim
+→ manually add bid again
+→ click another claim button
+→ account-ready screen
+→ scroll
+→ click continue
+→ nothing happens
+
+The intended flow is:
+
+CLAIM
+↓
+ENTER BID/CLAIM DETAILS
+↓
+LOGIN/SIGNUP IF NEEDED
+↓
+AUTOMATICALLY RESTORE THE EXACT PENDING TRANSACTION
+↓
+AUTOMATICALLY START PAYPAL
+↓
+PAY
+↓
+SERVER VERIFIES PAYMENT
+↓
+FINALIZE BID/CLAIM
+↓
+SUCCESS
+
+==================================================
+1. FIRST: REPRODUCE THE BUG
+==================================================
+
+Before changing code, reproduce the exact failure with a clean/new browser session.
+
+Use a completely unauthenticated user.
+
+Record the state at every step:
+
+A. Before clicking CLAIM
+
+B. After clicking CLAIM
+
+C. After entering bid amount
+
+D. After entering email/name
+
+E. Before Google login
+
+F. Google OAuth redirect
+
+G. OAuth callback
+
+H. Session establishment
+
+I. First authenticated frontend render
+
+J. Pending claim restoration
+
+K. Bid/claim state restoration
+
+L. PayPal create-order request
+
+M. PayPal order response
+
+Do NOT assume the problem.
+
+Find exactly where the state is lost.
+
+==================================================
+2. AUDIT AUTHENTICATION
+==================================================
+
+Trace the complete authentication implementation.
+
+Find the actual:
+
+- auth provider
+- login route
+- Google OAuth route
+- OAuth callback
+- session creation
+- session cookie
+- session validation
+- frontend auth context
+- auth loading state
+- redirect/return URL
+- pending claim restoration
+
+The likely failure is that OAuth completes but the frontend attempts to restore the checkout before the authenticated session has been established/hydrated.
+
+Fix the actual race/state problem.
+
+Do NOT use:
+
+setTimeout()
+sleep()
+arbitrary retry loops
+"wait 2 seconds"
+"wait 5 seconds"
+
+Use the real authentication/session state.
+
+The application must only restore the pending transaction after:
+
+authenticated session === confirmed
+
+==================================================
+3. GOOGLE LOGIN MUST HAPPEN ONLY ONCE
+==================================================
+
+Expected:
+
+User clicks:
+
+Continue with Google
+
+↓
+
+Google authentication
+
+↓
+
+OAuth callback
+
+↓
+
+authenticated session established
+
+↓
+
+application detects authenticated user
+
+↓
+
+pending transaction restored
+
+↓
+
+PayPal starts
+
+The user must NEVER see another login screen after successful Google authentication.
+
+If the application thinks the user is unauthenticated after OAuth, find out why.
+
+Check:
+
+- cookie domain
+- cookie path
+- SameSite
+- Secure
+- callback URL
+- session persistence
+- frontend/backend origin
+- Replit preview/proxy behavior
+- auth context hydration
+- stale auth state
+- redirect state
+
+Fix the underlying issue.
+
+==================================================
+4. BID/CLAIM STATE MUST BE FIRST-CLASS STATE
+==================================================
+
+Do NOT store only:
+
+listingSlug
+actionType
+
+The pending transaction needs to identify the exact transaction context.
+
+It must contain the equivalent of:
+
+{
+  campaignId,
+  listingId,
+  actionType,
+  amount,
+  ownerEmail,
+  ownerName,
+  createdAt,
+  returnIntent
+}
+
+Use the existing database/schema/types where possible.
+
+Do not blindly invent duplicate state models.
+
+The critical point is:
+
+AUTHENTICATION MUST NOT DESTROY THE BID/CLAIM STATE.
+
+Before login:
+
+campaign = X
+listing = Y
+amount = $255
+action = claim
+
+After login:
+
+campaign = X
+listing = Y
+amount = $255
+action = claim
+
+Exactly the same.
+
+==================================================
+5. "ADDING BID" MUST BE AUDITED SEPARATELY
+==================================================
+
+There is still an issue with adding/submitting the bid.
+
+Trace the complete bid flow:
+
+UI amount
+→ validation
+→ claim state
+→ API request
+→ server validation
+→ campaign validation
+→ listing validation
+→ payment intent/order creation
+→ PayPal
+
+Determine whether the bid is:
+
+- merely a proposed amount before payment
+OR
+- persisted as a bid before payment
+OR
+- finalized only after successful payment
+
+Follow the existing business rules.
+
+IMPORTANT:
+
+Do NOT permanently increase ranking power or finalize a bid merely because the user entered "$255".
+
+The authoritative transaction should only finalize after successful server-verified PayPal payment.
+
+If the system currently creates a temporary bid/payment intent before PayPal, make that state explicit and safely resumable.
+
+==================================================
+6. AMOUNT MUST SURVIVE LOGIN
+==================================================
+
+Example:
+
+User selects:
+
+$255
+
+Then Google login happens.
+
+After login the UI must still say:
+
+$255
+
+It must NOT become:
+
+$5
+$0
+previous bid
+undefined
+NaN
+blank
+
+The server must NOT trust the browser's $255 value for final payment.
+
+The server must resolve the valid amount using:
+
+campaign
+listing
+action
+current ranking/business rules
+
+Then create the PayPal order using the server-authoritative amount.
+
+==================================================
+7. DO NOT USE A SECOND "CLAIM" BUTTON
+==================================================
+
+The public page has:
+
+[ CLAIM #1 ]
+
+That starts the process.
+
+After that, the checkout flow owns the transaction.
+
+Do NOT show another CLAIM button after authentication.
+
+Do NOT show:
+
+"Create account & claim"
+
+Do NOT show:
+
+"Your owner account is ready"
+
+Do NOT require:
+
+"Continue to payment"
+
+immediately after successful login.
+
+Once authentication is confirmed:
+
+→ restore pending transaction
+→ validate it
+→ initialize PayPal
+
+automatically.
+
+==================================================
+8. PAYPAL INITIALIZATION
+==================================================
+
+After successful authentication:
+
+POST /api/paypal/create-order
+
+must happen automatically.
+
+Do not require the user to discover another button.
+
+Show:
+
+"Preparing secure payment..."
+
+while the request is running.
+
+Then render PayPal.
+
+If create-order fails:
+
+show a real error.
+
+Never silently leave the user on the page.
+
+For example:
+
+"Unable to start payment. Please try again."
+
+Include a Retry action.
+
+Log the server-side error safely.
+
+==================================================
+9. IMPORTANT: DISTINGUISH AUTH FAILURE FROM PAYPAL FAILURE
+==================================================
+
+Instrument the flow so we can see:
+
+AUTH_STARTED
+AUTH_CALLBACK
+SESSION_CONFIRMED
+PENDING_TRANSACTION_SAVED
+PENDING_TRANSACTION_RESTORED
+CAMPAIGN_VALIDATED
+BID_VALIDATED
+PAYPAL_ORDER_CREATE_STARTED
+PAYPAL_ORDER_CREATED
+PAYPAL_CHECKOUT_RENDERED
+PAYPAL_APPROVED
+PAYPAL_CAPTURE_STARTED
+PAYPAL_CAPTURED
+TRANSACTION_FINALIZED
+
+Use safe structured logging.
+
+NEVER log:
+
+- client secret
+- PayPal secret
+- password
+- OAuth access token
+- session secret
+
+Use a correlation/transaction ID.
+
+==================================================
+10. SERVER MUST BE AUTHORITATIVE
+==================================================
+
+Never trust client-side:
+
+- campaign ID
+- listing ID
+- amount
+- ranking position
+- payment status
+- ownership
+
+The server must verify:
+
+1. authenticated user
+2. campaign exists
+3. campaign is active
+4. listing belongs to campaign
+5. action is valid
+6. amount is valid
+7. transaction is still pending/valid
+8. PayPal order belongs to this transaction
+9. captured amount matches
+10. currency matches
+11. PayPal status is valid
+12. merchant/payee matches where configured
+
+Only then finalize.
+
+==================================================
+11. PREVENT DUPLICATE BID/CLAIM
+==================================================
+
+The user may:
+
+- tap twice
+- refresh
+- authenticate twice
+- return from Google
+- reopen the page
+- click PayPal twice
+- receive duplicate webhook
+
+There must be exactly one final transaction.
+
+Reuse the existing idempotency architecture.
+
+Do NOT create duplicate:
+
+- bids
+- claims
+- payments
+- receipts
+- ledger entries
+- ranking updates
+
+==================================================
+12. AUTHENTICATED USER FLOW
+==================================================
+
+If the visitor is already logged in:
+
+CLAIM #1
+↓
+details
+↓
+server validates
+↓
+PayPal immediately
+
+No login.
+
+No account creation.
+
+No extra screen.
+
+==================================================
+13. NEW USER FLOW
+==================================================
+
+New user:
+
+CLAIM #1
+↓
+details
+↓
+Google/email authentication
+↓
+SESSION CONFIRMED
+↓
+RESTORE EXACT TRANSACTION
+↓
+VALIDATE CURRENT CAMPAIGN
+↓
+CREATE PAYPAL ORDER
+↓
+PAYPAL
+↓
+SUCCESS
+
+Exactly ONE authentication.
+
+==================================================
+14. EXPIRED CAMPAIGN
+==================================================
+
+If the user started a transaction yesterday and the campaign has now ended:
+
+Do NOT resume it.
+
+Do NOT create a PayPal order.
+
+Clear stale pending state.
+
+Show the current campaign.
+
+But do NOT confuse this with the authentication problem.
+
+First make sure a valid current campaign survives authentication correctly.
+
+==================================================
+15. UI SHOULD BE SIMPLE
+==================================================
+
+The user should see only what they need.
+
+STEP 1:
+Claim details
+
+STEP 2:
+Authentication if needed
+
+STEP 3:
+PayPal
+
+STEP 4:
+Success
+
+Do not make the user scroll around to find the next action.
+
+==================================================
+16. TEST THE EXACT BUG
+==================================================
+
+Do NOT only run unit tests.
+
+Perform an actual browser test.
+
+TEST A — BRAND NEW USER
+
+1. Clear cookies.
+2. Clear localStorage.
+3. Clear sessionStorage.
+4. Open live campaign.
+5. Click CLAIM #1.
+6. Enter $255.
+7. Enter email/name.
+8. Click Continue.
+9. Google login.
+10. Complete Google authentication.
+11. Verify only ONE login.
+12. Verify authenticated session.
+13. Verify campaign unchanged.
+14. Verify listing unchanged.
+15. Verify amount still $255.
+16. Verify PayPal initialization happens automatically.
+17. Verify PayPal UI appears.
+18. Complete Sandbox payment.
+19. Verify capture.
+20. Verify exactly one final bid/claim.
+21. Verify exactly one receipt.
+22. Verify exactly one ledger entry.
+23. Verify ranking update.
+
+TEST B — EXISTING LOGGED-IN USER
+
+1. Login first.
+2. Open campaign.
+3. Click CLAIM.
+4. Enter bid.
+5. Verify no authentication screen.
+6. Verify PayPal starts.
+
+TEST C — AUTH RETURN
+
+1. Start claim.
+2. Authenticate.
+3. Verify OAuth callback.
+4. Verify session.
+5. Verify pending transaction.
+6. Verify PayPal.
+
+TEST D — REFRESH
+
+Refresh after authentication but before PayPal.
+
+The transaction must remain valid if the campaign is still active.
+
+TEST E — DOUBLE CLICK
+
+Double click the claim/continue action.
+
+Only one transaction must be created.
+
+==================================================
+17. DO NOT DECLARE SUCCESS PREMATURELY
+==================================================
+
+Do not tell me:
+
+"Everything checks out"
+
+based only on:
+
+tsc
+unit tests
+API mocks
+or create-order success.
+
+The actual browser journey must work.
+
+The most important acceptance test is:
+
+NEW USER
+→ CLAIM
+→ ENTER BID
+→ GOOGLE LOGIN ONCE
+→ AUTOMATIC RETURN
+→ AUTOMATIC PAYPAL
+→ PAY
+→ BID/CLAIM FINALIZED
+
+If that exact sequence does not work, the task is NOT complete.
+
+==================================================
+18. FINAL REPORT
+==================================================
+
+After fixing it, report:
+
+1. Exact root cause of login loop.
+2. Exact root cause of bid/claim state failure.
+3. Files changed.
+4. Authentication changes.
+5. Pending transaction changes.
+6. PayPal changes, if any.
+7. Browser test performed.
+8. Exact result of the new-user journey.
+9. Any remaining blocker.
+
+Do not make another cosmetic patch.
+
+Trace the actual state from:
+
+CLAIM
+→ BID
+→ AUTH
+→ SESSION
+→ RESTORE
+→ PAYPAL
+→ CAPTURE
+→ FINALIZATION
+
+and fix the broken transition.

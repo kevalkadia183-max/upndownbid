@@ -1,0 +1,224 @@
+IMPORTANT — TIME-BASED PRODUCTION DATA CLEANUP
+
+Upndownbid.lol is now being advertised publicly.
+
+DO NOT perform a full database reset.
+
+I need a SAFE TIME-BASED CLEANUP because I want to preserve all data generated since advertising/launch activity started.
+
+CUT-OFF:
+27 August 2026 at 5:00 AM IST
+Timezone: Asia/Kolkata
+ISO cutoff: 2026-08-27T05:00:00+05:30
+
+==================================================
+PRIMARY RULE
+==================================================
+
+Delete OLD/TEST APPLICATION DATA created BEFORE:
+
+2026-08-27 05:00:00 IST
+
+Preserve ALL data created AT OR AFTER:
+
+2026-08-27 05:00:00 IST
+
+This includes any real users, listings, claims, bids, rankings, reviews, clicks, feedback, and payment-related records created since 5:00 AM.
+
+DO NOT delete any post-cutoff data.
+
+==================================================
+ADMIN — ALWAYS PRESERVE
+==================================================
+
+The ONLY platform administrator should be:
+
+kevalkadia27@gmail.com
+
+NEVER delete this account regardless of its creation timestamp.
+
+Make sure this account has the proper server-side admin role.
+
+Do not create duplicate admin accounts.
+
+Do not remove its Google authentication identity.
+
+==================================================
+WHAT MAY BE DELETED
+==================================================
+
+For application records that are clearly test/old data AND were created before the cutoff, remove them safely.
+
+Potential records include:
+
+- old/test users
+- old/test listings
+- old/test claims
+- old/test bids
+- old/test boosts
+- old/test push-downs
+- old/test ratings/reviews
+- old/test click tracking
+- old/test feedback
+- old/test payment records
+- old/test campaign participation
+- old/test owner/listing relationships
+- other clearly obsolete test application data
+
+IMPORTANT:
+
+Do NOT delete records merely because they are old.
+
+The cutoff is the primary condition, but preserve anything that appears to be legitimate production data.
+
+==================================================
+DO NOT DELETE SYSTEM CONFIGURATION
+==================================================
+
+Preserve:
+
+- database schema
+- migrations
+- campaign configuration
+- PayPal configuration
+- PayPal live credentials
+- PayPal webhook configuration
+- Google authentication configuration
+- application settings
+- security configuration
+- admin configuration
+- production environment variables
+- required system records
+
+Do NOT drop tables.
+
+Do NOT recreate the database.
+
+Do NOT reset the schema.
+
+Do NOT disable PayPal.
+
+Do NOT modify the ranking algorithm.
+
+Do NOT modify authentication.
+
+Do NOT modify the campaign logic.
+
+Do NOT modify production payment logic.
+
+==================================================
+DATABASE SAFETY
+==================================================
+
+BEFORE deleting anything:
+
+1. Inspect the database schema.
+2. Identify timestamp fields for every relevant table.
+3. Identify foreign-key/dependency relationships.
+4. Create a backup/snapshot if supported.
+5. Produce a preview/count of records that WOULD be deleted.
+6. Verify that no record created at or after 05:00 IST is included.
+7. Verify that kevalkadia27@gmail.com is excluded from deletion.
+8. Only then perform the cleanup.
+
+IMPORTANT:
+Convert timestamps correctly to Asia/Kolkata before applying the cutoff.
+
+Do not incorrectly compare UTC timestamps as if they were IST.
+
+==================================================
+PRESERVE ALL POST-LAUNCH DATA
+==================================================
+
+Everything created after:
+
+05:00 AM IST on 27 August 2026
+
+must remain untouched.
+
+For example:
+
+05:00 → KEEP
+05:01 → KEEP
+06:00 → KEEP
+10:00 → KEEP
+12:00 → KEEP
+23:59 → KEEP
+
+Anything before 05:00 may be considered for cleanup, subject to the safety rules above.
+
+==================================================
+SPECIAL CASE — USERS
+==================================================
+
+Do NOT blindly delete every user created before 05:00.
+
+If a user has meaningful production activity after 05:00, preserve the user and all of their valid post-cutoff activity.
+
+Do not create orphaned records.
+
+If deleting an old test user would cascade into post-cutoff production data, DO NOT delete that user automatically.
+
+Instead preserve the user and report it for manual review.
+
+==================================================
+SPECIAL CASE — PAYMENTS
+==================================================
+
+Never delete a payment record that is associated with:
+
+- a real post-cutoff transaction
+- a PayPal transaction
+- a webhook event
+- a claim created after 05:00
+- a listing created after 05:00
+
+If there is any uncertainty about a payment record, preserve it.
+
+==================================================
+AFTER CLEANUP
+==================================================
+
+Run integrity checks.
+
+Verify:
+
+- No post-cutoff records were deleted.
+- Admin still exists.
+- kevalkadia27@gmail.com is admin.
+- No orphaned records exist.
+- Public listings remain intact.
+- Campaign #1 remains active.
+- Current rankings remain intact.
+- Current claims remain intact.
+- Current bids remain intact.
+- Current feedback remains intact.
+- Current click tracking remains intact.
+- PayPal configuration remains intact.
+- Google login remains intact.
+- Admin dashboard works.
+- Normal user isolation still works.
+
+Run the existing automated test suite.
+
+==================================================
+REPORT
+==================================================
+
+After completion, report:
+
+1. Exact cutoff used.
+2. Number of records inspected.
+3. Number of records deleted by table/type.
+4. Number of records preserved.
+5. Number of post-cutoff records preserved.
+6. Confirmation that kevalkadia27@gmail.com was preserved.
+7. Confirmation that the account remains the ONLY admin.
+8. Confirmation that no orphaned records were created.
+9. Payment records preserved.
+10. Test results.
+11. Any records that were intentionally NOT deleted because they were ambiguous.
+
+DO NOT deploy or publish anything as part of this task.
+
+Do the cleanup safely and report the result first.

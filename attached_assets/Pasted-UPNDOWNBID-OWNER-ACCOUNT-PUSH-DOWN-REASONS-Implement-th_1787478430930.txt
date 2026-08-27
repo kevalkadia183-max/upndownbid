@@ -1,0 +1,581 @@
+UPNDOWNBID — OWNER ACCOUNT + PUSH DOWN REASONS
+
+Implement the following without changing the existing weekly campaign,
+ranking, Boost, Push Down, or payment architecture.
+
+==================================================
+1. PUBLIC USERS — NO LOGIN
+==================================================
+
+Normal visitors do NOT need an account.
+
+They can:
+
+- Browse products
+- Search products
+- Boost products
+- Push Down products
+- Submit reasons/feedback
+- View reviews
+- View rankings
+- View winners
+
+Do NOT force public users to log in.
+
+==================================================
+2. PRODUCT OWNER ACCOUNT
+==================================================
+
+Only users who ADD A PRODUCT create an account.
+
+During product creation collect ONLY:
+
+Name
+Email
+Password
+
+Do not ask for unnecessary profile information.
+
+Flow:
+
+Website/App URL
+↓
+Category
+↓
+Owner Claim/Bid
+↓
+Name
+↓
+Email
+↓
+Password
+↓
+Projected Rank
+↓
+Checkout
+↓
+Product + Owner Account Created
+
+Use secure password hashing.
+
+Never store plaintext passwords.
+
+==================================================
+3. OWNER PROFILE
+==================================================
+
+After registration, the owner can update additional information:
+
+- Name
+- Profile photo
+- Bio
+- Company
+- Role
+- Social links
+- Website
+- Location
+- Other optional information
+
+None of these should be required during initial product creation.
+
+==================================================
+4. OWNER DASHBOARD
+==================================================
+
+Provide:
+
+OWNER LOGIN
+
+After login:
+
+MY PRODUCTS
+
+Product
+Rank
+Ranking Power
+Boosts
+Push Downs
+Reviews
+
+Example:
+
+Makunto
+
+Rank #3
+Ranking Power $250
+
+Boosts: 12
+Push Downs: 3
+Reviews: 8
+
+[ MANAGE ]
+
+==================================================
+5. OWNER REVIEWS
+==================================================
+
+Inside each owner's product:
+
+REVIEWS & FEEDBACK
+
+Show all Boost and Push Down feedback related to the product.
+
+Example:
+
+🐞 Bug
+
+"Checkout doesn't work on mobile."
+
+Anonymous
+
+[ Reply ]
+
+Or:
+
+🎨 UI / UX
+
+"The navigation is confusing."
+
+Anonymous
+
+[ Reply ]
+
+The owner can reply publicly.
+
+Display:
+
+OWNER RESPONSE
+
+"Thanks for reporting this. We've fixed the issue."
+
+Do not allow the owner to delete the original community review.
+
+==================================================
+6. PUSH DOWN REASON SYSTEM
+==================================================
+
+When a public user clicks:
+
+[ ↘ PUSH DOWN ]
+
+show a short reason selection.
+
+Question:
+
+"Why are you pushing this product down?"
+
+Options:
+
+🐞 Bug
+🎨 UI / UX
+⚡ Performance
+🧩 Missing / broken feature
+🏢 I'm a competitor
+😄 Just for fun
+❓ Other
+
+The user selects ONE primary reason.
+
+==================================================
+7. ISSUE DESCRIPTION
+==================================================
+
+If the user selects:
+
+🐞 Bug
+
+🎨 UI / UX
+
+⚡ Performance
+
+🧩 Missing / broken feature
+
+show:
+
+"Describe the issue"
+
+[ Briefly explain... ]
+
+This field is optional.
+
+Keep it short and simple.
+
+Example:
+
+Reason:
+🐞 Bug
+
+Description:
+"Login button doesn't work on mobile."
+
+==================================================
+8. OTHER
+==================================================
+
+If the user selects:
+
+❓ Other
+
+show:
+
+"Tell us why"
+
+[ Briefly explain... ]
+
+For Other, require a short explanation before submission.
+
+==================================================
+9. COMPETITOR
+==================================================
+
+If:
+
+🏢 I'm a competitor
+
+is selected:
+
+Do NOT ask for additional information.
+
+Treat this as a self-selected reason only.
+
+Do not attempt to identify whether the person is actually a competitor.
+
+==================================================
+10. JUST FOR FUN
+==================================================
+
+If:
+
+😄 Just for fun
+
+is selected:
+
+Do NOT ask for additional information.
+
+Keep this option because Push Down is also intended to be a fun/community interaction.
+
+==================================================
+11. PUSH DOWN AMOUNT
+==================================================
+
+After the reason selection, show the existing Push Down amount control.
+
+Example:
+
+PUSH DOWN
+
+Amount:
+
+[-] $10 [+]
+
+Current Ranking Power:
+$250
+
+After Push Down:
+$240
+
+Projected Rank:
+#2
+
+Then:
+
+[ PUSH DOWN $10 ]
+
+The user must complete payment before the Push Down affects ranking.
+
+==================================================
+12. PUSH DOWN DATA
+==================================================
+
+Store:
+
+- product_id
+- campaign_id
+- amount
+- reason
+- description if provided
+- timestamp
+- transaction/payment ID
+- anonymous/public identity information according to the existing system
+
+Do NOT require the public user to create an account.
+
+==================================================
+13. PUBLIC PRODUCT PAGE
+==================================================
+
+Show aggregated Push Down reasons.
+
+Example:
+
+PUSH DOWNS
+
+🐞 Bug              3
+🎨 UI / UX          2
+⚡ Performance       1
+🧩 Missing Feature  1
+🏢 Competitor       1
+😄 Just for Fun     2
+
+[ VIEW FEEDBACK ]
+
+Keep the UI compact.
+
+==================================================
+14. INDIVIDUAL FEEDBACK
+==================================================
+
+When viewing feedback:
+
+🐞 Bug
+
+"Checkout button doesn't work on mobile."
+
+Anonymous
+
+Date
+
+If there is an owner response:
+
+OWNER RESPONSE
+
+"We've fixed this issue. Thanks for reporting it."
+
+The owner response should be visually separated from the original feedback.
+
+==================================================
+15. OWNER REPLY
+==================================================
+
+Only the verified product owner can reply.
+
+When owner clicks:
+
+[ Reply ]
+
+show:
+
+[ Write a reply... ]
+
+[ REPLY ]
+
+The response becomes publicly visible.
+
+Example:
+
+OWNER RESPONSE
+
+"Thanks for reporting this. We've fixed the issue."
+
+Do not allow an owner to reply to another owner's product.
+
+==================================================
+16. OWNER AUTHORIZATION
+==================================================
+
+Every owner action must be verified server-side.
+
+Verify:
+
+Authenticated owner
++
+Product belongs to owner
++
+Review belongs to product
+
+Never trust product_id from the frontend alone.
+
+Prevent IDOR/access-control vulnerabilities.
+
+==================================================
+17. OWNER LOGIN
+==================================================
+
+Public navigation should NOT show a generic login.
+
+Use:
+
+OWNER LOGIN
+
+This is only for people who created a product.
+
+The public experience remains account-free.
+
+==================================================
+18. PRODUCT CREATION LINK
+==================================================
+
+When a product is created:
+
+Create:
+
+USER
+- id
+- name
+- email
+- password_hash
+- created_at
+
+PRODUCT
+- id
+- owner_id
+- URL
+- category
+- existing product information
+
+CAMPAIGN PARTICIPATION
+- campaign_id
+- product_id
+- owner_bid
+
+The product must be permanently linked to its owner account.
+
+==================================================
+19. BOOST
+==================================================
+
+Keep Boost separate from Push Down.
+
+Public users can Boost without login.
+
+Example:
+
+[ ↗ BOOST ]
+
+"Help this product rise."
+
+Boost amount:
+
+$25
+
+Reason/feedback can remain part of the existing Boost flow.
+
+Boost increases:
+
+Community Boosts
+
+and therefore:
+
+Ranking Power
+
+==================================================
+20. RANKING POWER
+==================================================
+
+Keep the existing calculation:
+
+OWNER CLAIM
++
+COMMUNITY BOOSTS
+-
+PUSH DOWNS
+=
+RANKING POWER
+
+Do NOT change the underlying calculation.
+
+Only the public terminology should use:
+
+BOOST
+PUSH DOWN
+RANKING POWER
+CLAIM
+
+==================================================
+21. WEEKLY CAMPAIGN
+==================================================
+
+Push Down actions only affect the CURRENT campaign.
+
+When the campaign ends:
+
+- Push Downs are finalized
+- Boosts are finalized
+- Owner claims are finalized
+- Winner is determined
+- Winner is stored permanently
+- New campaign starts fresh
+
+Historical Push Downs remain attached to the old campaign.
+
+Do NOT carry old Push Downs into the new campaign.
+
+==================================================
+22. NO PUBLIC ACCOUNT REQUIREMENT
+==================================================
+
+Do NOT accidentally introduce authentication into:
+
+- Push Down
+- Boost
+- Browsing
+- Searching
+- Viewing reviews
+- Viewing rankings
+- Viewing winners
+
+Only product owners need authentication.
+
+==================================================
+23. SECURITY
+==================================================
+
+Sanitize all user-entered descriptions and owner replies.
+
+Prevent:
+
+- XSS
+- HTML injection
+- Script injection
+- Excessively long text
+- Spam
+
+Use secure authentication for owners.
+
+Use secure password hashing.
+
+Never expose passwords.
+
+Never expose private owner information.
+
+==================================================
+24. TESTING
+==================================================
+
+Test:
+
+1. Anonymous user can Push Down.
+2. Anonymous user can Boost.
+3. Anonymous user can select Bug.
+4. Anonymous user can select UI/UX.
+5. Anonymous user can select Performance.
+6. Anonymous user can select Missing/Broken Feature.
+7. Anonymous user can select Competitor.
+8. Anonymous user can select Just for Fun.
+9. Anonymous user can select Other.
+10. Bug description works.
+11. UI/UX description works.
+12. Performance description works.
+13. Missing/Broken Feature description works.
+14. Other requires explanation.
+15. Competitor requires no explanation.
+16. Just for Fun requires no explanation.
+17. Push Down payment flow remains intact.
+18. Push Down changes Ranking Power correctly.
+19. Push Down reason is stored.
+20. Feedback appears publicly.
+21. Owner can log in.
+22. Owner sees their products.
+23. Owner sees feedback on their products.
+24. Owner can reply.
+25. Owner cannot reply to another owner's product.
+26. Public users are never forced to log in.
+27. Run typecheck.
+28. Run tests.
+29. Run production build.
+
+Do not redesign the application.
+
+Do not change unrelated functionality.
+
+Keep the implementation simple, short, mobile-friendly, and consistent with the current UpnDownBid design.

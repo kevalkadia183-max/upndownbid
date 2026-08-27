@@ -1,0 +1,55 @@
+Fix ONLY the current Claim a Spot validation failure shown in the browser:
+
+"Claim was not completed
+A valid URL, category, email, and Idempotency-Key are required."
+
+Do not redo or duplicate the completed Polar webhook/payment work.
+
+Trace the Claim a Spot flow end-to-end from the mobile UI to the API and identify why the request is reaching the server without the required:
+- valid URL
+- category
+- owner email
+- Idempotency-Key
+
+Requirements:
+
+1. Preserve the existing Claim a Spot UI and design.
+2. Ensure the claim form collects/retains the selected product/business URL and category.
+3. Use the owner email already displayed in the form when submitting the claim.
+4. Generate a fresh cryptographically safe Idempotency-Key for each new claim attempt and reuse the same key only when retrying that exact request.
+5. Send all required fields in the exact API contract expected by the existing claim endpoint.
+6. Do NOT weaken or remove server-side validation.
+7. Do NOT make the API accept missing values just to hide the error.
+8. Do NOT create a payment, ledger entry, ranking update, or campaign mutation until the validated claim request succeeds.
+9. Preserve the existing Polar sandbox checkout flow after the claim request succeeds.
+10. If the form is opened through the mobile "CLAIM A SPOT" button, verify that all required data survives navigation to the claim page.
+11. Also verify direct navigation to the claim page.
+12. If URL/category are supposed to come from the selected product/listing, make sure that state is correctly carried into the claim form instead of becoming undefined after navigation.
+
+Testing requirements:
+
+- Test the exact mobile flow shown in the screenshot.
+- Test desktop.
+- Test direct claim-page navigation.
+- Test a valid claim submission.
+- Test missing URL.
+- Test missing category.
+- Test missing email.
+- Test missing Idempotency-Key at the API level.
+- Verify invalid requests are rejected without financial/database mutations.
+- Verify a valid request proceeds to the existing Polar sandbox checkout.
+- Verify no ranking/ledger/payment success is shown before the verified Polar webhook.
+- Run typecheck.
+- Run production build.
+- Run the relevant API/security tests.
+- Check for horizontal overflow on mobile.
+
+Do not claim this is fixed until the exact mobile flow has been executed successfully and the API request has been inspected to confirm URL, category, email, and Idempotency-Key are actually present.
+
+At the end report:
+1. Root cause
+2. Files changed
+3. Tests run
+4. Exact mobile result
+5. Whether Polar checkout was reached
+6. Whether any financial/ranking mutation occurred

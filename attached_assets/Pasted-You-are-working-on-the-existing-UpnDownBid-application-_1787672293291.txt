@@ -1,0 +1,500 @@
+You are working on the existing UpnDownBid application.
+
+TASK:
+Completely remove the existing Polar payment integration and replace it with a production-ready PayPal Checkout integration for INTERNATIONAL customers.
+
+IMPORTANT:
+Do NOT redesign the application.
+Do NOT change existing pricing, plans, user accounts, dashboard functionality, database structure, or unrelated features.
+Do NOT remove existing subscription/business logic unless it is specifically tied to Polar.
+First audit the existing Polar integration and understand how plans, checkout, payment status, subscriptions, user access, and webhooks currently work.
+
+PAYMENT TARGET:
+PayPal Business account
+International customers only
+Primary currency: USD
+
+PAYPAL IMPLEMENTATION:
+Use the current PayPal Orders API / PayPal Checkout architecture.
+Do not implement a simple hard-coded PayPal payment link as the application's primary checkout.
+The application must create PayPal orders dynamically from the selected UpnDownBid plan/product.
+
+OFFICIAL FLOW:
+
+1. User selects a plan.
+2. UpnDownBid creates a local pending order/payment record.
+3. Frontend requests creation of a PayPal order from the backend.
+4. Backend creates the PayPal order using the PayPal Orders API.
+5. PayPal checkout is displayed to the customer.
+6. Customer can pay using the payment methods PayPal makes available to them.
+7. After buyer approval, backend captures the PayPal order.
+8. Verify the capture/order status.
+9. PayPal webhook confirms the final payment event.
+10. Only after verified successful payment:
+    - mark local payment as paid
+    - activate the purchased plan/service
+    - update the user's subscription/access
+    - store PayPal transaction/order/capture IDs
+    - show successful payment to the customer
+11. Failed/cancelled/pending payments must NOT activate paid access.
+
+PAYPAL API:
+
+Use:
+- PayPal Orders API v2
+- intent = CAPTURE
+- USD for international checkout
+
+Use PayPal's current production API endpoint for live mode and sandbox endpoint for testing.
+
+Never expose:
+- PAYPAL_CLIENT_SECRET
+- PayPal access tokens
+- other private credentials
+
+in frontend code.
+
+ENVIRONMENT VARIABLES:
+
+Create/update environment configuration using:
+
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_ENVIRONMENT=sandbox
+
+and support:
+
+PAYPAL_ENVIRONMENT=production
+
+Do not hard-code credentials anywhere.
+
+If the project already has an environment/config system, integrate with it instead of creating a second configuration system.
+
+PAYPAL BACKEND:
+
+Create clean backend functions/routes for:
+
+POST /api/paypal/create-order
+POST /api/paypal/capture-order
+POST /api/paypal/webhook
+
+Use the project's existing API conventions if equivalent routes already exist.
+
+CREATE ORDER:
+
+The backend must NEVER trust the price sent by the browser.
+
+The browser should send only something such as:
+
+- plan ID
+- product/service ID
+- quantity if applicable
+
+The backend must retrieve the actual price from the existing database/configuration.
+
+Validate:
+- authenticated user
+- valid plan
+- valid price
+- currency
+- product/service
+- user eligibility
+- existing unpaid/pending order where appropriate
+
+Then create the PayPal order.
+
+Attach useful internal identifiers to the PayPal order/custom metadata where supported, such as:
+- internal user ID
+- internal order/payment ID
+- plan ID
+
+Do not expose sensitive internal information.
+
+CAPTURE:
+
+After PayPal approval, capture the order server-side.
+
+Verify:
+- PayPal order ID
+- order status
+- capture status
+- captured amount
+- currency
+- relevant merchant/payee information
+
+The amount captured must match the amount expected by the local order.
+
+If the amount does not match:
+- do NOT activate the subscription
+- flag the payment for review
+- log the mismatch safely
+
+WEBHOOKS:
+
+Implement a secure PayPal webhook endpoint.
+
+Support the important payment lifecycle events, including at minimum:
+
+PAYMENT.CAPTURE.COMPLETED
+PAYMENT.CAPTURE.DENIED
+PAYMENT.CAPTURE.PENDING
+
+Also handle relevant order approval/reversal events where appropriate.
+
+IMPORTANT:
+Verify PayPal webhook authenticity before processing it.
+
+Never trust a webhook simply because it reaches our endpoint.
+
+Use PayPal's webhook signature verification mechanism.
+
+Make webhook processing idempotent.
+
+If PayPal sends the same webhook multiple times:
+- do not create duplicate payments
+- do not activate a subscription twice
+- do not duplicate credits
+- do not duplicate orders
+
+Store the PayPal webhook/event ID and prevent duplicate processing.
+
+PAYMENT DATABASE:
+
+Inspect the existing database/payment models first.
+
+If Polar currently has fields such as:
+- provider
+- providerPaymentId
+- checkoutId
+- subscriptionId
+- customerId
+- status
+- amount
+- currency
+- metadata
+
+adapt the existing model rather than unnecessarily creating duplicate payment systems.
+
+Replace Polar-specific terminology with provider-neutral terminology where appropriate.
+
+For example:
+
+paymentProvider = "paypal"
+
+Store:
+- internal payment ID
+- user ID
+- plan ID
+- amount
+- currency
+- status
+- PayPal order ID
+- PayPal capture ID
+- PayPal payer/customer information only where appropriate
+- timestamps
+- webhook/event IDs where needed
+
+Do not store sensitive payment card information.
+
+PAYMENT STATUS:
+
+Use a clear state model such as:
+
+pending
+approved
+completed
+failed
+cancelled
+refunded
+
+Map PayPal statuses carefully.
+
+Never consider a payment successful merely because the user returned from PayPal.
+
+The authoritative result must come from a verified PayPal API response and/or verified webhook.
+
+SUBSCRIPTIONS:
+
+IMPORTANT:
+
+Before changing subscription behavior, inspect exactly how Polar currently handles:
+
+- recurring subscriptions
+- plan activation
+- renewal
+- cancellation
+- expiration
+- failed payments
+- grace periods
+- user entitlements
+
+Do NOT assume every Polar feature maps directly to a PayPal one-time order.
+
+If UpnDownBid currently sells RECURRING subscriptions, implement PayPal Subscriptions using PayPal's current Subscriptions API rather than pretending a one-time Orders payment is a recurring subscription.
+
+If UpnDownBid currently sells ONE-TIME products/services, use Orders API + CAPTURE.
+
+Determine this from the existing application before implementation.
+
+If the existing plans are recurring:
+- preserve the existing billing intervals
+- create the appropriate PayPal subscription product/plan structure
+- store PayPal subscription IDs
+- process subscription lifecycle webhooks
+- activate access only after verified subscription/payment state
+
+POLAR REMOVAL:
+
+After PayPal is working:
+
+Remove Polar from:
+- frontend checkout
+- backend payment routes
+- Polar SDK/package dependencies
+- Polar webhook handlers
+- Polar environment variables
+- Polar-specific UI
+- Polar-specific payment database logic
+- Polar checkout URLs
+- Polar payment buttons
+
+Search the ENTIRE repository for:
+
+polar
+POLAR
+polar.sh
+Polar
+polar checkout
+polar webhook
+polar customer
+polar subscription
+polar product
+
+Do not blindly delete anything named "polar".
+Inspect each occurrence first.
+
+Do not remove unrelated code.
+
+UI:
+
+Keep the existing UpnDownBid checkout design.
+
+Replace Polar checkout controls with PayPal checkout.
+
+The checkout should clearly show:
+- product/plan name
+- price
+- currency
+- billing period if applicable
+- PayPal payment option
+- loading state
+- success state
+- failure state
+- cancellation state
+
+Use PayPal's official checkout components/SDK.
+
+Do not build a fake PayPal button.
+
+Do not collect card details directly in UpnDownBid unless PayPal's approved integration specifically supports the chosen method.
+
+INTERNATIONAL ONLY:
+
+This PayPal integration is intended for international customers.
+
+Do not use PayPal as the domestic Indian payment gateway.
+
+Do not add INR domestic checkout through PayPal.
+
+Keep the payment architecture provider-neutral so that an Indian gateway such as Razorpay/Cashfree can be added later without rewriting the entire billing system.
+
+COUNTRY/CURRENCY:
+
+Default international currency:
+USD
+
+Do not allow the client/browser to arbitrarily change the price or currency.
+
+If multi-currency already exists in the application, preserve it only if the current business logic supports it and implement it safely.
+
+SECURITY:
+
+Follow secure payment practices.
+
+Never:
+- trust client-side price
+- trust client-side payment status
+- store card numbers
+- store CVV
+- expose PayPal secret
+- expose PayPal access token
+- activate paid access based only on a frontend callback
+- accept unsigned/unverified webhooks
+
+Use:
+- server-side PayPal API calls
+- HTTPS in production
+- verified webhooks
+- idempotency
+- database transactions where appropriate
+- structured payment logs
+- safe error messages to users
+
+ERROR HANDLING:
+
+Handle:
+- PayPal API unavailable
+- order creation failure
+- checkout cancellation
+- capture failure
+- duplicate capture
+- webhook failure
+- webhook replay
+- invalid amount
+- invalid currency
+- expired order
+- network timeout
+- user closing checkout
+- payment approved but webhook delayed
+
+The UI should never tell the customer "Payment successful" unless the backend has verified the payment.
+
+If payment is uncertain:
+show:
+
+"Payment is being verified. Please don't make another payment."
+
+Do not create duplicate charges.
+
+EMAIL/NOTIFICATIONS:
+
+Inspect the existing Polar payment-success workflow.
+
+Preserve existing:
+- payment confirmation email
+- order confirmation
+- subscription activation
+- invoice/receipt generation
+- user notifications
+
+Replace only the provider-specific trigger.
+
+Do not send a payment-success email before the payment is verified.
+
+ADMIN:
+
+Inspect the existing admin payment/order dashboard.
+
+Replace Polar-specific information with PayPal information.
+
+Admin should be able to see:
+- customer
+- plan
+- amount
+- currency
+- payment status
+- PayPal order ID
+- PayPal capture/subscription ID
+- created date
+- completed date
+
+Do not expose secret credentials.
+
+TESTING:
+
+Before declaring completion, test in PayPal SANDBOX.
+
+Create a complete test flow:
+
+1. User selects plan.
+2. Local pending payment is created.
+3. PayPal order is created.
+4. PayPal sandbox checkout opens.
+5. Sandbox buyer completes payment.
+6. Backend captures payment.
+7. Webhook arrives.
+8. Webhook is verified.
+9. Payment becomes completed.
+10. User receives correct plan/access.
+11. Admin sees the payment.
+12. Refreshing the page does not duplicate activation.
+13. Replaying the webhook does not duplicate activation.
+14. Failed payment does not activate access.
+15. Cancelled checkout does not activate access.
+
+Also test:
+- duplicate webhook
+- invalid webhook
+- wrong amount
+- wrong currency
+- capture failure
+- user closing checkout
+- payment pending
+
+REGRESSION TESTING:
+
+Run the project's existing test suite.
+
+Also run:
+- lint
+- type checking
+- build
+- database validation/migrations if applicable
+
+Do not break:
+- authentication
+- user accounts
+- dashboards
+- plans
+- existing application functionality
+- admin panel
+- existing non-payment features
+
+GIT/CHANGE SAFETY:
+
+Before making changes:
+
+1. Inspect current repository.
+2. Identify the current Polar implementation.
+3. Identify all payment-related files.
+4. Identify current database models/migrations.
+5. Identify current subscription/entitlement logic.
+6. Identify current checkout UI.
+7. Identify current webhook system.
+
+Do not make unrelated changes.
+
+After implementation, provide a concise report containing:
+
+1. Files changed
+2. Polar components removed
+3. PayPal components added
+4. Environment variables required
+5. Database changes
+6. API routes added/changed
+7. Webhook events handled
+8. Sandbox test results
+9. Production setup steps
+10. Any remaining limitations
+
+IMPORTANT PRODUCTION RULE:
+
+Do not switch to PayPal production mode automatically.
+
+Keep:
+
+PAYPAL_ENVIRONMENT=sandbox
+
+until the complete sandbox flow passes.
+
+Then clearly tell me exactly which PayPal production credentials/settings I need to add to Replit Secrets to go live.
+
+Do not ask me to paste secrets into chat.
+
+Use official PayPal documentation/current APIs rather than deprecated Polar or outdated PayPal integration patterns.
+
+FINAL REQUIREMENT:
+
+At the end, verify that there are ZERO active Polar payment calls remaining in the application and that the application has one clear payment path for international customers through PayPal.
+
+Do not claim the integration is production-ready unless the build, tests, payment flow, webhook verification, and database/payment state handling have all been validated.

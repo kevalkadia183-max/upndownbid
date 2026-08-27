@@ -1,0 +1,79 @@
+The latest Polar sandbox evidence changes the diagnosis.
+
+A REAL completed sandbox payment has now generated an order.paid webhook, and Polar shows:
+
+HTTP 202
+event type: order.paid
+status: paid
+paid: true
+total_amount: 1000
+
+Therefore DO NOT repeat the previous webhook repair, signature work, non-payment acknowledgements, Claim a Spot validation, or Polar concurrency work.
+
+The webhook is now reaching the application successfully.
+
+The app nevertheless returns to updownbid.lol and displays:
+
+“Sandbox payment needs reconciliation.
+No unverified ranking change has been applied.”
+
+TASK:
+Trace ONLY why a successfully delivered HTTP 202 order.paid event does not transition the corresponding internal payment to the final verified/succeeded state and apply the ranking change.
+
+Use the exact completed payment shown in the latest Polar sandbox delivery.
+
+Read-only first. Do not create another payment, replay the event, manually credit the ranking, or modify financial records.
+
+Trace this exact chain:
+
+Polar order.paid
+→ webhook handler
+→ internal payment lookup
+→ payment status transition
+→ payment-event/idempotency record
+→ ledger transaction
+→ campaign/ranking mutation
+→ public payment-status endpoint
+→ frontend reconciliation banner.
+
+Determine:
+
+1. What HTTP 202 means in our current webhook implementation.
+2. Whether the webhook handler actually processed the order.paid event or merely acknowledged/deferred it.
+3. Which internal payment ID the event contains.
+4. Whether that payment exists in the SAME production database.
+5. Its current payment status.
+6. Whether a payment_events/provider-event record exists for this exact Polar event.
+7. Whether the payment was transitioned to succeeded/paid.
+8. Whether ledger_entries were created.
+9. Whether the campaign/listing/ranking was updated.
+10. Whether an audit event was created.
+11. What the public payment-status endpoint returns for this payment.
+12. Why the frontend still displays “needs reconciliation.”
+13. Whether the 202 response is intentional asynchronous processing or is masking a failed reconciliation.
+14. Whether there is a queue/background job that is supposed to finish the 202 processing and whether it actually ran.
+
+IMPORTANT:
+Do not change code yet.
+
+First return a concise forensic diagnosis with:
+
+- Polar event ID
+- Polar order ID
+- Polar checkout ID
+- internal payment ID
+- webhook HTTP status
+- internal payment status
+- provider-event status
+- ledger status
+- ranking status
+- public payment-status response
+- exact reason reconciliation remains pending
+- confirmed root cause
+- minimal fix required
+
+If the event is successfully processed but the frontend is reading stale/pending state, say so explicitly.
+
+If 202 means the handler intentionally deferred processing, identify exactly what is responsible for completing that processing and why it did not complete.
+
+Only after the root cause is proven should implementation begin.

@@ -1,0 +1,218 @@
+Implement Plan #47, but integrate it with the new simplified claim/payment flow we are implementing.
+
+GOAL:
+
+A pending boost/push-down checkout must NEVER be offered again if the campaign it belongs to has already ended.
+
+The pending checkout must be tied to the exact campaign, not only the listing slug/action.
+
+CURRENT PROBLEM:
+
+Pending checkout is stored in browser sessionStorage keyed by listing slug + action.
+
+It does not contain sufficient campaign identity/expiry information.
+
+Campaigns roll over weekly.
+
+Therefore:
+
+Old campaign
+→ user starts checkout
+→ leaves before payment
+→ campaign ends
+→ new campaign begins
+→ user returns to listing
+→ application still offers "resume checkout"
+
+This is incorrect.
+
+IMPLEMENT:
+
+1. Pending checkout must include a unique campaign identifier.
+
+Example:
+
+{
+  listingSlug,
+  actionType,
+  campaignId,
+  campaignStart,
+  campaignEnd,
+  amount,
+  createdAt
+}
+
+Use the actual existing campaign identifier/schema in the application rather than inventing a new identifier if one already exists.
+
+2. When storing pending checkout, store the campaign ID associated with the checkout.
+
+3. When attempting to resume a pending checkout:
+
+Fetch/validate the current campaign server-side.
+
+The pending checkout is resumable ONLY if:
+
+pendingCheckout.campaignId === currentCampaign.id
+
+AND
+
+the campaign is still active
+
+AND
+
+the pending checkout has not expired
+
+AND
+
+the listing/action is still valid.
+
+4. If the campaign has ended:
+
+DO NOT show the resume checkout banner.
+
+DO NOT automatically restore the old payment state.
+
+DO NOT send the user to PayPal for the old campaign.
+
+Clear the stale pending checkout from sessionStorage.
+
+5. If a new campaign has started:
+
+Treat it as a completely new campaign.
+
+The user must start a new claim/boost/push-down transaction against the new campaign.
+
+6. Add an explicit expiry to pending checkout.
+
+Do not rely only on browser sessionStorage lifetime.
+
+The server must validate campaign state before creating a PayPal order.
+
+7. SECURITY:
+
+Never trust campaign ID, amount, ranking position, or campaign status supplied by the browser.
+
+The server must determine:
+
+- current campaign
+- campaign status
+- listing
+- valid amount
+- valid action
+- whether the transaction can proceed
+
+8. IMPORTANT:
+
+This must work together with the new simplified claim flow:
+
+PUBLIC LISTING
+→ CLAIM #1
+→ claim details
+→ authentication if required
+→ automatically resume pending claim
+→ immediately initialize PayPal
+→ payment
+→ server verification
+→ finalize claim
+
+There must be no "resume old checkout" path that can bypass current campaign validation.
+
+9. Handle these cases:
+
+CASE A:
+User starts checkout → completes payment before campaign ends.
+
+Expected:
+SUCCESS.
+
+CASE B:
+User starts checkout → leaves → returns while same campaign is active.
+
+Expected:
+Can safely resume the pending checkout.
+
+CASE C:
+User starts checkout → campaign ends → returns after campaign rollover.
+
+Expected:
+Old checkout is discarded.
+No resume banner.
+User sees the new campaign and can start a new claim.
+
+CASE D:
+User starts checkout → campaign ends → attempts to call the payment API directly using the old pending checkout.
+
+Expected:
+Server rejects the attempt because the campaign is no longer active.
+
+CASE E:
+User modifies sessionStorage manually.
+
+Expected:
+Server still rejects invalid/stale campaign/payment data.
+
+CASE F:
+User starts a claim, authenticates with Google, and returns after authentication.
+
+Expected:
+Pending checkout is restored ONLY if the campaign is still valid, then PayPal initialization happens automatically.
+
+10. TESTS:
+
+Add automated tests for:
+
+- pending checkout stores campaign ID
+- same active campaign can resume
+- expired campaign cannot resume
+- different/new campaign cannot resume old checkout
+- stale sessionStorage is cleared
+- server rejects old campaign payment creation
+- manipulated campaign ID is rejected
+- manipulated amount is rejected
+- successful current-campaign checkout still works
+- Google OAuth return preserves a valid pending checkout
+- duplicate payment remains idempotent
+
+11. UX:
+
+Do not show technical wording such as:
+
+"Pending checkout context expired."
+
+Instead, if necessary, show:
+
+"That campaign has ended. Start a new claim in the current campaign."
+
+But preferably simply remove the stale resume banner and let the current campaign be shown normally.
+
+12. IMPORTANT:
+
+Do not rewrite the PayPal payment architecture.
+
+Keep:
+
+/api/paypal/create-order
+/api/paypal/capture-order
+/api/paypal/webhook
+
+Keep all existing:
+
+- server-side amount verification
+- currency verification
+- PayPal status verification
+- merchant verification
+- idempotency
+- ledger protection
+- receipt protection
+- ranking update protection
+
+After implementation, test the complete flow rather than only running TypeScript.
+
+Report:
+
+A. Files changed
+B. Root cause
+C. Fix
+D. Tests performed
+E. Results
+F. Any remaining issue

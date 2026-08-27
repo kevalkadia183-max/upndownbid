@@ -1,0 +1,377 @@
+Update the UpnDownBid.lol user-facing terminology to use "BOOST" and "PUSH DOWN" instead of "BID" and "PENALTY".
+
+IMPORTANT:
+This is a terminology/UX copy update only.
+
+DO NOT:
+- Change the database schema
+- Change APIs
+- Change ranking calculations
+- Change payment logic
+- Change campaign logic
+- Change business rules
+- Redesign the UI
+- Change the existing colors/layout
+- Remove any functionality
+
+The underlying system must continue working exactly as it currently does.
+
+==================================================
+1. COMMUNITY POSITIVE ACTION → BOOST
+==================================================
+
+Replace user-facing references to:
+
+BID → BOOST
+Bids → Boosts
+Bid amount → Boost amount
+Community bid → Community boost
+Community bids → Community boosts
+Place Bid → BOOST
+Bid this product → Boost this product
+
+Examples:
+
+Instead of:
+
+[ BID ]
+
+show:
+
+[ ↗ BOOST ]
+
+Instead of:
+
+"Community Support"
+
+use:
+
+"BOOSTS"
+
+Instead of:
+
+"Bid amount"
+
+use:
+
+"Boost amount"
+
+The meaning should be:
+
+"Boost this product to help it rise in the rankings."
+
+==================================================
+2. NEGATIVE ACTION → PUSH DOWN
+==================================================
+
+Replace user-facing references to:
+
+PENALTY → PUSH DOWN
+Penalties → Push Downs
+Penalty amount → Push Down amount
+Apply Penalty → Push Down
+
+Examples:
+
+Instead of:
+
+[ PENALTY ]
+
+show:
+
+[ ↘ PUSH DOWN ]
+
+Instead of:
+
+"Penalties (2)"
+
+show:
+
+"PUSH DOWNS (2)"
+
+Instead of:
+
+"Penalty amount"
+
+show:
+
+"Push Down amount"
+
+The meaning should be:
+
+"Push this product down by reducing its ranking power."
+
+==================================================
+3. EFFECTIVE BID → RANKING POWER
+==================================================
+
+Replace the user-facing term:
+
+"Effective Bid"
+
+with:
+
+"RANKING POWER"
+
+Example:
+
+RANKING POWER
+$251
+
+Do NOT change the underlying calculation.
+
+The existing calculation must remain:
+
+OWNER BID
++ COMMUNITY SUPPORT/BIDS
+- PENALTIES
+= EFFECTIVE BID
+
+Only the user-facing label changes.
+
+==================================================
+4. OWNER'S INITIAL CONTRIBUTION
+==================================================
+
+For the product owner's initial contribution, use:
+
+"CLAIM"
+
+where appropriate.
+
+Examples:
+
+"Claim #1"
+
+"Claim amount"
+
+"Starting claim"
+
+"Claim this position"
+
+Do not force "Claim" into places where it makes the UI confusing.
+
+The owner contribution must continue using the existing backend bid/owner-bid logic.
+
+==================================================
+5. PRODUCT CARD
+==================================================
+
+Update product cards to look conceptually like:
+
+Makunto
+AI Tools
+
+BOOSTS 0
+PUSH DOWNS 0
+RATING 0.0
+
+RANKING POWER
+$251
+
+[ ↗ BOOST ]    [ ↘ PUSH DOWN ]
+
+Keep the existing card design, spacing, colors, typography, and layout.
+
+Only update the wording/icons where necessary.
+
+==================================================
+6. BOOST DIALOG
+==================================================
+
+When the user clicks BOOST, the dialog should clearly explain:
+
+"Help this product rise"
+
+"Choose an amount to boost this product's ranking."
+
+Use:
+
+Boost amount
+
+and a clear CTA:
+
+BOOST
+
+Do not call it "Place Bid" anywhere in this flow.
+
+==================================================
+7. PUSH DOWN DIALOG
+==================================================
+
+When the user clicks PUSH DOWN, explain:
+
+"Push this product down"
+
+"Choose an amount to reduce this product's ranking power."
+
+Use:
+
+Push Down amount
+
+and CTA:
+
+PUSH DOWN
+
+Keep the existing reason/context field.
+
+The user should still be able to explain why they are pushing the product down.
+
+==================================================
+8. HOME PAGE
+==================================================
+
+Update all relevant homepage labels.
+
+Examples:
+
+"Community Support" → "COMMUNITY BOOSTS"
+
+"Penalties" → "PUSH DOWNS"
+
+"Effective Bid" → "RANKING POWER"
+
+"Place Bid" → "BOOST"
+
+"Apply Penalty" → "PUSH DOWN"
+
+Make sure there are no leftover visible "BID" or "PENALTY" labels referring to community actions.
+
+==================================================
+9. PRODUCT DETAIL PAGE
+==================================================
+
+Update:
+
+- Ranking Power
+- Boost count
+- Push Down count
+- Boost history
+- Push Down history
+- Action buttons
+- Dialog titles
+- Confirmation messages
+- Activity feed
+- Review/reason labels
+- Any explanatory text
+
+Example:
+
+COMMUNITY ACTIVITY
+
+↗ Keval boosted this product by $10
+
+↘ Someone pushed this product down by $5
+
+Use the existing anonymous/public identity behavior. Do not introduce login.
+
+==================================================
+10. CAMPAIGN / RANKING LANGUAGE
+==================================================
+
+Use natural language such as:
+
+"Boost to rise."
+
+"Push Down to reduce ranking power."
+
+"Products rise through community boosts."
+
+"Products fall when the community pushes them down."
+
+"Highest Ranking Power wins this week's campaign."
+
+Do not describe the system as an auction.
+
+==================================================
+11. NO LOGIN
+==================================================
+
+Do NOT add or restore:
+
+- Login
+- Sign up
+- Profile
+- Account
+- Authentication UI
+
+The application remains publicly accessible without login.
+
+==================================================
+12. CONSISTENCY CHECK
+==================================================
+
+Search the entire frontend for user-facing occurrences of:
+
+Bid
+Bids
+Penalty
+Penalties
+Effective Bid
+Place Bid
+Apply Penalty
+
+Replace them where they refer to the community actions.
+
+IMPORTANT:
+
+Do not blindly replace internal variable names, database columns, API fields, or backend identifiers.
+
+For example, these may remain internally:
+
+ownerBid
+bidAmount
+penaltyAmount
+effectiveBid
+
+because changing internal identifiers is unnecessary and could introduce bugs.
+
+Only change user-facing text.
+
+==================================================
+13. ACCESSIBILITY
+==================================================
+
+Update:
+
+- Button labels
+- aria-labels
+- Tooltips
+- Screen-reader text
+
+so that they say BOOST or PUSH DOWN appropriately.
+
+Examples:
+
+"Boost Makunto"
+
+"Push Makunto down"
+
+==================================================
+14. FINAL VALIDATION
+==================================================
+
+After the changes:
+
+1. Run typecheck.
+2. Run the existing tests.
+3. Build the application.
+4. Verify desktop.
+5. Verify mobile.
+6. Click BOOST on a product.
+7. Confirm the correct Boost dialog opens.
+8. Click PUSH DOWN on a product.
+9. Confirm the correct Push Down dialog opens.
+10. Verify the existing ranking calculation has not changed.
+11. Verify campaign functionality has not changed.
+12. Verify no login/signup UI has returned.
+
+Do not make any unrelated changes.
+
+At the end, report:
+
+- Files changed
+- User-facing terminology changed
+- Tests passed
+- Build status
+- Confirmation that backend calculations/business logic were NOT changed

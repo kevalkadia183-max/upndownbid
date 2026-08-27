@@ -1,0 +1,137 @@
+FINAL CLAIM FLOW REQUIREMENT — IMPORTANT
+
+Simplify the claim flow further.
+
+After the user successfully authenticates (Google or email), DO NOT show an intermediate "Your owner account is ready" screen.
+
+DO NOT require the user to click another "Continue" button.
+
+DO NOT send the user back to the campaign page.
+
+DO NOT make the user scroll.
+
+Immediately resume the pending claim and start the PayPal checkout.
+
+FINAL FLOW:
+
+PUBLIC CAMPAIGN
+    ↓
+[ CLAIM #1 ]
+    ↓
+CLAIM DETAILS
+    - Claim amount
+    - Website/product
+    - Owner email
+    - Owner name
+    ↓
+[ CONTINUE ]
+    ↓
+AUTHENTICATION
+    - Google
+    - OR email/password
+    ↓
+AUTH SUCCESS
+    ↓
+AUTOMATICALLY RESTORE PENDING CLAIM
+    ↓
+AUTOMATICALLY CREATE/INITIALIZE PAYPAL ORDER
+    ↓
+SHOW PAYPAL CHECKOUT
+    ↓
+USER APPROVES PAYMENT
+    ↓
+SERVER CAPTURES + VERIFIES PAYMENT
+    ↓
+FINALIZE CLAIM
+    ↓
+SUCCESS
+
+There must be NO manual step between authentication and PayPal.
+
+Specifically:
+
+After Google OAuth callback succeeds:
+
+1. Establish the authenticated session.
+2. Verify the session is authenticated.
+3. Restore the pending claim from the secure pending-claim state.
+4. Verify the pending claim is still valid.
+5. Create the PayPal order through the existing /api/paypal/create-order flow.
+6. Automatically transition the UI to the PayPal payment step.
+7. Render the PayPal checkout.
+8. The user only needs to approve/pay.
+
+Do not show:
+
+"Your owner account is ready"
+
+Do not show:
+
+"Continue to payment"
+
+Do not show another:
+
+"CLAIM #1"
+
+The authentication step should effectively become:
+
+LOGIN/SIGNUP
+    ↓
+PAYPAL
+
+The only user action after authentication should be the actual PayPal approval/payment.
+
+IMPORTANT:
+
+If PayPal SDK/order initialization takes a moment, show a proper loading state:
+
+"Preparing secure payment..."
+
+Then display PayPal.
+
+If initialization fails, show:
+
+"Unable to start payment. Please try again."
+
+with a Retry button.
+
+Never silently do nothing.
+
+Preserve the pending:
+- campaign ID
+- listing/product ID
+- claim amount
+- owner email
+- owner name
+- claim intent
+
+across OAuth.
+
+If the user is already authenticated when they click CLAIM #1, skip authentication entirely and go directly to PayPal after validating the claim.
+
+FINAL UX:
+
+New user:
+
+CLAIM #1
+→ Details
+→ Google/Email signup
+→ PayPal
+→ Payment
+→ Success
+
+Existing logged-in user:
+
+CLAIM #1
+→ Details
+→ PayPal
+→ Payment
+→ Success
+
+No second login.
+No "account ready" screen.
+No extra continue button after login.
+No unnecessary scrolling.
+No duplicate claim action.
+
+Audit and modify the existing implementation accordingly. Do not rewrite the PayPal security, server-side verification, idempotency, ledger, receipt, webhook, or ranking-finalization architecture.

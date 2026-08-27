@@ -1,0 +1,208 @@
+UPDOWNBID — FINAL PRE-LAUNCH AUDIT
+
+We are preparing UpDownBid for production launch.
+
+Do NOT make unrelated changes.
+
+Perform a complete final pre-launch audit and fix only issues that prevent a safe production launch.
+
+CHECK 1 — AUTHENTICATION / CLAIM FLOW
+- Fresh user can start a claim.
+- User is sent to login when authentication is required.
+- Google login works.
+- After successful login, the user goes DIRECTLY to the payment page for the pending claim.
+- Do NOT send the user back to the homepage.
+- Do NOT require a refresh.
+- Do NOT require the user to click another Claim button.
+- Do NOT ask for email/name again when authentication already provides the account identity.
+- Pending claim survives authentication.
+- Pending claim is invalidated if its campaign has ended.
+
+CHECK 2 — PAYMENT PAGE
+- Correct listing is shown.
+- Correct campaign is shown.
+- Correct claim amount is shown.
+- Payment cannot be submitted twice.
+- Refresh/reload does not create duplicate orders.
+- Cancelled PayPal checkout returns cleanly.
+- Failed payment returns a useful error.
+- Successful payment can only be finalized by server-side verification.
+
+CHECK 3 — ACCOUNT ISOLATION
+Test with multiple users.
+
+User A:
+- owns listing A
+
+User B:
+- owns listing B
+
+Verify:
+- A cannot edit B.
+- B cannot edit A.
+- A cannot access B's owner data.
+- B cannot access A's owner data.
+- Profile changes affect only the authenticated user.
+- Listing ownership is stored and enforced server-side.
+
+CHECK 4 — RANKING
+Verify:
+- claim
+- boost
+- push down
+- ranking power
+- weekly campaign boundaries
+- ended campaign protection
+- duplicate transactions
+- concurrent claims
+
+No client-side value should be trusted for financial/ranking state.
+
+CHECK 5 — EXTERNAL DOMAIN CLICK TRACKING
+Verify:
+- displayed domain is correct.
+- clicking the domain opens the intended external website.
+- click tracking records the event.
+- click count increments correctly.
+- listing ownership is not affected by click tracking.
+
+CHECK 6 — FEEDBACK
+Verify the floating feedback button works on every major page.
+
+Categories:
+- Payment failed or looks wrong
+- Something is broken
+- Other feedback
+
+The user can describe the problem in the text box.
+
+When logged in, automatically associate the feedback with the authenticated account internally.
+
+Do not require the user to re-enter their email.
+
+Attach useful internal context such as:
+- current page
+- listing ID if available
+- campaign ID if available
+- timestamp
+- authenticated user ID if available
+
+Do NOT collect passwords, card numbers, PayPal credentials, or other sensitive payment information.
+
+CHECK 7 — POLICIES
+Verify these pages exist and are reachable:
+- Terms & Conditions
+- Privacy Policy
+- Refund & Cancellation Policy
+- Prohibited Content / Safety Policy
+
+Verify payment confirmation links to the applicable policy.
+
+CHECK 8 — PAYPAL SANDBOX
+Run automated PayPal tests.
+
+Verify:
+- successful order creation
+- capture handling
+- cancellation handling
+- error handling
+- amount mismatch rejection
+- currency mismatch rejection
+- duplicate webhook idempotency
+- duplicate capture protection
+- terminal payment status protection
+- merchant/payee verification
+
+Do not perform a real payment.
+
+CHECK 9 — PAYPAL LIVE CONFIGURATION
+Verify that the following production configuration exists in Replit Secrets:
+
+PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET
+PAYPAL_ENVIRONMENT=live
+PAYPAL_WEBHOOK_ID_LIVE
+PAYPAL_MERCHANT_ID
+PAYMENT_MODE=live
+PAYMENT_PROVIDER=paypal
+PAYMENTS_LIVE_ENABLED=true
+
+If any required production secret is missing, STOP and report it.
+
+Do not invent credentials.
+
+CHECK 10 — NO SANDBOX IN PRODUCTION
+Search the entire payment implementation for:
+- sandbox PayPal API URLs
+- sandbox SDK configuration
+- sandbox credentials
+- development payment bypasses
+- test-only payment flags
+
+Production payment code must use PayPal Live.
+
+CHECK 11 — WEBHOOK
+Verify:
+
+https://www.upndownbid.lol/api/paypal/webhook
+
+Verify:
+- HTTPS
+- correct Live webhook configuration
+- correct Live webhook ID
+- signature verification
+- expected event subscriptions
+- HTTP 2xx response
+- duplicate delivery idempotency
+
+A repeated webhook must never create another ledger entry, receipt, claim, or ranking update.
+
+CHECK 12 — BUILD / TEST
+Run:
+- typecheck
+- automated tests
+- production build
+- any existing payment/security tests
+
+Fix failures that affect production readiness.
+
+Do not weaken tests to make them pass.
+
+CHECK 13 — FINAL PRODUCTION SAFETY
+Verify:
+- no secrets committed to Git
+- no credentials in frontend code
+- no credentials in logs
+- no payment bypass
+- no admin-only payment shortcut exposed to normal users
+- HTTPS enabled
+- production domain configured
+- error states are user-friendly
+- loading states prevent accidental duplicate submissions
+
+IMPORTANT:
+Do NOT perform a real $5 transaction.
+
+At the end, give me a concise launch report:
+
+AUTH FLOW: PASS/FAIL
+PENDING CLAIM: PASS/FAIL
+ACCOUNT ISOLATION: PASS/FAIL
+RANKING: PASS/FAIL
+CLICK TRACKING: PASS/FAIL
+FEEDBACK: PASS/FAIL
+POLICIES: PASS/FAIL
+PAYPAL SANDBOX: PASS/FAIL
+PAYPAL LIVE CONFIG: PASS/FAIL
+LIVE WEBHOOK: PASS/FAIL
+SECURITY: PASS/FAIL
+BUILD: PASS/FAIL
+AUTOMATED TESTS: PASS/FAIL
+
+Then give:
+
+READY TO PUBLISH: YES/NO
+
+If NO, list only the blocking issues.
+
+If YES, do not make any additional feature changes.

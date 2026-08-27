@@ -1,0 +1,1176 @@
+UPNDOWNBID — COMPLETE HOMEPAGE + BIDDING UX UPDATE
+
+IMPORTANT:
+Implement all requirements below as ONE cohesive update.
+
+Use the screenshots provided in this conversation as visual/UX references.
+
+The first reference shows the interactive bidding/claim module.
+The second reference shows the current UpnDownBid homepage that must be replaced.
+The third reference shows the Live Campaign Rankings product cards where BID and PENALTY actions must be added.
+
+Do NOT copy Outbid.lol's branding, logo, proprietary code, exact wording, or proprietary assets.
+Use the screenshots only as UX/layout inspiration.
+
+========================================================
+1. REPLACE THE CURRENT HERO / ADD YOUR PRODUCT SECTION
+========================================================
+
+REMOVE the current homepage hero block containing:
+
+"The public ledger."
+
+"A fresh seven-day public bid starts every Sunday.
+Products rise with support and fall with penalties."
+
+[ + ADD YOUR PRODUCT ]
+
+HOW IT WORKS
+
+Do NOT simply place the new bidding module underneath it.
+
+The current hero/add-product block must be replaced by the new interactive CURRENT CAMPAIGN bidding module.
+
+The bidding module itself becomes the product-entry mechanism.
+
+Do NOT leave a second large "ADD YOUR PRODUCT" CTA in this location.
+
+========================================================
+2. HOMEPAGE STRUCTURE
+========================================================
+
+The homepage should follow this structure:
+
+HEADER
+
+UpnDownBid logo
+Search
+Menu
+
+↓
+
+🏆 LAST WEEK'S WINNER
+
+Previous campaign winner
+Final effective bid
+Campaign number
+
+↓
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #X
+Countdown
+
+↓
+
+INTERACTIVE OWNER BIDDING MODULE
+
+↓
+
+LIVE CAMPAIGN RANKINGS
+
+↓
+
+RECENT ACTIVITY
+
+↓
+
+WINNER HISTORY
+
+The purpose should be immediately obvious:
+
+1. Who won last week?
+2. What campaign is live now?
+3. When does it end?
+4. Who is currently #1?
+5. How much is #1?
+6. How much do I need to bid?
+7. Where do I enter my website?
+8. What category is it?
+9. What rank will my bid achieve?
+10. How can I support or penalize existing products?
+
+========================================================
+3. LAST WEEK'S WINNER
+========================================================
+
+Keep the winner history system.
+
+At the top of the homepage show:
+
+🏆 LAST WEEK'S WINNER
+
+Product Name
+
+Campaign #X Winner
+
+Final Effective Bid:
+$XXX
+
+The previous winner must remain visible even after the new campaign starts.
+
+Keep historical winners permanently stored.
+
+The newest previous winner should always be displayed prominently.
+
+========================================================
+4. CURRENT WEEKLY CAMPAIGN
+========================================================
+
+Every campaign runs for exactly 7 days.
+
+Example:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in:
+6d 16h 01m 38s
+
+New products start at:
+$5
+
+"Bid more to move higher in this week's live race."
+
+When the campaign expires:
+
+1. Stop all bidding.
+2. Stop all support.
+3. Stop all penalties.
+4. Determine the winner.
+5. Store the winner permanently.
+6. Archive the campaign.
+7. Start a fresh campaign.
+8. New products can enter with a fresh $5 owner bid.
+
+Previous campaign financial values MUST NOT carry into the new campaign.
+
+Winner history MUST remain available.
+
+========================================================
+5. MAIN INTERACTIVE OWNER BID MODULE
+========================================================
+
+Replace the current "ADD YOUR PRODUCT" hero with this.
+
+Design approximately like:
+
+--------------------------------------------
+
+🔥 THIS WEEK'S CAMPAIGN             Campaign #13
+
+New spots start at $5.
+Bid more to move higher in this week's live race.
+
+--------------------------------------------
+
+BID $5 → PROJECTED #11
+
+        [ − ]     $5     [ + ]
+
+Current #1     $250
+Reach #1 from  $250
+
+--------------------------------------------
+
+WEBSITE / APP URL
+
+[ 🌐 https://yourproduct.com ]
+
+--------------------------------------------
+
+CATEGORY
+
+[ SEO & AI Visibility ▼ ]
+
+--------------------------------------------
+
+YOUR PROJECTED RANK
+
+#11
+
+Based on the live effective-bid ranking,
+including community support and penalties.
+
+--------------------------------------------
+
+[ BID FOR #11 ]
+
+--------------------------------------------
+
+The bid amount must be interactive.
+
+Users can:
+
+- tap +
+- tap -
+- directly enter an amount
+- see projected rank update instantly
+
+========================================================
+6. CRITICAL #1 PRICE RULE
+========================================================
+
+If the current #1 effective bid is:
+
+$250
+
+Then:
+
+Reach #1 from $250
+
+NOT $255.
+
+Equal effective bid IS allowed to claim #1.
+
+Examples:
+
+Current #1 = $250
+
+Bid $5
+→ calculate projected rank
+
+Bid $100
+→ calculate projected rank
+
+Bid $249
+→ below #1
+
+Bid $250
+→ projected #1
+
+Bid $251
+→ projected #1
+
+Do NOT automatically add the $5 minimum increment to the current #1 amount.
+
+The minimum bid of $5 is the minimum amount required to enter a new product.
+
+It must NOT artificially change the #1 threshold.
+
+========================================================
+7. DYNAMIC BID TEXT
+========================================================
+
+The headline must dynamically change.
+
+If the user's bid would result in #11:
+
+BID $5 → PROJECTED #11
+
+Primary button:
+
+[ BID FOR #11 ]
+
+If the user's bid would result in #3:
+
+BID $100 → PROJECTED #3
+
+Button:
+
+[ BID FOR #3 ]
+
+If the user's bid would result in #1:
+
+CLAIM #1 FOR $250
+
+Button:
+
+[ CLAIM #1 ]
+
+Do NOT always display "Claim #1."
+
+Only use CLAIM #1 when the current entered bid actually produces #1.
+
+========================================================
+8. CURRENT #1
+========================================================
+
+Always dynamically display:
+
+Current #1    $250
+
+This must come from the live campaign.
+
+Also display:
+
+Reach #1 from $250
+
+The value must dynamically update whenever the leaderboard changes.
+
+========================================================
+9. WEBSITE / APP URL
+========================================================
+
+The user must enter:
+
+WEBSITE / APP URL
+
+Example:
+
+https://example.com
+
+URL is required.
+
+Validate the URL.
+
+Do not create a product until the URL is valid.
+
+If the URL already exists in the current campaign, DO NOT create a duplicate.
+
+Instead show:
+
+"This product is already competing."
+
+Current rank:
+#4
+
+Current effective bid:
+$820
+
+Then allow the owner to increase their owner bid.
+
+========================================================
+10. CATEGORY
+========================================================
+
+The user must select a category.
+
+Example categories:
+
+AI
+AI Agents & Infrastructure
+SaaS
+Developer Tools
+Productivity
+Marketing
+Finance
+E-commerce
+Education
+Health
+Climate
+Social
+Entertainment
+Other
+
+Do NOT use the category search/filter UI as the primary product-entry mechanism.
+
+The required product-entry fields are:
+
+URL
+Category
+Owner Bid
+
+========================================================
+11. OWNER BID VS COMMUNITY SUPPORT
+========================================================
+
+These are completely different actions.
+
+OWNER BID:
+
+Money paid by the product owner to enter or increase the product's owner bid.
+
+COMMUNITY SUPPORT:
+
+Money paid by another user to support an existing product.
+
+PENALTY:
+
+Money paid by another user to apply a negative signal against an existing product.
+
+Never mix these values.
+
+========================================================
+12. EFFECTIVE BID FORMULA
+========================================================
+
+Ranking must use:
+
+Effective Bid =
+Owner Bid
++
+Community Support
+-
+Penalties
+
+Example:
+
+Owner Bid:
+$180
+
+Community Support:
++$119
+
+Penalties:
+-$22
+
+Effective Bid:
+$277
+
+The ranking must be based on Effective Bid.
+
+========================================================
+13. NEW PRODUCT
+========================================================
+
+For a completely new product:
+
+Effective Bid =
+Owner Bid
+
+Example:
+
+Owner bid:
+$100
+
+Support:
+$0
+
+Penalties:
+$0
+
+Effective bid:
+$100
+
+Calculate projected rank against the current live campaign.
+
+========================================================
+14. EXISTING PRODUCT OWNER BID
+========================================================
+
+If the URL already exists and the product owner wants to increase their bid:
+
+Calculate:
+
+New Owner Bid
++
+Existing Support
+-
+Existing Penalties
+=
+New Effective Bid
+
+Show projected rank before checkout.
+
+Do NOT create duplicate listings.
+
+========================================================
+15. BACKEND RANKING AUTHORITY
+========================================================
+
+The frontend may calculate a projected rank for instant UI feedback.
+
+BUT THE BACKEND IS AUTHORITATIVE.
+
+Before checkout:
+
+1. Verify current campaign.
+2. Verify campaign is active.
+3. Retrieve latest product data.
+4. Retrieve latest support.
+5. Retrieve latest penalties.
+6. Recalculate effective bids.
+7. Recalculate projected rank.
+8. Validate the submitted amount.
+9. Create payment session.
+
+Never trust a frontend-submitted:
+
+- rank
+- effective bid
+- campaign ID
+- product ID
+- amount
+
+After verified payment:
+
+- record transaction
+- update bid/support/penalty
+- recalculate effective bid
+- recalculate rankings
+- update activity
+- update reviews/signals
+
+========================================================
+16. LIVE CAMPAIGN RANKINGS
+========================================================
+
+Keep the existing:
+
+LIVE CAMPAIGN RANKINGS
+
+Example:
+
+11 products entered
+
+Each product card should show:
+
+#1
+
+Logo
+
+Product name
+Category
+Description
+
+--------------------------------
+
+SUPPORT
+↑ 0
+
+PENALTY
+↓ 0
+
+RATING
+★ 0.0 (0)
+
+EFFECTIVE BID
+$250
+
+--------------------------------
+
+[ ↑ BID ]     [ ↓ PENALTY ]
+
+========================================================
+17. ADD BID BUTTON TO EVERY PRODUCT
+========================================================
+
+EVERY product card must have:
+
+[ ↑ BID ]
+
+This button is for COMMUNITY SUPPORT of that existing product.
+
+When clicked, open a dedicated support/bid interface for THAT product.
+
+Do NOT open the generic "Add Product" form.
+
+Example:
+
+BID ON MAKUNTO
+
+Current rank:
+#1
+
+Current effective bid:
+$250
+
+Support amount:
+
+[ − ] $5 [ + ]
+
+or direct amount entry.
+
+New effective bid:
+$255
+
+Projected rank:
+#1
+
+Then:
+
+[ CONTINUE TO PAYMENT ]
+
+After successful verified payment:
+
+Community Support:
++$5
+
+Recalculate effective bid.
+
+Recalculate ranking.
+
+Update the UI.
+
+========================================================
+18. BID REASON / REVIEW
+========================================================
+
+When supporting an existing product, allow the user to provide a reason.
+
+Example:
+
+Why are you supporting this product?
+
+[ Great product for AI developers ]
+
+This becomes part of the public activity/review history.
+
+Example:
+
+SUPPORT
++$25
+
+"Great product for AI developers."
+
+========================================================
+19. PENALTY BUTTON
+========================================================
+
+EVERY product card must also have:
+
+[ ↓ PENALTY ]
+
+When clicked:
+
+APPLY PENALTY
+
+Product:
+Makunto
+
+Current effective bid:
+$250
+
+Penalty:
+
+[ − ] $5 [ + ]
+
+or direct amount entry.
+
+Reason:
+
+[ Select reason ▼ ]
+
+Options:
+
+Poor product
+Misleading description
+Bad experience
+Spam
+Not useful
+Other
+
+Optional explanation:
+
+[ Why are you applying this penalty? ]
+
+Show:
+
+Current effective bid:
+$250
+
+Penalty:
+-$10
+
+New effective bid:
+$240
+
+Projected rank:
+#2
+
+Then:
+
+[ CONTINUE TO PAYMENT ]
+
+========================================================
+20. PENALTY MUST REQUIRE PAYMENT
+========================================================
+
+Penalty is NOT free.
+
+If the user applies:
+
+-$10 penalty
+
+They must pay:
+
+$10
+
+Only a verified successful payment can create the penalty.
+
+This prevents unlimited/free manipulation.
+
+========================================================
+21. PENALTY REVIEW
+========================================================
+
+The penalty reason becomes part of the product's public history.
+
+Example:
+
+PENALTY
+-$10
+
+Reason:
+"Product description does not match the actual service."
+
+Users should be able to see historical support and penalty activity on the product page.
+
+========================================================
+22. PRODUCT DETAIL PAGE
+========================================================
+
+The individual product page must also have:
+
+[ ↑ BID ]
+
+[ ↓ PENALTY ]
+
+These must use the same backend logic as the homepage product cards.
+
+Do not create separate ranking systems.
+
+========================================================
+23. RANKING UPDATE EXAMPLE
+========================================================
+
+Before:
+
+#1 Makunto
+$250
+
+#2 Lumen
+$201
+
+Someone supports Lumen with $60.
+
+Lumen becomes:
+
+Owner bid:
+$201
+
+Support:
++$60
+
+Effective:
+$261
+
+New ranking:
+
+#1 Lumen — $261
+#2 Makunto — $250
+
+The UI should update automatically.
+
+========================================================
+24. NO LOGIN / NO SIGNUP
+========================================================
+
+DO NOT add:
+
+Login
+Sign Up
+Profile
+Account
+Authentication
+
+Users do NOT need an account.
+
+Users can:
+
+- add products
+- place owner bids
+- support products
+- apply penalties
+- provide reasons/reviews
+
+Collect email during checkout/payment.
+
+Do not show a login icon in the header.
+
+========================================================
+25. CHECKOUT
+========================================================
+
+Before payment show a confirmation.
+
+For owner bid:
+
+PRODUCT:
+Makunto
+
+CAMPAIGN:
+#13
+
+OWNER BID:
+$250
+
+PROJECTED RANK:
+#1
+
+For community support:
+
+PRODUCT:
+Makunto
+
+SUPPORT:
++$25
+
+NEW EFFECTIVE BID:
+$275
+
+PROJECTED RANK:
+#1
+
+For penalty:
+
+PRODUCT:
+Makunto
+
+PENALTY:
+-$10
+
+NEW EFFECTIVE BID:
+$240
+
+PROJECTED RANK:
+#2
+
+Important message:
+
+"Your projected position is based on the current live campaign. Another verified transaction may change the ranking before your payment is completed."
+
+Then:
+
+[ CONTINUE TO PAYMENT ]
+
+Only successful verified payment changes the ranking.
+
+========================================================
+26. MOBILE DESIGN
+========================================================
+
+This is primarily a mobile-first product.
+
+Use the screenshots as the visual reference.
+
+Keep:
+
+- warm off-white background
+- coral/orange accent
+- dark typography
+- rounded cards
+- subtle borders
+- clean modern typography
+- generous spacing
+- large touch targets
+
+The interactive bidding panel should be visually dominant.
+
+The product cards should remain compact.
+
+Do NOT allow horizontal scrolling.
+
+Make sure the fixed bottom navigation never covers:
+
+- bid amount
+- category
+- projected rank
+- Bid button
+- Penalty button
+
+Add adequate bottom padding.
+
+========================================================
+27. DESKTOP DESIGN
+========================================================
+
+On desktop:
+
+Center the main campaign bidding module.
+
+Use a clean premium card.
+
+Example:
+
+THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in 6d 16h
+
+CLAIM #1 FOR $250
+
+[-] $250 [+]
+
+Current #1: $250
+
+Website URL
+[________________]
+
+Category
+[ AI ▼ ]
+
+PROJECTED RANK
+#1
+
+[ CLAIM #1 ]
+
+Then below:
+
+LIVE CAMPAIGN RANKINGS
+
+========================================================
+28. MOBILE BOTTOM NAV
+========================================================
+
+Keep navigation simple.
+
+Do NOT include:
+
+Profile
+Login
+Account
+
+Recommended:
+
+DISCOVER
+
+and other genuinely useful navigation items already implemented.
+
+The bottom navigation must not create a duplicate "Add Product" workflow.
+
+========================================================
+29. ADD PRODUCT BUTTON
+========================================================
+
+The large "ADD YOUR PRODUCT" hero button must be removed.
+
+The interactive campaign bidding module replaces it.
+
+If an "Add Product" action is needed elsewhere, it should simply scroll/focus the user to the main bidding module.
+
+Do not create two different product-entry systems.
+
+========================================================
+30. CATEGORY FILTERS
+========================================================
+
+The live rankings may continue to have category filters such as:
+
+ALL
+SEO & AI Visibility
+AI Agents & Infrastructure
+etc.
+
+But these are for browsing/filtering existing products.
+
+They are NOT the product-entry form.
+
+The product-entry form uses:
+
+Website/App URL
+Category
+Owner Bid
+
+========================================================
+31. WINNER SYSTEM
+========================================================
+
+At the end of every 7-day campaign:
+
+Winner =
+product with highest final Effective Bid.
+
+Save:
+
+- winner product
+- final owner bid
+- final support
+- final penalties
+- final effective bid
+- campaign number
+- campaign dates
+
+Show:
+
+🏆 LAST WEEK'S WINNER
+
+Product
+Final Effective Bid
+Campaign
+
+Maintain a permanent Winner History.
+
+The newest winner should always be highlighted.
+
+========================================================
+32. CAMPAIGN RESET
+========================================================
+
+When a campaign ends:
+
+OLD CAMPAIGN:
+
+Archived.
+
+Winner recorded.
+
+NEW CAMPAIGN:
+
+Starts fresh.
+
+New products can enter with $5 minimum owner bid.
+
+Old campaign owner bids/support/penalties MUST NOT be copied into the new campaign.
+
+Historical records remain available.
+
+========================================================
+33. PAYMENT SAFETY
+========================================================
+
+Do not update financial/ranking data merely because a user clicks:
+
+Bid
+Support
+Penalty
+Claim #1
+
+Only verified successful payment should modify the campaign.
+
+Use payment webhooks/server-side verification.
+
+Prevent:
+
+- duplicate transactions
+- replayed payment events
+- fake client-side success
+- negative amounts
+- invalid product IDs
+- expired campaign transactions
+
+========================================================
+34. SANDBOX MODE
+========================================================
+
+Keep the existing sandbox mode for development/testing.
+
+Clearly show:
+
+SANDBOX MODE — NO REAL FUNDS ARE TRANSFERRED
+
+when sandbox is active.
+
+Do not claim real payments occurred in sandbox.
+
+========================================================
+35. IMPORTANT SECURITY RULE
+========================================================
+
+All monetary values and ranking calculations must be server authoritative.
+
+Never trust the browser for:
+
+- price
+- effective bid
+- projected rank
+- product ownership
+- campaign state
+- transaction status
+
+Use database transactions/atomic operations where needed to prevent two simultaneous payments from corrupting rankings.
+
+========================================================
+36. FINAL USER EXPERIENCE
+========================================================
+
+A visitor opens UpnDownBid.
+
+They immediately see:
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+$420
+
+↓
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+Ends in 6d 16h
+
+↓
+
+BID $5 → PROJECTED #11
+
+[-] $5 [+]
+
+Current #1 $250
+Reach #1 from $250
+
+Website/App URL
+[________________]
+
+Category
+[ AI ▼ ]
+
+YOUR PROJECTED RANK
+#11
+
+[ BID FOR #11 ]
+
+↓
+
+LIVE CAMPAIGN RANKINGS
+
+#1 Makunto
+Effective Bid $250
+
+[ ↑ BID ] [ ↓ PENALTY ]
+
+#2 Lumen
+Effective Bid $201
+
+[ ↑ BID ] [ ↓ PENALTY ]
+
+#3 Wildform
+Effective Bid $180
+
+[ ↑ BID ] [ ↓ PENALTY ]
+
+↓
+
+RECENT ACTIVITY
+
+↓
+
+WINNER HISTORY
+
+========================================================
+37. FINAL REQUIREMENT
+========================================================
+
+Implement this as REAL functionality.
+
+Do not create mock buttons.
+Do not create fake ranking calculations.
+Do not create fake payment success.
+Do not create duplicate product-entry flows.
+
+Use the existing UpnDownBid backend, database, campaign system,
+payment system, ranking system, support system, penalty system,
+and winner system wherever possible.
+
+Before finishing:
+
+1. Test new product owner bidding.
+2. Test existing product owner bid increase.
+3. Test community support from product card.
+4. Test penalty from product card.
+5. Test reason/review.
+6. Test projected ranking.
+7. Test #1 claim when current #1 = $250.
+8. Verify $250 can claim #1 when #1 effective bid = $250.
+9. Verify $249 cannot claim #1.
+10. Verify effective bid calculation.
+11. Verify payment verification.
+12. Verify weekly campaign rollover.
+13. Verify winner recording.
+14. Verify new campaign starts fresh at $5.
+15. Verify old winner remains visible.
+16. Test on mobile.
+17. Test on desktop.
+18. Ensure no Login/Signup UI exists.
+19. Ensure no duplicate "Add Product" hero remains.
+20. Ensure every ranking card has BID and PENALTY buttons.
+
+Do not change unrelated functionality.
+Do not redesign the entire application.
+Focus this implementation on the homepage campaign experience,
+owner bidding, community support, penalties, rankings, payments,
+and weekly winner system.

@@ -1,0 +1,471 @@
+FINAL RELEASE GATE — COMPLETE REMAINING UPnDOWNBID TASKS
+
+The current implementation status is:
+
+#25 — Shared test-data protection
+STATUS: COMPLETE / MERGED
+
+#18 — Owner payment + leaderboard integrity
+IMPLEMENTATION: COMPLETE
+TESTS: 13/13 PASS
+TYPECHECK: PASS
+
+Remaining work:
+
+1. Complete owner portal verification (#22)
+2. Formalize/mark the payment-integrity task as completed/merged if the
+   repository/task tracker requires it
+3. Run the complete final release gate
+
+IMPORTANT:
+DO NOT integrate live payments.
+DO NOT add payment credentials.
+DO NOT redesign the application.
+DO NOT add unrelated features.
+
+==================================================
+1. COMPLETE OWNER PORTAL VERIFICATION
+==================================================
+
+Use the existing Clerk implementation.
+
+Test with at least:
+
+OWNER A
+OWNER B
+ANONYMOUS PUBLIC USER
+
+Verify OWNER A:
+
+- Can authenticate successfully after the required Clerk verification.
+- Can access the owner portal.
+- Can see only OWNER A's products.
+- Can edit their profile.
+- Profile changes persist after refresh.
+- Can edit their own listing.
+- Listing changes persist after refresh.
+- Can archive their own listing.
+- Archived listing behaves according to the existing product rules.
+- Can see feedback/reviews for their own product.
+- Can reply to feedback.
+- Owner replies appear publicly.
+- Owner replies remain after refresh.
+- Owner can manage multiple products if the existing system supports it.
+
+==================================================
+2. CROSS-OWNER SECURITY
+==================================================
+
+This is critical.
+
+OWNER A must NOT be able to:
+
+- Open OWNER B's product management page.
+- Edit OWNER B's product.
+- Archive OWNER B's product.
+- Edit OWNER B's profile.
+- Reply to OWNER B's reviews.
+- Access OWNER B's private owner information.
+
+Test both:
+
+- frontend navigation
+- direct API requests
+
+Do not rely on frontend route protection.
+
+Server-side authorization must reject unauthorized access.
+
+Test IDOR-style manipulation by changing:
+
+product_id
+owner_id
+review_id
+
+in requests.
+
+Verify unauthorized requests fail safely.
+
+==================================================
+3. PUBLIC EXPERIENCE
+==================================================
+
+Verify anonymous users still have the frictionless experience.
+
+Without logging in, test:
+
+- Homepage
+- Product browsing
+- Product details
+- Rankings
+- Boost
+- Push Down
+- Push Down reason selection
+- Reviews/feedback
+- Winner history
+- Current campaign
+- Countdown
+- Product submission flow up to the appropriate owner authentication/payment stage
+
+Do NOT accidentally require login for public community actions.
+
+==================================================
+4. OWNER FEEDBACK
+==================================================
+
+Test:
+
+Anonymous user creates Push Down feedback:
+
+Reason:
+Bug
+
+Description:
+"Login button does not work on mobile."
+
+Owner logs in.
+
+Owner sees:
+
+Bug
+"Login button does not work on mobile."
+
+Owner replies:
+
+"Thanks for reporting this. We've fixed it."
+
+Verify public product page displays:
+
+OWNER RESPONSE
+
+"Thanks for reporting this. We've fixed it."
+
+Verify:
+
+- Original feedback remains intact.
+- Owner response is correctly associated with the review.
+- Response persists after refresh.
+- Another owner cannot modify the response.
+
+==================================================
+5. OWNER PROFILE
+==================================================
+
+Test profile editing.
+
+Change:
+
+Name
+Bio
+Company
+Role
+Social links
+
+where those fields exist.
+
+Save.
+
+Refresh.
+
+Verify values persist.
+
+Log out.
+
+Log back in.
+
+Verify values still persist.
+
+Do not expose private owner information publicly unless the existing product/profile rules explicitly allow it.
+
+==================================================
+6. LISTING EDITING
+==================================================
+
+Test editing the owner's listing.
+
+Change appropriate editable fields such as:
+
+- Product name
+- Description
+- Category
+- Logo/image
+- Other existing editable fields
+
+Save.
+
+Refresh.
+
+Verify persistence.
+
+Confirm the public product page reflects the approved changes.
+
+Do not allow owner edits to modify historical financial transactions,
+campaign results, ranking history, or immutable payment records.
+
+==================================================
+7. ARCHIVE BEHAVIOR
+==================================================
+
+Test:
+
+Owner archives their product.
+
+Verify:
+
+- Product is marked archived.
+- Owner can still see it in their portal if that is the intended behavior.
+- Historical campaign/transaction data remains intact.
+- Historical winner/campaign records remain intact.
+- Archived product cannot perform prohibited active-campaign actions.
+- Public visibility follows the existing archive rules.
+
+Do NOT permanently delete historical financial records.
+
+==================================================
+8. PAYMENT-INTEGRITY TASK
+==================================================
+
+The implementation is already technically complete.
+
+Confirm the existing regression suite still proves:
+
+- Failed payments do not affect rankings.
+- Cancelled payments do not affect rankings.
+- Duplicate payment events are safe.
+- Concurrent owner bids are atomic.
+- Leaderboard reads use a consistent snapshot.
+- Lost-response/idempotency replay is protected.
+- Owner bid ledger and leaderboard update remain consistent.
+
+Existing result:
+
+13/13 tests PASS
+
+Do not rewrite working payment-integrity code unnecessarily.
+
+If the project/task tracker has a task such as:
+
+"Prevent owner bid payments from being recorded without the matching
+leaderboard update"
+
+mark it COMPLETE/MERGED only after verifying the implementation and tests.
+
+DO NOT connect a live payment provider.
+
+==================================================
+9. FINAL TEST SUITE
+==================================================
+
+After owner portal verification, run the complete release suite:
+
+- Full API tests
+- Full security tests
+- Payment-integrity tests
+- Concurrency tests
+- Owner authentication tests
+- Owner authorization tests
+- Ranking tests
+- Campaign tests
+- Winner tests
+- Boost tests
+- Push Down tests
+- Review/reply tests
+- Shared test-data protection tests
+
+Record exact results.
+
+==================================================
+10. TYPECHECK + BUILD
+==================================================
+
+Run:
+
+- Workspace typechecks
+- Production build
+- Any existing lint/static analysis checks
+
+Use the actual workflow environment required by the project.
+
+Do not report an environment-specific command failure as an application
+failure without first validating the correct workflow command.
+
+==================================================
+11. BROWSER RELEASE TEST
+==================================================
+
+Run a fresh browser session.
+
+DESKTOP:
+
+Test:
+
+1. Homepage
+2. Current campaign
+3. Last week's winner
+4. Live rankings
+5. Product details
+6. Add product
+7. Boost
+8. Push Down
+9. Push Down reasons
+10. Reviews
+11. Owner login
+12. Owner portal
+13. Product management
+14. Owner reply
+15. Public owner reply
+16. Winner history
+
+MOBILE:
+
+Repeat the critical flows.
+
+Check:
+
+- No horizontal overflow
+- No overlapping buttons
+- No broken dialogs
+- No covered controls
+- No routing errors
+- No console/runtime errors
+- Bottom navigation does not cover content
+
+==================================================
+12. WORKFLOW / SERVICE HEALTH
+==================================================
+
+Review final workflow/service logs.
+
+Check for:
+
+- Application errors
+- Database errors
+- Authentication failures
+- API errors
+- Unexpected exceptions
+- Failed builds
+- Restart loops
+- Broken endpoints
+
+Confirm the affected services are healthy.
+
+==================================================
+13. DATA INTEGRITY
+==================================================
+
+Confirm:
+
+- Test runs cannot modify protected shared records.
+- Historical campaign data remains intact.
+- Winner history remains intact.
+- Financial transaction history remains intact.
+- Owner bid ledger matches applied leaderboard values.
+- No duplicate payment effects exist.
+- No duplicate owner products were accidentally created.
+- No cross-owner data leakage exists.
+
+==================================================
+14. SECURITY RELEASE CHECK
+==================================================
+
+Verify:
+
+- Admin access remains protected.
+- Owner access remains protected.
+- Public actions remain intentionally anonymous.
+- Cross-owner access is denied.
+- IDOR attempts fail.
+- Private owner information is protected.
+- Passwords are never exposed.
+- Clerk authentication is correctly enforced for owner-only actions.
+- Server-side authorization is present.
+- Financial endpoints cannot be manipulated from the client.
+
+==================================================
+15. STRICT CHANGE CONTROL
+==================================================
+
+At this stage, do NOT proactively refactor working code.
+
+Only make changes if:
+
+- A real test fails.
+- A real security issue is discovered.
+- A real production-readiness bug is discovered.
+- A real owner-portal workflow is broken.
+
+For every fix:
+
+1. Identify the defect.
+2. Make the smallest safe change.
+3. Add/update regression coverage.
+4. Re-run the affected test.
+5. Re-run the complete relevant suite.
+
+==================================================
+16. FINAL VERDICT
+==================================================
+
+After everything is complete, provide a release report:
+
+OWNER PORTAL
+PASS / FAIL
+
+CROSS-OWNER SECURITY
+PASS / FAIL
+
+PAYMENT INTEGRITY
+13/13 + final result
+
+SHARED TEST DATA PROTECTION
+PASS / FAIL
+
+API/SECURITY SUITE
+X/X
+
+TYPECHECK
+PASS / FAIL
+
+PRODUCTION BUILD
+PASS / FAIL
+
+DESKTOP BROWSER
+PASS / FAIL
+
+MOBILE BROWSER
+PASS / FAIL
+
+CAMPAIGN/WINNER SYSTEM
+PASS / FAIL
+
+BOOST/PUSH DOWN
+PASS / FAIL
+
+REVIEWS/OWNER REPLIES
+PASS / FAIL
+
+WORKFLOW/SERVICE HEALTH
+PASS / FAIL
+
+REMAINING BLOCKERS
+List only actual release blockers.
+
+NON-BLOCKING FOLLOW-UPS
+List separately.
+
+FINAL DECISION:
+
+READY FOR PAYMENT INTEGRATION
+
+OR
+
+NOT READY — [specific blocker]
+
+IMPORTANT:
+
+If the final decision is READY FOR PAYMENT INTEGRATION,
+STOP THERE.
+
+Do NOT begin payment integration automatically.
+
+The next separate task will be production payment integration.

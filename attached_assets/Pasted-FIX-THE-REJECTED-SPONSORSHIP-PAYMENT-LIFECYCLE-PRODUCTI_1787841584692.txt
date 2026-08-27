@@ -1,0 +1,452 @@
+FIX THE REJECTED SPONSORSHIP PAYMENT LIFECYCLE — PRODUCTION-SAFE
+
+The latest audit rejected the implementation because there is a race condition between:
+
+1. sweepExpiredSponsorships()
+2. PayPal/test-provider payment finalization
+3. sponsorship activation
+
+DO NOT redesign the sponsorship system. Fix the lifecycle race using the existing architecture and preserve all existing functionality.
+
+==================================================
+CRITICAL BUG
+==================================================
+
+Current behavior:
+
+- A sponsorship starts as pending.
+- It has a 15-minute local reservation TTL.
+- sweepExpiredSponsorships() finds stale pending sponsorships.
+- The sweep uses an advisory lock.
+- Payment finalization does NOT use the same advisory lock.
+- Therefore this race is possible:
+
+T1:
+Sweep selects stale pending sponsorship.
+
+T2:
+Payment provider capture succeeds.
+
+T3:
+Payment finalization activates sponsorship and commits.
+
+T4:
+Sweep performs its unconditional UPDATE by sponsorship ID.
+
+T5:
+The now-active sponsorship gets changed to cancelled.
+
+Result:
+Payment = succeeded
+Invoice = generated
+Sponsorship slot = cancelled
+
+THIS MUST NEVER BE POSSIBLE.
+
+==================================================
+GOAL
+==================================================
+
+Make sponsorship state transitions atomic and serialized.
+
+A successfully verified provider payment must NEVER be followed by the expiration sweep cancelling the purchased sponsorship.
+
+The expiration sweep must NEVER overwrite an already-active sponsorship.
+
+==================================================
+REQUIRED FIX #1 — SHARED ADVISORY LOCK
+==================================================
+
+Use the SAME sponsorship-specific advisory lock mechanism for BOTH:
+
+A. sweepExpiredSponsorships()
+B. payment finalization / sponsorship activation
+
+Payment finalization must acquire the sponsorship advisory lock BEFORE:
+
+- reading sponsorship state
+- validating payment state
+- activating sponsorship
+- changing sponsorship lifecycle state
+- writing the final payment state
+- creating/updating invoice state where relevant
+
+The sweep must continue to use that same lock.
+
+The lock must be held through the complete transaction/state transition.
+
+Do NOT merely add a lock around a SELECT while leaving the UPDATE outside the protected transaction.
+
+==================================================
+REQUIRED FIX #2 — DEFENSIVE CONDITIONAL UPDATE
+==================================================
+
+Even with the advisory lock, make the expiration update defensive.
+
+Never do:
+
+UPDATE sponsorships
+SET status = 'cancelled'
+WHERE id = $id;
+
+Instead, only cancel if the sponsorship is STILL stale and pending.
+
+Conceptually:
+
+UPDATE sponsorships
+SET status = 'cancelled', ...
+WHERE id = $id
+  AND status = 'pending'
+  AND expires_at <= now();
+
+Use the actual schema/status names already present in the project.
+
+The sweep must verify the affected row count.
+
+If zero rows were updated, treat the sponsorship as no longer eligible for expiration and do not overwrite anything.
+
+An ACTIVE sponsorship must be impossible to change to CANCELLED through the expiration sweep.
+
+==================================================
+REQUIRED FIX #3 — PAYPAL TTL PROBLEM
+==================================================
+
+The current fixed 15-minute local reservation creates another lifecycle problem.
+
+A legitimate PayPal approval/capture can take longer than the local 15-minute TTL.
+
+The system must NOT interpret:
+
+"local reservation expired"
+
+as automatically meaning:
+
+"the PayPal payment/order is invalid."
+
+Do NOT release a valid provider-created/approved PayPal order solely because the local 15-minute TTL elapsed.
+
+Before freeing the sponsorship capacity for a PayPal sponsorship that has an associated provider order:
+
+- determine the current provider/payment state when appropriate
+- distinguish between:
+  - never approved / abandoned
+  - approved
+  - captured/succeeded
+  - pending
+  - failed
+  - cancelled
+  - unknown/reconciliation-required
+
+If PayPal has already created/approved a valid order, do not blindly cancel the sponsorship solely because 15 minutes passed.
+
+If the provider state cannot safely be determined, preserve the record for reconciliation rather than creating a false cancellation.
+
+Use the existing PayPal integration and provider verification mechanisms. Do not invent a second payment system.
+
+==================================================
+REQUIRED FIX #4 — PAYMENT FINALIZATION RULE
+==================================================
+
+When PayPal capture is verified as successful:
+
+1. Acquire the sponsorship advisory lock.
+2. Begin the appropriate database transaction.
+3. Re-read the sponsorship FOR UPDATE where appropriate.
+4. Re-read the payment/order state.
+5. Verify that this payment actually belongs to this sponsorship.
+6. If sponsorship is pending:
+   - activate it.
+7. If sponsorship is already active:
+   - make the operation idempotent.
+8. If sponsorship was cancelled/expired:
+   - DO NOT silently pretend activation succeeded.
+   - determine whether provider payment succeeded.
+   - route the case through the existing reconciliation/refund/recovery logic.
+9. Persist payment success and sponsorship activation atomically where the schema permits.
+10. Commit.
+11. Only then perform non-critical asynchronous work.
+
+Do not allow a successful payment to produce a successful invoice while leaving the sponsorship in a cancelled state.
+
+==================================================
+REQUIRED FIX #5 — IDEMPOTENCY
+==================================================
+
+Payment finalization must be idempotent.
+
+If the same PayPal webhook/capture/finalization is received twice:
+
+- do not create duplicate sponsorships
+- do not double-charge
+- do not create duplicate invoices
+- do not increment counters twice
+- do not change an active sponsorship back to pending/cancelled
+- safely return the already-finalized result
+
+Use the existing payment/provider identifiers and database constraints where available.
+
+==================================================
+REQUIRED FIX #6 — SWEEP SAFETY
+==================================================
+
+Review sweepExpiredSponsorships() completely.
+
+The sweep must:
+
+- acquire the same advisory lock used by activation
+- re-read the sponsorship state after acquiring the lock
+- verify it is still pending
+- verify it is genuinely expired
+- check provider/payment state when a provider order exists
+- cancel only when it is safe to release the reservation
+- never cancel ACTIVE
+- never overwrite a successful payment
+- never delete payment history
+- never destroy invoice records
+
+If provider status is uncertain:
+
+PRESERVE + RECONCILE.
+
+Do not guess.
+
+==================================================
+REQUIRED TESTS
+==================================================
+
+Add deterministic tests for the exact rejected race.
+
+TEST 1 — CAPTURE BEATS SWEEP
+
+Create:
+
+pending sponsorship
+expired reservation
+provider payment capable of succeeding
+
+Deterministically interleave:
+
+A. sweep obtains/selects sponsorship
+B. payment finalization attempts activation
+C. verify locking behavior
+D. commit both operations in the relevant order
+
+Expected:
+
+payment = succeeded
+sponsorship = active
+sweep cannot subsequently change it to cancelled
+
+==================================================
+
+TEST 2 — SWEEP BEATS ABANDONED PAYMENT
+
+Create:
+
+pending sponsorship
+expired reservation
+no successful provider payment
+
+Run sweep.
+
+Expected:
+
+sponsorship = cancelled/expired according to existing state model
+payment remains correctly represented
+capacity is released
+
+==================================================
+
+TEST 3 — PAYPAL APPROVAL AFTER 15 MINUTES
+
+Simulate:
+
+PayPal order created
+local TTL expires
+PayPal order is still valid/approved
+capture happens after the local 15-minute TTL
+
+Expected:
+
+The system does NOT automatically treat the provider-approved order as abandoned merely because local TTL elapsed.
+
+Successful capture must activate the sponsorship or enter the correct verified recovery path.
+
+==================================================
+
+TEST 4 — PAYPAL SUCCESSFUL CAPTURE
+
+Use provider mode = PayPal.
+
+Simulate:
+
+pending sponsorship
+valid PayPal order
+verified successful capture
+
+Expected:
+
+payment = succeeded
+sponsorship = active
+invoice = generated exactly once
+
+==================================================
+
+TEST 5 — DUPLICATE PAYPAL FINALIZATION
+
+Send the same successful provider event twice.
+
+Expected:
+
+one payment result
+one active sponsorship
+one invoice
+no duplicate financial records
+no duplicate activation
+
+==================================================
+
+TEST 6 — ACTIVE SPONSORSHIP PROTECTION
+
+Create active sponsorship.
+
+Run sweep.
+
+Expected:
+
+status remains ACTIVE.
+
+The sweep must not modify it.
+
+==================================================
+
+TEST 7 — RECONCILIATION SAFETY
+
+Simulate provider state = unknown / cannot safely verify.
+
+Expected:
+
+Do not mark payment as successful.
+Do not falsely cancel a valid provider order.
+Do not destroy payment/invoice evidence.
+Mark/retain the appropriate reconciliation state using the existing architecture.
+
+==================================================
+REQUIRED PAYPAL INTEGRATION COVERAGE
+==================================================
+
+The current tests mostly exercise immediate test-provider completion.
+
+Add actual provider-mode lifecycle coverage around:
+
+pending
+→ PayPal order created
+→ approval
+→ capture
+→ verified success
+→ sponsorship activation
+→ invoice generation
+
+Also test:
+
+pending
+→ TTL elapsed
+→ provider order still valid
+→ capture succeeds
+
+The tests should use mocked/sandbox provider responses where appropriate.
+
+Do not require real money or production PayPal credentials for automated tests.
+
+==================================================
+DATABASE / TRANSACTION REQUIREMENTS
+==================================================
+
+Inspect the actual schema before changing anything.
+
+Do not guess column names.
+
+Do not introduce unnecessary migrations.
+
+Prefer the smallest safe change.
+
+Preserve:
+
+- existing sponsorship records
+- payment records
+- invoice records
+- audit history
+- provider identifiers
+- reconciliation information
+
+Do not delete financial records as part of this fix.
+
+If a migration is genuinely required, explain exactly why before applying it.
+
+==================================================
+IMPORTANT — DO NOT BREAK EXISTING BUSINESS LOGIC
+==================================================
+
+Preserve:
+
+- 4 sponsored/featured slots
+- current campaign logic
+- current campaign leader
+- 7-day sponsorship duration
+- ranking system
+- payment provider architecture
+- PayPal migration
+- invoice generation
+- admin functionality
+- existing demo/video functionality
+- winner/featured display
+- current UI
+
+This task is primarily a backend lifecycle correctness fix.
+
+Do not redesign the frontend unless a small status/display correction is required.
+
+==================================================
+VALIDATION
+==================================================
+
+After implementation:
+
+1. Run the complete existing test suite.
+2. Run all sponsorship tests.
+3. Run all payment tests.
+4. Run all PayPal tests.
+5. Run the new race-condition tests.
+6. Run TypeScript/build checks.
+7. Check for lint/type errors.
+8. Verify database queries/transactions are valid.
+9. Review all changed files.
+10. Confirm no .env, secrets, credentials, logs, or production data were modified/committed.
+
+Do NOT deploy automatically.
+
+==================================================
+FINAL REPORT
+==================================================
+
+At the end, report:
+
+- files changed
+- exact lifecycle race fixed
+- how advisory locking now works
+- how the sweep is prevented from overwriting ACTIVE
+- how PayPal orders older than 15 minutes are handled
+- idempotency behavior
+- tests added
+- tests passed
+- build/typecheck result
+- whether a database migration was required
+- whether deployment is safe to proceed
+
+If any requirement cannot be safely implemented using the existing architecture, STOP and explain the blocker instead of creating a workaround.
+
+The priority is:
+
+PAYMENT CORRECTNESS > SPONSORSHIP CORRECTNESS > EXPIRATION CLEANUP.
+
+A paid sponsorship must never disappear because of a race between payment finalization and expiration cleanup.

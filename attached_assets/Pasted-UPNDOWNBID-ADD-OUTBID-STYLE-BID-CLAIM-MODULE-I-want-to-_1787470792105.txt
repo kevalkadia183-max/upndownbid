@@ -1,0 +1,745 @@
+UPNDOWNBID — ADD OUTBID-STYLE BID/CLAIM MODULE
+
+I want to add a prominent bidding module inspired by the interaction pattern shown in the reference screenshot.
+
+Do NOT copy Outbid.lol's branding, exact design, code, text, logo, or proprietary assets.
+
+Recreate the useful UX concept for UpnDownBid's own weekly campaign system.
+
+==================================================
+1. MAIN BID MODULE
+==================================================
+
+At the top of the current campaign section, create a prominent interactive module.
+
+Example:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+Ends in 5D 18H 24M
+
+Then:
+
+BID FOR #1   [ − ]   $355   [ + ]
+
+The amount must be interactive.
+
+The user can:
+- tap +
+- tap -
+- directly edit the amount
+- use a numeric input/stepper
+
+Minimum bid:
+
+$5
+
+The amount must never go below the current minimum bid.
+
+==================================================
+2. DYNAMIC RANK PREVIEW
+==================================================
+
+As the user changes the bid amount, immediately calculate the projected ranking.
+
+Example:
+
+BID FOR #1
+[-] $355 [+]
+
+If $355 would currently rank #3:
+
+YOUR PROJECTED RANK
+
+#3
+
+If $1,250 would currently rank #1:
+
+YOUR PROJECTED RANK
+
+#1
+
+Do NOT falsely say "Claim #1" unless the entered amount would actually currently place the product at #1.
+
+Use dynamic text:
+
+If projected rank is #1:
+
+CLAIM #1 FOR $1,250
+
+If projected rank is #3:
+
+BID $355 → PROJECTED #3
+
+If projected rank is #10:
+
+BID $50 → PROJECTED #10
+
+==================================================
+3. CURRENT #1 PRICE
+==================================================
+
+Always show the current amount required to currently reach #1.
+
+Example:
+
+Current #1:
+$1,245
+
+To currently reach #1:
+$1,250
+
+This should update whenever the current leaderboard changes.
+
+Use the smallest valid amount that would currently place the product at #1, respecting the minimum bid/increment rules.
+
+==================================================
+4. PRODUCT URL
+==================================================
+
+Under the bid amount:
+
+WEBSITE / APP URL
+
+[ 🌐 Your product URL ]
+
+Example:
+
+https://makunto.com
+
+This is where the user enters the website/app they want to put into the current campaign.
+
+URL is required.
+
+==================================================
+5. CATEGORY
+==================================================
+
+Below the URL:
+
+CATEGORY
+
+[ AI & Infrastructure ▼ ]
+
+Example categories:
+
+AI
+AI Agents & Infrastructure
+SaaS
+Developer Tools
+Productivity
+Marketing
+Finance
+E-commerce
+Education
+Health
+Climate
+Social
+Entertainment
+Other
+
+The category is for classification.
+
+The URL is still required.
+
+==================================================
+6. MAIN ACTION BUTTON
+==================================================
+
+The main button must change based on the situation.
+
+If new product:
+
+[ BID FOR #X ]
+
+Example:
+
+BID FOR #3
+
+If amount would currently place it #1:
+
+[ CLAIM #1 ]
+
+If URL already exists:
+
+[ OUTBID ]
+
+or:
+
+[ INCREASE BID ]
+
+Choose the most understandable wording.
+
+The button must NOT say "Outbid" if the user is adding a completely new product.
+
+==================================================
+7. EXISTING PRODUCT BEHAVIOR
+==================================================
+
+If the entered URL already exists in the current campaign:
+
+Show:
+
+"This product is already competing."
+
+Current rank:
+#4
+
+Current effective bid:
+$820
+
+Then allow the user to increase the bid.
+
+Example:
+
+Your new bid:
+$900
+
+Projected rank:
+#2
+
+Button:
+
+[ INCREASE BID ]
+
+The new transaction must be associated with the existing listing.
+
+Do NOT create a duplicate product.
+
+==================================================
+8. NEW PRODUCT BEHAVIOR
+==================================================
+
+If the URL does NOT exist:
+
+User enters:
+
+URL:
+https://example.com
+
+Category:
+AI
+
+Bid:
+$100
+
+System calculates:
+
+Projected rank:
+#7
+
+Then:
+
+[ BID FOR #7 ]
+
+After checkout/payment succeeds:
+
+The product enters the current campaign.
+
+==================================================
+9. SUPPORT AND PENALTY REMAIN SEPARATE
+==================================================
+
+Do NOT replace the Support and Penalty functionality.
+
+The main module is for:
+
+OWNER / PRODUCT BID
+
+Existing product pages still have:
+
+[ SUPPORT ]
+
+[ APPLY PENALTY ]
+
+Support:
+
++$25
+
+Penalty:
+
+-$10
+
+The ranking formula remains:
+
+OWNER BID
++
+COMMUNITY SUPPORT
+-
+PENALTIES
+=
+EFFECTIVE BID
+
+==================================================
+10. WEEKLY CAMPAIGN RULE
+==================================================
+
+This module ALWAYS operates on the CURRENT LIVE CAMPAIGN.
+
+Example:
+
+Campaign #13
+
+Ends:
+Sunday
+
+Minimum:
+$5
+
+All new bids belong to Campaign #13.
+
+When Campaign #13 ends:
+
+- Stop bidding
+- Determine winner
+- Save winner
+- Start Campaign #14
+- Reset bidding values for the new campaign
+
+The previous campaign's bid values MUST NOT carry over.
+
+==================================================
+11. LAST WEEK'S WINNER
+==================================================
+
+Keep the Last Week's Winner section separate.
+
+Example:
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+
+Campaign #12 Winner
+
+Final Effective Bid:
+$1,420
+
+Then below:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+
+Ends in:
+5D 18H
+
+Then the interactive bidding module.
+
+This makes the difference extremely clear:
+
+LAST WEEK'S WINNER
+=
+historical champion
+
+THIS WEEK'S BID
+=
+current competition
+
+==================================================
+12. REFERENCE-STYLE INFORMATION
+==================================================
+
+Use the same useful concept as the reference:
+
+"New spots start at $5."
+
+Then explain:
+
+"Bid more to move higher on this week's leaderboard."
+
+Also:
+
+"Your final rank can change if another product receives a higher effective bid."
+
+Do NOT copy the exact Outbid.lol wording.
+
+==================================================
+13. BID CALCULATION
+==================================================
+
+The frontend can show a projected rank for responsiveness.
+
+BUT:
+
+The backend must be authoritative.
+
+Before checkout/payment:
+
+Recalculate:
+
+current campaign
+current ranking
+current effective bids
+projected rank
+required amount
+
+If the leaderboard changes while the user is on the page, recalculate again.
+
+Never trust a frontend-submitted rank.
+
+==================================================
+14. RANKING EXAMPLE
+==================================================
+
+Current:
+
+#1 Product A
+$1,250
+
+#2 Product B
+$900
+
+#3 Product C
+$500
+
+User enters:
+
+$600
+
+Show:
+
+PROJECTED RANK
+
+#3
+
+If user changes to:
+
+$905
+
+Show:
+
+PROJECTED RANK
+
+#2
+
+If user enters:
+
+$1,255
+
+Show:
+
+PROJECTED RANK
+
+#1
+
+And:
+
+CLAIM #1 FOR $1,255
+
+==================================================
+15. IMPORTANT: EFFECTIVE BID
+==================================================
+
+The ranking is NOT based only on the entered owner bid.
+
+Calculate:
+
+Effective Bid =
+Owner Bid
++
+Community Support
+-
+Penalties
+
+Example:
+
+Product A
+
+Owner Bid:
+$1,000
+
+Support:
++$300
+
+Penalties:
+-$50
+
+Effective Bid:
+$1,250
+
+Therefore, the bid module must calculate projected ranking against EFFECTIVE BID.
+
+For a new owner bid:
+
+Projected Effective Bid =
+New Owner Bid
++
+Existing Community Support
+-
+Existing Penalties
+
+For a completely new listing:
+
+Projected Effective Bid =
+Owner Bid
+
+==================================================
+16. BID INCREMENT
+==================================================
+
+Create configurable bid increments.
+
+Default:
+
+$5
+
+Examples:
+
+$5
+$10
+$15
+$20
+...
+
+But allow direct amount entry.
+
+Admin should eventually be able to configure:
+
+Minimum bid:
+$5
+
+Minimum increment:
+$5
+
+Do not hardcode these values.
+
+==================================================
+17. MOBILE DESIGN
+==================================================
+
+This module is extremely important on mobile.
+
+It should fit naturally into one screen without becoming confusing.
+
+Recommended structure:
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+Ends in 5D 18H
+
+--------------------------------
+
+CLAIM #1 FOR
+
+[-]   $1,255   [+]
+
+Current #1: $1,250
+
+--------------------------------
+
+Website / App URL
+
+[ https://example.com ]
+
+--------------------------------
+
+Category
+
+[ AI ▼ ]
+
+--------------------------------
+
+YOUR PROJECTED RANK
+
+#1
+
+--------------------------------
+
+[ CLAIM #1 ]
+
+The amount and projected rank should be visually dominant.
+
+==================================================
+18. DESKTOP DESIGN
+==================================================
+
+On desktop, make this a centered premium bidding panel.
+
+Example:
+
+----------------------------------------------
+        🔥 THIS WEEK'S CAMPAIGN
+
+             Campaign #13
+          Ends in 5D 18H 24M
+
+        CLAIM #1 FOR $1,255
+
+          [-] $1,255 [+]
+
+         Current #1: $1,250
+
+       Website / App URL
+       [________________]
+
+       Category
+       [ AI ▼ ]
+
+       PROJECTED RANK
+             #1
+
+           [ CLAIM #1 ]
+----------------------------------------------
+
+Then below:
+
+LIVE RANKINGS
+
+==================================================
+19. CHECKOUT
+==================================================
+
+After clicking the primary button:
+
+Do NOT immediately create the ranking.
+
+Open the checkout confirmation.
+
+Show:
+
+YOUR BID
+
+$1,255
+
+Product:
+
+example.com
+
+Category:
+
+AI
+
+Campaign:
+
+#13
+
+Projected rank:
+
+#1
+
+Important:
+
+"This is your projected position based on the current leaderboard. Another completed transaction can change the ranking."
+
+Then:
+
+[ Continue to Payment ]
+
+After verified payment:
+
+Update the campaign.
+
+==================================================
+20. NO LOGIN
+==================================================
+
+The user does NOT need an account.
+
+Do not add:
+
+Login
+Signup
+Profile
+Authentication
+
+Collect email during checkout only.
+
+==================================================
+21. SANDBOX
+==================================================
+
+Keep development/test payment mode available.
+
+Do not require real payment credentials to test this feature.
+
+Only verified successful transactions update the ranking.
+
+==================================================
+22. FINAL HOMEPAGE ORDER
+==================================================
+
+Use this structure:
+
+HEADER
+
+UpnDownBid
+Search
+Menu
++ Add Product
+
+↓
+
+HERO
+
+"Every week, products compete for the top spot."
+
+↓
+
+🏆 LAST WEEK'S WINNER
+
+Beacon
+Campaign #12 Winner
+$1,420
+
+↓
+
+🔥 THIS WEEK'S CAMPAIGN
+
+Campaign #13
+Ends in 5D 18H
+
+↓
+
+INTERACTIVE BID MODULE
+
+CLAIM #1 FOR $1,255
+[-] $1,255 [+]
+
+Current #1: $1,250
+
+Website URL
+Category
+
+Projected Rank
+
+[ CLAIM #1 ]
+
+↓
+
+LIVE RANKINGS
+
+#1
+#2
+#3
+...
+
+↓
+
+RECENT ACTIVITY
+
+↓
+
+WINNER HISTORY
+
+==================================================
+23. IMPORTANT UX GOAL
+==================================================
+
+When a visitor opens UpnDownBid, they should immediately understand:
+
+1. Who won last week?
+2. What campaign is live now?
+3. When does it end?
+4. What is currently #1?
+5. How much do I need to bid to reach #1?
+6. Where do I enter my website?
+7. What category is it?
+8. What rank will my bid achieve?
+9. How do I pay?
+
+The interactive bid module should make the answer to all of these obvious.
+
+Implement this as a real functional bidding component, not just a visual mockup.

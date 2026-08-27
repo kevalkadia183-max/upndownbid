@@ -1,0 +1,234 @@
+FIX THIS EXACT FLOW — GOOGLE LOGIN MUST REDIRECT DIRECTLY TO PAYMENT
+
+The required user flow is:
+
+1. User selects a listing.
+2. User chooses the claim amount.
+3. User clicks the claim/start action.
+4. If not logged in → open Google login.
+5. User completes Google login.
+6. Authentication/session is established.
+7. IMMEDIATELY redirect the user to the PAYMENT CONFIRMATION PAGE for the claim they just started.
+8. User sees:
+   - Listing
+   - Campaign
+   - Claim amount
+   - Total charged today
+   - Refund & Cancellation Policy
+   - CONFIRM AND PAY
+9. User confirms and proceeds to PayPal.
+
+The redirect after successful Google authentication MUST NOT go to:
+
+- homepage
+- discover page
+- listing page
+- claim form
+- portal
+- account page
+
+It MUST go directly to the pending payment/checkout page.
+
+Expected:
+
+CLAIM
+↓
+GOOGLE LOGIN
+↓
+AUTHENTICATION SUCCESS
+↓
+PAYMENT PAGE
+↓
+CONFIRM AND PAY
+↓
+PAYPAL
+
+NOT:
+
+CLAIM
+↓
+GOOGLE LOGIN
+↓
+HOMEPAGE
+↓
+REFRESH
+↓
+PAYMENT
+
+==================================================
+IMPORTANT
+==================================================
+
+The current bug is that after Google authentication the application redirects to the main page, and only after manually refreshing does the payment page appear.
+
+Fix the actual authentication callback/navigation logic.
+
+Do NOT solve this with:
+
+window.location.reload()
+
+Do NOT add arbitrary setTimeout delays.
+
+Do NOT ask the user to refresh.
+
+Do NOT make the user enter the URL, amount, email, or name again.
+
+The pending claim must be preserved during Google OAuth and restored immediately after authentication.
+
+==================================================
+USER DETAILS
+==================================================
+
+We do NOT need separate:
+
+- Owner email input
+- Owner name input
+- Product name input
+
+The authenticated Google account already provides the user's identity.
+
+Use the authenticated session:
+
+user.id
+user.email
+user.name
+
+according to the application's existing auth structure.
+
+Additional profile information can be edited later in the Owner Portal/Profile.
+
+==================================================
+PENDING CLAIM
+==================================================
+
+Before sending the user to Google login, create/preserve a secure pending checkout intent containing the necessary claim context, such as:
+
+- listing ID
+- listing slug
+- campaign ID
+- action type
+- requested amount
+- intent ID
+- creation/expiry time
+
+After Google authentication:
+
+1. Establish the authenticated session.
+2. Retrieve the pending checkout intent.
+3. Validate it server-side.
+4. Confirm the campaign is still active.
+5. Confirm the listing still exists.
+6. Recalculate/verify the authoritative amount.
+7. Navigate DIRECTLY to the checkout/payment confirmation page.
+
+Use the existing checkout architecture if already present.
+
+==================================================
+ROUTING
+==================================================
+
+If the application has a checkout route, use it.
+
+For example:
+
+/checkout/:intentId
+
+or the existing equivalent.
+
+The OAuth callback should effectively do:
+
+authenticate user
+→ restore pending checkout
+→ redirect to checkout/payment
+
+NOT:
+
+authenticate user
+→ redirect to /
+
+==================================================
+AUTHENTICATION RACE CONDITION
+==================================================
+
+Make sure navigation does not happen until the authentication session is actually established.
+
+Current behavior suggests:
+
+Google OAuth succeeds
+→ application renders default/home route
+→ pending checkout restoration happens later
+→ refresh finally displays checkout.
+
+Fix this lifecycle/race condition properly.
+
+The checkout restoration must happen BEFORE the application chooses the normal post-login destination.
+
+If a valid pending checkout exists:
+
+POST-LOGIN DESTINATION = PAYMENT PAGE.
+
+If no pending checkout exists:
+
+POST-LOGIN DESTINATION = normal authenticated destination.
+
+==================================================
+MOBILE TEST
+==================================================
+
+Test exactly on mobile:
+
+1. Fresh/private browser session.
+2. Open Updownbid.
+3. Start a new claim.
+4. Google login.
+5. Complete Google login.
+6. DO NOT refresh.
+7. Verify that the payment confirmation page appears automatically.
+
+Expected screenshot/state:
+
+"COMPLETE YOUR PAYMENT"
+
+with:
+
+Listing
+Campaign
+Claim amount
+Total charged today
+Refund & Cancellation Policy checkbox
+CONFIRM AND PAY
+
+The user must never see the homepage between login and payment.
+
+==================================================
+PAYMENT SECURITY
+==================================================
+
+Do not trust the client for the final amount.
+
+The server must validate the pending claim and campaign before creating the PayPal order.
+
+Do not change the existing PayPal payment verification, ledger, receipt, or idempotency architecture.
+
+Do not create duplicate payment/ledger/receipt records.
+
+==================================================
+FINAL ACCEPTANCE CRITERIA
+==================================================
+
+The fix is NOT complete unless this exact sequence works without refreshing:
+
+CLAIM
+→ GOOGLE LOGIN
+→ PAYMENT PAGE
+
+No:
+
+homepage
+refresh
+second login
+re-entering details
+duplicate claim
+duplicate payment
+
+Run the relevant tests and manually verify the complete Google login → payment flow before declaring the task complete.

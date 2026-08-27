@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "upndownbid"
+description = "A public leaderboard where communities support promising products and transparently signal when listings need to fall, with separate financial ranking and quality reviews."
+version = "1.0.0"
+id = "artifacts/signalrank"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18660
+
+[services.development]
+run = "pnpm --filter @workspace/signalrank run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/signalrank", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/signalrank/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18660"
+BASE_PATH = "/"

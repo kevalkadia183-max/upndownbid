@@ -1,0 +1,703 @@
+IMPLEMENT THE FINAL FEATURED/SPONSORED LISTING SYSTEM AND CURRENT CAMPAIGN LEADER DISPLAY.
+
+IMPORTANT:
+Do not replace or break the existing campaign ranking, bidding, payment, invoice, demo, authentication, or admin functionality.
+
+We need TWO DISTINCT systems:
+
+1. PAID FEATURED/SPONSORED LISTINGS
+2. CURRENT LIVE CAMPAIGN LEADER
+
+They must remain completely separate in the data model and UI.
+
+==================================================
+1. FEATURED / SPONSORED LISTINGS
+==================================================
+
+Create/support exactly 4 Featured/Sponsored advertising positions.
+
+These are PAID promotional placements.
+
+Each position lasts for 7 days.
+
+The four positions should be:
+
+Featured Slot #1
+Featured Slot #2
+Featured Slot #3
+Featured Slot #4
+
+These are NOT the same thing as campaign ranking positions.
+
+A listing can be:
+
+- Sponsored only
+- Campaign participant only
+- Both sponsored and campaign participant
+- Neither
+
+Do not mix the two concepts.
+
+==================================================
+2. SPONSORED LISTING ORDER
+==================================================
+
+The four sponsored listings should be ordered by their active sponsorship placement.
+
+If the business purchases Slot #1, it occupies Featured Slot #1.
+
+If Slot #1 is unavailable, the next available paid slot can be purchased.
+
+Each sponsorship must have:
+
+- listing_id
+- sponsor/owner
+- slot_number
+- start_at
+- expires_at
+- payment_id
+- status
+- created_at
+- updated_at
+
+Statuses should support at minimum:
+
+active
+expired
+pending
+cancelled
+
+Do NOT hardcode sponsors.
+
+All data must come from the database.
+
+==================================================
+3. 7-DAY EXPIRATION
+==================================================
+
+Every sponsored placement lasts exactly 7 days from its confirmed activation/start time.
+
+When expires_at is reached:
+
+- Remove it from active sponsored listings.
+- Make that slot available again.
+- Do not display it in the active sponsored section.
+- Keep the historical sponsorship/payment record for admin reporting.
+- Do not delete the listing itself.
+
+Use server/database time rather than the visitor's local device clock.
+
+==================================================
+4. SPONSORED SECTION ON DISCOVER PAGE
+==================================================
+
+Add a compact section near the BOTTOM of the Discover page:
+
+⭐ FEATURED / SPONSORED
+
+"Businesses supporting visibility on UpDownBid."
+
+Display the active 4 sponsored listings.
+
+Example:
+
+------------------------------------------
+
+⭐ FEATURED / SPONSORED
+
+[1] Makunto
+    makunto.com
+    [View]
+
+[2] Company B
+    companyb.com
+    [View]
+
+[3] Company C
+    companyc.com
+    [View]
+
+[4] Company D
+    companyd.com
+    [View]
+
+Sponsored placements · 7 days
+
+------------------------------------------
+
+Clearly label the section:
+
+SPONSORED
+
+or
+
+FEATURED SPONSORS
+
+Do not make users think these are campaign winners.
+
+==================================================
+5. SPONSORED POPUP ON WEBSITE ENTRY
+==================================================
+
+The four active sponsored listings should ALSO appear in a popup/modal when a visitor enters the website.
+
+This is an advertising benefit for the people who paid for Featured placement.
+
+The popup should appear once per visitor/session or according to a reasonable frequency cap.
+
+Do NOT show it repeatedly on every navigation.
+
+Use a tasteful entrance animation.
+
+It must NOT block the website permanently.
+
+Example:
+
+------------------------------------------
+
+⭐ FEATURED ON UPNDOWNBID
+
+Meet this week's featured businesses
+
+🏅 #1  Makunto
+        makunto.com
+        [View]
+
+🏅 #2  Company B
+        companyb.com
+        [View]
+
+🏅 #3  Company C
+        companyc.com
+        [View]
+
+🏅 #4  Company D
+        companyd.com
+        [View]
+
+Sponsored • Featured for 7 days
+
+[ EXPLORE FEATURED ]
+
+                         ×
+
+------------------------------------------
+
+On mobile, make this compact and scrollable if necessary.
+
+Do not cover the entire screen unnecessarily.
+
+The visitor must be able to close it immediately.
+
+==================================================
+6. POPUP TRACKING
+==================================================
+
+Track useful advertising analytics.
+
+For every sponsored listing, track:
+
+- popup impressions
+- sponsored section impressions
+- clicks
+- website visits generated from sponsored placement
+
+Use existing analytics infrastructure if available.
+
+Do not create duplicate analytics systems if equivalent tracking already exists.
+
+At minimum the admin should eventually be able to see:
+
+Impressions
+Clicks
+CTR
+Start date
+Expiration date
+Revenue
+
+==================================================
+7. CURRENT CAMPAIGN LEADER
+==================================================
+
+The current campaign leader is COMPLETELY SEPARATE from Sponsored Listings.
+
+Use the existing live ranking engine.
+
+Display a compact campaign section near the Top 4 area.
+
+Example:
+
+🏆 CURRENT CAMPAIGN
+
+Campaign #1
+
+CURRENT LEADER
+
+Makunto
+#1
+$262 ranking power
+
+⏱ Ends in 2d 12h 16m
+
+[ ▶ Demo ]
+[ View Listing ]
+
+The leader must update automatically when the live ranking changes.
+
+DO NOT use sponsorship data to determine the campaign leader.
+
+DO NOT allow sponsorship payment to automatically change campaign ranking.
+
+==================================================
+8. TOP 4 RANKINGS
+==================================================
+
+Keep the existing Top 4 campaign rankings.
+
+The Top 4 are determined by the existing campaign ranking system.
+
+The section should say:
+
+🏆 TOP 4 RANKINGS
+
+Campaign #1
+
+These are the current top 4 listings in this week's live campaign.
+
+⏱ Ends in 2d 12h 16m
+
+[Top 4 cards]
+
+If the campaign has ended and winners have been finalized:
+
+🏆 CURRENT CAMPAIGN WINNERS
+
+These top 4 won this week's campaign.
+
+Winners remain featured until the next campaign results.
+
+Do not confuse these winners with paid Sponsored listings.
+
+==================================================
+9. IMPORTANT: SPONSOR + CAMPAIGN PARTICIPANT
+==================================================
+
+A company may appear in both places.
+
+Example:
+
+Makunto could be:
+
+⭐ Featured Sponsor
+AND
+🏆 Current Campaign #1
+
+That is valid.
+
+However, the UI should show the statuses separately.
+
+Example:
+
+Makunto
+
+🏆 #1 Campaign Leader
+
+⭐ Featured Sponsor
+
+This makes the distinction obvious.
+
+==================================================
+10. DISCOVER PAGE LAYOUT
+==================================================
+
+Reorganize the Discover page to reduce unnecessary vertical space.
+
+Recommended order:
+
+HEADER
+
+CATEGORY FILTERS
+
+--------------------------------
+🏆 CURRENT CAMPAIGN
+Campaign #1
+⏱ Time remaining
+CURRENT LEADER
+[leader]
+--------------------------------
+
+🏆 TOP 4 RANKINGS
+[4 ranking cards]
+--------------------------------
+
+⚡ CLAIM A SPOT
+"Want to be seen here?"
+[CLAIM A SPOT]
+--------------------------------
+
+LIVE CAMPAIGN RANKINGS
+[existing rankings]
+--------------------------------
+
+LIVE ACTIVITY
+[existing activity]
+--------------------------------
+
+WINNER HISTORY
+[existing history]
+--------------------------------
+
+⭐ FEATURED / SPONSORED
+[4 paid sponsors]
+--------------------------------
+
+MARKETPLACE IN NUMBERS
+[existing statistics]
+--------------------------------
+
+FOOTER
+
+Do NOT create a huge standalone campaign countdown card.
+
+==================================================
+11. REMOVE REDUNDANT CAMPAIGN UI
+==================================================
+
+Remove the large:
+
+"CAMPAIGN #1 IS LIVE"
+
+card.
+
+Remove the large:
+
+"THIS WEEK'S CAMPAIGN"
+
+claim form from the Discover page.
+
+Do NOT remove the actual claim functionality.
+
+Move detailed claim fields into the existing Claim A Spot workflow.
+
+The Discover page should only have a compact CTA:
+
+⚡ WANT TO BE SEEN HERE?
+
+Claim a live campaign position from $5.
+
+[ CLAIM A SPOT → ]
+
+==================================================
+12. SPONSORED PURCHASE CTA
+==================================================
+
+Add a way for businesses to purchase a Featured/Sponsored slot.
+
+Example:
+
+⭐ GET FEATURED
+
+Put your business in front of visitors on UpDownBid.
+
+Featured placement:
+7 days
+
+Available slots:
+#1
+#2
+#3
+#4
+
+Show the actual current price configured by the admin.
+
+DO NOT hardcode pricing.
+
+The admin must be able to configure the price.
+
+Before payment:
+
+Show:
+
+Featured Slot
+7 days
+Price
+Start date
+Expiration date
+
+After successful payment:
+
+- Create/activate sponsorship
+- Assign slot
+- Generate invoice
+- Send invoice to customer
+- Send invoice/notification to admin
+- Show confirmation
+- Begin 7-day sponsorship period
+
+Use the existing payment and invoice infrastructure where possible.
+
+==================================================
+13. ADMIN PANEL
+==================================================
+
+Add a Featured/Sponsored section to the existing admin panel.
+
+Admin should be able to see:
+
+FEATURED SPONSORS
+
+Slot #1
+Business
+Payment
+Amount
+Started
+Expires
+Status
+
+Slot #2
+Business
+Payment
+Amount
+Started
+Expires
+Status
+
+Slot #3
+Business
+Payment
+Amount
+Started
+Expires
+Status
+
+Slot #4
+Business
+Payment
+Amount
+Started
+Expires
+Status
+
+Admin controls:
+
+- View sponsor
+- View listing
+- View payment
+- View invoice
+- View analytics
+- Cancel sponsorship if necessary
+- Configure sponsorship price
+- Configure popup behavior
+- Configure duration
+- See revenue
+
+Default duration should be 7 days.
+
+==================================================
+14. ADMIN PRICE CONFIGURATION
+==================================================
+
+Do not hardcode Featured prices.
+
+Add an admin-configurable setting:
+
+FEATURED_SPONSOR_PRICE
+
+Default duration:
+
+7 DAYS
+
+The admin can change the price later without changing code.
+
+If different prices are eventually desired for Slot #1/#2/#3/#4, design the data model so this can be supported later.
+
+==================================================
+15. SPONSORED POPUP RULES
+==================================================
+
+Popup rules:
+
+- Show active sponsors only.
+- Maximum 4 sponsors.
+- Never show expired sponsors.
+- Never show cancelled sponsors.
+- Do not show if there are zero active sponsors.
+- Do not show repeatedly on every page.
+- Respect a frequency cap using local/session storage or existing visitor mechanism.
+- Provide obvious close button.
+- Do not interfere with navigation.
+- Do not show the popup to the sponsor as a special exception unless existing UX rules require it.
+
+Track:
+
+popup_impression
+popup_click
+
+==================================================
+16. NO FAKE DATA
+==================================================
+
+Do not hardcode:
+
+Sponsor names
+Sponsor logos
+Sponsor URLs
+Sponsor prices
+Sponsor expiration dates
+Campaign leader
+Campaign ranking
+Demo views
+Campaign countdown
+
+Everything must come from real application data.
+
+If there are currently no sponsored listings:
+
+DO NOT show fake sponsors.
+
+Instead show a compact:
+
+⭐ FEATURED SPONSORSHIPS AVAILABLE
+
+"Put your business in front of UpDownBid visitors."
+
+[ BECOME A SPONSOR ]
+
+==================================================
+17. VISUAL DESIGN
+==================================================
+
+Follow the existing UpDownBid visual language:
+
+- Purple primary
+- Orange accent
+- White cards
+- Soft borders
+- Rounded corners
+- Clean typography
+- Mobile-first
+- Minimal vertical waste
+
+Sponsored listings should have a subtle premium appearance.
+
+Do NOT make them look like campaign winners.
+
+Use a small:
+
+⭐ SPONSORED
+
+badge.
+
+Campaign winners should use:
+
+🏆 WINNER
+
+badge.
+
+This visual distinction is important.
+
+==================================================
+18. MOBILE REQUIREMENT
+==================================================
+
+Optimize for 320px–430px widths.
+
+No page-level horizontal scrolling.
+
+The sponsored popup must fit mobile screens.
+
+The four sponsored listings can be displayed as:
+
+- compact vertical cards, OR
+- horizontal carousel
+
+depending on available width.
+
+The Top 4 ranking section can use the existing responsive layout.
+
+Avoid excessive whitespace.
+
+==================================================
+19. FINAL BUSINESS MODEL
+==================================================
+
+The final system should effectively create TWO revenue/visibility products:
+
+PRODUCT 1:
+LIVE CAMPAIGN
+
+Businesses pay to compete for ranking positions.
+
+Ranking is determined by the existing campaign mechanics.
+
+PRODUCT 2:
+FEATURED SPONSORSHIP
+
+Businesses pay for guaranteed promotional visibility for 7 days.
+
+They receive:
+
+- Featured/Sponsored listing near the bottom
+- Entry popup exposure
+- Sponsor badge
+- Click/impression tracking
+- Analytics
+- Invoice
+
+These two products must remain independent.
+
+==================================================
+20. FINAL ACCEPTANCE TEST
+==================================================
+
+After implementation test all of the following:
+
+1. No sponsors:
+   Discover page works normally.
+
+2. One sponsor:
+   One sponsor appears in Featured section.
+   One sponsor appears in popup.
+
+3. Four sponsors:
+   All four appear.
+   Popup shows all four.
+
+4. Fifth sponsor:
+   Cannot occupy a fifth active slot.
+   Must wait until a slot becomes available.
+
+5. Sponsorship expires:
+   It disappears from active Featured section.
+   It disappears from popup.
+   Slot becomes available.
+
+6. Campaign leader changes:
+   Current leader updates independently of sponsorship.
+
+7. Sponsor is also campaign #1:
+   Both badges/statuses appear correctly.
+
+8. Campaign ends:
+   Winners are displayed according to existing winner logic.
+
+9. Payment succeeds:
+   Sponsorship activates correctly.
+   Invoice is generated.
+   Invoice is sent to customer and admin.
+
+10. Mobile:
+    No horizontal page overflow.
+    Popup is usable.
+    Bottom navigation remains usable.
+
+11. Admin:
+    Admin can view and manage sponsored placements.
+
+12. Security:
+    Only authorized admin users can manage sponsorships/pricing.
+    Never trust client-side sponsorship status or expiration.
+    Validate sponsorship/payment state server-side.
+
+Do not modify unrelated functionality.
+Run existing tests and add appropriate tests for sponsorship creation, expiration, slot limits, popup eligibility, analytics, and admin authorization.

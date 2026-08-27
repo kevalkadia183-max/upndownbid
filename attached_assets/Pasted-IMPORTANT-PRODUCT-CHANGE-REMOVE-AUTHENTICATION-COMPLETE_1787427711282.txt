@@ -1,0 +1,669 @@
+IMPORTANT PRODUCT CHANGE:
+
+REMOVE AUTHENTICATION COMPLETELY.
+
+We do NOT want user accounts, login, signup, passwords, or a profile system for the public product.
+
+The platform must work as a frictionless public marketplace/leaderboard.
+
+Do NOT ask users to sign in before:
+
+* Adding a product
+* Supporting a product
+* Applying a penalty
+* Writing a review
+* Viewing products
+* Viewing rankings
+
+The reference experience should feel like a simple public marketplace where someone can enter a URL, choose an amount, and complete a one-time checkout.
+
+⸻
+
+1. REMOVE LOGIN
+
+Remove:
+
+* Sign In button
+* Sign Up button
+* Login page
+* Registration page
+* Password reset
+* User dashboard
+* User profile
+* Authentication middleware
+* “Login required” modals
+* Account creation requirements
+
+Do not leave empty login UI behind.
+
+The main navigation should instead have:
+
+Explore
+Trending
+Activity
+How It Works
+
+* Add Product
+
+On mobile:
+
+Search
+
+* Add Product
+    Menu
+
+⸻
+
+2. NO ACCOUNT REQUIRED TO ADD A PRODUCT
+
+Anyone can click:
+
++ Add Product
+
+and immediately start.
+
+Flow:
+
+ADD PRODUCT
+↓
+Enter website/app URL
+↓
+Select category
+↓
+Review product information
+↓
+Choose initial owner bid
+↓
+See projected rank
+↓
+Checkout
+↓
+Payment verified
+↓
+Product published
+
+No login/signup step.
+
+⸻
+
+3. NO ACCOUNT REQUIRED TO SUPPORT
+
+Anyone can open a product and click:
+
+Support
+
+Enter:
+
+$25
+
+Then show:
+
+Current Effective Bid:
+$277
+
+Your Support:
++$25
+
+Projected Effective Bid:
+$302
+
+Projected Rank:
+#2
+
+Then:
+
+[ Continue to Checkout ]
+
+No login.
+
+⸻
+
+4. NO ACCOUNT REQUIRED TO PENALIZE
+
+Anyone can click:
+
+Apply Penalty
+
+Enter:
+
+$10
+
+Show:
+
+Current Effective Bid:
+$277
+
+Your Penalty:
+-$10
+
+Projected Effective Bid:
+$267
+
+Projected Rank:
+#4
+
+Then:
+
+[ Continue to Checkout ]
+
+No login.
+
+⸻
+
+5. EMAIL INSTEAD OF ACCOUNTS
+
+During checkout, collect an email address.
+
+This email is NOT an account.
+
+It is used for:
+
+* Payment receipt
+* Transaction confirmation
+* Product management access if the person created a listing
+* Review confirmation if appropriate
+* Support/penalty receipt
+* Fraud/security communication
+
+Do not automatically create a user account.
+
+⸻
+
+6. PRODUCT OWNERSHIP WITHOUT ACCOUNTS
+
+Because there is no login system, ownership must be handled differently.
+
+When someone creates a product:
+
+Store internally:
+
+listing_id
+owner_email
+owner_name if provided
+creation_transaction_id
+
+After successful payment, email the owner a secure:
+
+Manage Your Product
+
+link.
+
+Example:
+
+https://example.com/manage/secure-token
+
+The token must be:
+
+* Cryptographically random
+* Unpredictable
+* Expiring or rotatable
+* Stored securely
+* Revocable
+
+Do NOT put sensitive information directly into the URL.
+
+This secure link allows the person who created the listing to:
+
+* Edit product description
+* Change logo
+* Change screenshots
+* Update website
+* Increase owner bid
+* View listing analytics
+* View activity
+* Manage product information
+
+They still do NOT need an account.
+
+⸻
+
+7. OWNER MANAGEMENT
+
+When the owner opens the secure management link:
+
+Show:
+
+YOUR PRODUCT
+
+Beacon
+
+Rank #3
+Effective Bid: $277
+
+Owner Bid: $180
+Community Support: +$119
+Penalties: -$22
+
+Then:
+
+[ Increase Owner Bid ]
+
+[ Edit Product ]
+
+[ View Reviews ]
+
+[ View Activity ]
+
+[ Share ]
+
+No username/password.
+
+⸻
+
+8. SUPPORTER/PENALIZER IDENTITY
+
+Do not create accounts.
+
+For every financial action, internally record:
+
+transaction_id
+email
+listing_id
+action_type
+amount
+payment_status
+review_id
+timestamp
+payment_provider_id
+anonymous/public preference
+
+Publicly, the user can appear as:
+
+Anonymous Supporter
+
+or optionally:
+
+Display name
+
+Do not publicly expose email addresses.
+
+⸻
+
+9. REVIEW FLOW
+
+After successful payment:
+
+Want to tell people why?
+
+For Support:
+
+Reason:
+
+* Great product
+* Great idea
+* Useful
+* Deserves more visibility
+* Supporting the founder
+* Better than alternatives
+* Other
+
+For Penalty:
+
+Reason:
+
+* Poor quality
+* Too expensive
+* Bugs
+* Misleading
+* Doesn’t deserve current position
+* Supporting another product
+* Rule violation
+* Other
+
+Optional text:
+
+“Tell the community why…”
+
+Then:
+
+[ Publish Review ]
+
+[ Skip ]
+
+No login required.
+
+⸻
+
+10. REVIEW IDENTITY
+
+Allow:
+
+Anonymous
+
+or
+
+Display name
+
+If the user enters a display name:
+
+Show:
+
+Mira
+SUPPORTER
+★★★★★
+
+If anonymous:
+
+Anonymous Supporter
+SUPPORTER
+★★★★★
+
+Never show the user’s email.
+
+⸻
+
+11. DUPLICATE PRODUCT DETECTION
+
+Since there are no accounts, URL uniqueness becomes extremely important.
+
+Normalize URLs before comparing them.
+
+For example:
+
+https://example.com
+https://www.example.com/
+http://example.com
+
+should normally resolve to the same canonical website where technically appropriate.
+
+If the URL already exists:
+
+Show:
+
+This product is already on the leaderboard.
+
+Current rank:
+#4
+
+Effective bid:
+$830
+
+Then:
+
+[ View Product ]
+
+[ Support ]
+
+If the person is the owner, they can use their secure management link to manage it.
+
+Do NOT automatically create duplicates.
+
+⸻
+
+12. ADD PRODUCT CHECKOUT
+
+The checkout should resemble the simple reference flow.
+
+Show:
+
+Claim your spot
+
+Then:
+
+Your bid:
+
+[-] $250 [+]
+
+Projected rank:
+
+#7
+
+Current #1:
+
+$1,420
+
+To currently reach #1:
+
+$1,425
+
+Then product information:
+
+Website:
+example.com
+
+Category:
+AI
+
+Then:
+
+Email
+[________________]
+
+Then:
+
+[ Continue to Payment ]
+
+⸻
+
+13. PAYMENT
+
+For development:
+
+SANDBOX / TEST MODE ONLY.
+
+Do not require a production payment provider connection yet.
+
+Production architecture should eventually support a proper one-time payment provider.
+
+Never store:
+
+* Card number
+* CVV
+* Full payment credentials
+
+Use hosted/tokenized checkout.
+
+⸻
+
+14. PAYMENT SUCCESS
+
+After verified payment:
+
+Show:
+
+You’re on the board.
+
+Beacon
+
+Current Rank:
+#7
+
+Effective Bid:
+$250
+
+Then:
+
+[ View Product ]
+
+[ Manage Product ]
+
+[ Share ]
+
+For support:
+
+Support recorded.
+
+Beacon
+
+Your contribution:
++$25
+
+For penalty:
+
+Penalty recorded.
+
+Beacon
+
+Your penalty:
+-$10
+
+New effective bid:
+$267
+
+⸻
+
+15. NO USER DASHBOARD
+
+Remove the existing concept of:
+
+My Products
+My Bids
+My Penalties
+My Reviews
+Profile
+
+Replace it with:
+
+Manage Your Product
+
+using the secure emailed management link.
+
+Transaction receipts can also contain a secure link to view the relevant transaction.
+
+⸻
+
+16. ADMIN IS DIFFERENT
+
+The public platform does NOT need accounts.
+
+However, the platform administrator still needs a protected admin area.
+
+Keep a separate admin authentication system.
+
+Admin can manage:
+
+Listings
+Transactions
+Reviews
+Reports
+Payments
+Moderation
+Fraud
+Settings
+Audit Logs
+
+Do NOT expose admin functionality publicly.
+
+⸻
+
+17. ABUSE PROTECTION WITHOUT ACCOUNTS
+
+Because there are no accounts, strengthen transaction-level abuse protection.
+
+Implement:
+
+* Rate limiting
+* IP/request throttling where appropriate
+* Payment-provider fraud signals
+* Email verification where appropriate
+* Duplicate transaction protection
+* Idempotency keys
+* URL duplication checks
+* Review spam detection
+* Review reporting
+* Suspicious transaction detection
+* Listing moderation
+* Admin suspension
+
+Do not rely on login as an anti-abuse mechanism.
+
+Do not use invasive fingerprinting.
+
+⸻
+
+18. CORE MODEL
+
+The platform now works like this:
+
+PUBLIC VISITOR
+↓
+DISCOVER PRODUCT
+↓
+SUPPORT / PENALIZE
+↓
+ENTER AMOUNT
+↓
+SEE PROJECTED RANK
+↓
+ENTER EMAIL
+↓
+CHECKOUT
+↓
+PAYMENT VERIFIED
+↓
+RANKING UPDATES
+↓
+OPTIONAL REVIEW
+
+For owners:
+
+ADD PRODUCT
+↓
+URL
+↓
+CATEGORY
+↓
+INITIAL BID
+↓
+PROJECTED RANK
+↓
+EMAIL
+↓
+CHECKOUT
+↓
+PRODUCT GOES LIVE
+↓
+SECURE MANAGEMENT LINK EMAILED
+
+⸻
+
+19. CORE RANKING FORMULA
+
+Keep:
+
+Effective Bid =
+Owner Bid
++
+Community Support
+
+Penalties
+
+Example:
+
+Owner Bid       $180
+Support         +$119
+Penalties       -$22
+
+Effective Bid   $277
+
+The backend remains authoritative.
+
+Never trust frontend-submitted:
+
+* Rank
+* Effective bid
+* Support total
+* Penalty total
+* Transaction status
+
+⸻
+
+20. IMPORTANT
+
+The absence of login is intentional.
+
+Do NOT reintroduce authentication simply because ownership or reviews need an identity.
+
+Use:
+
+EMAIL + VERIFIED PAYMENT + SECURE MANAGEMENT TOKEN
+
+instead of:
+
+USERNAME + PASSWORD + ACCOUNT.
+
+The goal is a frictionless experience:
+
+Find → Bid/Support/Penalize → Checkout → Done.
+
+This should be the primary interaction model of the platform.

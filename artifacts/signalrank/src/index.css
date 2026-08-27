@@ -1,0 +1,416 @@
+@layer theme, base, clerk, components, utilities;
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&family=Space+Mono:wght@400;700&display=swap');
+@import 'tailwindcss';
+@import '@clerk/themes/shadcn.css';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: hsl(var(--primary));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: hsl(var(--secondary));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: hsl(var(--muted));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: hsl(var(--accent));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: hsl(var(--destructive));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root, .dark {
+  --background: 35 30% 97%;
+  --foreground: 220 25% 12%;
+  
+  --border: 30 15% 87%;
+  --input: 30 15% 87%;
+  --ring: 258 85% 64%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 220 25% 12%;
+  --card-border: 30 15% 87%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 12%;
+  --popover-border: 30 15% 87%;
+
+  --primary: 258 85% 64%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 145 63% 42%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 30 15% 93%;
+  --muted-foreground: 220 10% 46%;
+
+  --accent: 258 85% 64%;
+  --accent-foreground: 220 25% 12%;
+
+  --destructive: 0 70% 54%;
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 150 100% 40%;
+  --success-foreground: 0 0% 0%;
+
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 220 25% 12%;
+  --sidebar-border: 30 15% 87%;
+  --sidebar-primary: 13 75% 64%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 30 15% 93%;
+  --sidebar-accent-foreground: 220 25% 12%;
+  --sidebar-ring: 13 75% 64%;
+
+  --app-font-sans: 'Outfit', sans-serif;
+  --app-font-serif: Georgia, serif;
+  --app-font-mono: 'Space Mono', monospace;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at 50% -20%, hsl(258 85% 64% / 0.09) 0%, transparent 48%),
+      radial-gradient(circle at 100% 100%, hsl(30 70% 80% / 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/*
+ * Mobile browsers can reduce the effective CSS viewport dramatically when
+ * page zoom or accessibility magnification is active. Keep the shared
+ * navigation in-flow at that size instead of allowing its logo to overflow.
+ */
+@media (max-width: 18rem) {
+  [data-sandbox-banner] {
+    padding: 0.25rem 0.5rem;
+  }
+
+  [data-sandbox-message] {
+    gap: 0.25rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.03em;
+    line-height: 0.75rem;
+  }
+
+  [data-sandbox-message] svg {
+    height: 0.625rem;
+    width: 0.625rem;
+    flex: 0 0 auto;
+  }
+
+  [data-brand-header-inner] {
+    height: auto;
+    min-height: 3.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+
+  [data-brand-link] {
+    flex: 1 0 100%;
+    justify-content: center;
+    width: 100%;
+  }
+
+  [data-brand-logo] {
+    justify-content: center;
+    width: 100%;
+    gap: 0.375rem;
+  }
+
+  [data-brand-lockup] {
+    height: 1rem;
+    max-width: 100%;
+  }
+
+  [data-brand-controls] {
+    flex: 0 0 auto;
+  }
+
+  [data-mobile-navigation] {
+    inset-right: 0.5rem;
+    inset-left: 0.5rem;
+    padding: 0.25rem;
+  }
+
+  [data-mobile-navigation] a {
+    min-height: 2.5rem;
+    font-size: 0.45rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+
+  [data-campaign-bid-banner],
+  [data-campaign-bid-content] {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+
+  [data-campaign-bid-banner-label] {
+    min-width: 0;
+    gap: 0.25rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+    line-height: 0.75rem;
+  }
+
+  [data-campaign-bid-banner-label] svg {
+    height: 0.625rem;
+    width: 0.625rem;
+    flex: 0 0 auto;
+  }
+
+  [data-campaign-bid-layout],
+  [data-campaign-bid-content],
+  [data-campaign-bid-controls] {
+    min-width: 0;
+  }
+
+  [data-campaign-bid-heading] {
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+    line-height: 0.75rem;
+  }
+
+  [data-campaign-bid-controls] {
+    gap: 0.25rem;
+  }
+
+  [data-campaign-bid-stepper] {
+    height: 1.75rem;
+    width: 1.75rem;
+    border-radius: 0.5rem;
+  }
+
+  [data-campaign-bid-stepper] svg {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
+
+  [data-campaign-bid-controls] input {
+    height: 1.75rem;
+    min-width: 0;
+    padding-left: 1.25rem;
+    font-size: 1rem;
+  }
+
+  [data-campaign-bid-currency] {
+    top: 0.375rem;
+    left: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  [data-campaign-bid-summary] {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.5rem;
+    line-height: 0.75rem;
+  }
+
+  [data-campaign-bid-summary] span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  [data-mobile-menu-sheet] {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 0.75rem;
+  }
+
+  [data-mobile-menu-sheet] nav {
+    margin-top: 2.5rem;
+  }
+
+  [data-mobile-menu-link] {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * A leaderboard row normally presents its activity metrics and ranking
+   * power beside each other. At accessibility-zoom widths that combination
+   * is wider than the card itself, so stack the groups and allow labels to
+   * wrap rather than creating document-level horizontal scrolling.
+   */
+  [data-leaderboard-card] {
+    padding: 0.5rem;
+  }
+
+  [data-leaderboard-card-main] {
+    gap: 0.5rem;
+  }
+
+  [data-listing-identity],
+  [data-listing-title-row] {
+    gap: 0.25rem;
+  }
+
+  [data-listing-category] {
+    max-width: 2rem;
+    padding-right: 0.25rem;
+    padding-left: 0.25rem;
+    font-size: 0.4rem;
+    letter-spacing: 0;
+  }
+
+  [data-listing-stats] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.5rem;
+  }
+
+  [data-listing-signals] {
+    gap: 0.125rem;
+    font-size: 0.4rem;
+  }
+
+  [data-listing-signals] > div > div:first-child,
+  [data-listing-power] > div:first-child {
+    font-size: 0.35rem;
+    line-height: 0.5rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+
+  [data-listing-signals] svg {
+    height: 0.5rem;
+    width: 0.5rem;
+    flex: 0 0 auto;
+  }
+
+  [data-listing-power] {
+    width: 100%;
+    text-align: center;
+  }
+
+  [data-listing-actions] {
+    gap: 0.25rem;
+  }
+
+  [data-listing-actions] button {
+    min-width: 0;
+    gap: 0.125rem;
+    padding-right: 0.125rem;
+    padding-left: 0.125rem;
+    font-size: 0.4rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+
+  [data-listing-actions] svg {
+    height: 0.625rem;
+    width: 0.625rem;
+    flex: 0 0 auto;
+  }
+
+  [data-rankings-header],
+  [data-activity-header],
+  [data-winner-history] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0.25rem;
+    text-align: center;
+  }
+
+  [data-rankings-header] h3 {
+    font-size: 0.45rem;
+    line-height: 0.625rem;
+    letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+  }
+
+  [data-rankings-header] > span,
+  [data-activity-header] > span {
+    max-width: 100%;
+    font-size: 0.4rem;
+    line-height: 0.625rem;
+    overflow-wrap: anywhere;
+  }
+
+  [data-activity-header] {
+    padding: 0.5rem;
+  }
+
+  [data-activity-header] h2 {
+    min-width: 0;
+    font-size: 0.5rem;
+    letter-spacing: 0.03em;
+  }
+
+  [data-activity-header] h2 svg {
+    height: 0.625rem;
+    width: 0.625rem;
+    flex: 0 0 auto;
+  }
+
+  [data-winner-history] {
+    padding: 0.5rem;
+    font-size: 0.5rem;
+    line-height: 0.75rem;
+  }
+
+  [data-winner-history] > span {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  [data-winner-history] > span:first-child {
+    gap: 0.25rem;
+  }
+
+  [data-winner-history] > span:first-child svg {
+    height: 0.625rem;
+    width: 0.625rem;
+    flex: 0 0 auto;
+  }
+}

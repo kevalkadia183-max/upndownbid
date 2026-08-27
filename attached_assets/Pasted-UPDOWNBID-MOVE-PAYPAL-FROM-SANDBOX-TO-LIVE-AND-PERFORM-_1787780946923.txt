@@ -1,0 +1,533 @@
+UPDOWNBID — MOVE PAYPAL FROM SANDBOX TO LIVE AND PERFORM A CONTROLLED $5 PRODUCTION TEST
+
+We have completed and verified the PayPal Sandbox integration.
+
+The application is PayPal-only.
+
+DO NOT change the payment architecture.
+DO NOT introduce Razorpay.
+DO NOT create another PayPal sandbox account.
+DO NOT change the existing checkout flow unless required for production configuration.
+
+We are now ready to move PayPal to LIVE.
+
+==================================================
+1. FIRST AUDIT THE EXISTING PAYPAL IMPLEMENTATION
+==================================================
+
+Before changing anything, inspect the existing PayPal implementation.
+
+Confirm the current flow is:
+
+User claim
+→ authenticated user
+→ create checkout
+→ /api/paypal/create-order
+→ PayPal JavaScript SDK
+→ buyer approval
+→ /api/paypal/capture-order
+→ server-side PayPal capture verification
+→ amount verification
+→ currency verification
+→ merchant/payee verification when available
+→ idempotency protection
+→ payment record
+→ receipt
+→ ledger entry
+→ effective bid/ranking update
+
+Also confirm the webhook:
+
+/api/paypal/webhook
+
+is still enabled and verified.
+
+Do not remove any of these protections.
+
+==================================================
+2. VERIFY CURRENT ENVIRONMENT VARIABLES
+==================================================
+
+The application currently uses:
+
+PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET
+PAYPAL_ENVIRONMENT
+PAYPAL_WEBHOOK_ID
+PAYPAL_WEBHOOK_ID_LIVE
+PAYPAL_MERCHANT_ID
+
+and the existing production gates:
+
+PAYMENT_MODE
+PAYMENT_PROVIDER
+PAYMENTS_LIVE_ENABLED
+
+Inspect the actual code before changing anything.
+
+Do not invent new variable names if the existing implementation already uses these.
+
+==================================================
+3. PREPARE LIVE CONFIGURATION
+==================================================
+
+Production configuration should become:
+
+PAYPAL_ENVIRONMENT=live
+
+PAYMENT_MODE=live
+
+PAYMENT_PROVIDER=paypal
+
+PAYMENTS_LIVE_ENABLED=true
+
+Use the LIVE values for:
+
+PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET
+PAYPAL_MERCHANT_ID
+PAYPAL_WEBHOOK_ID_LIVE
+
+Do not overwrite or delete the sandbox credentials.
+
+Keep sandbox credentials available separately so we can switch back for development/testing.
+
+==================================================
+4. PAYPAL PRODUCTION ENDPOINT
+==================================================
+
+The production PayPal REST API must use:
+
+https://api-m.paypal.com
+
+The application must NOT call:
+
+https://api-m.sandbox.paypal.com
+
+when PAYPAL_ENVIRONMENT=live.
+
+Audit all server-side PayPal API calls.
+
+Also verify that the PayPal JavaScript SDK is loaded using the LIVE Client ID.
+
+Do not accidentally leave a sandbox Client ID in the frontend.
+
+==================================================
+5. LIVE WEBHOOK
+==================================================
+
+Verify the production webhook is configured for the production application.
+
+The webhook URL must point to the actual deployed UpDownBid production endpoint:
+
+/api/paypal/webhook
+
+Use the LIVE webhook ID:
+
+PAYPAL_WEBHOOK_ID_LIVE
+
+Do not use the Sandbox webhook ID in production.
+
+Verify webhook signature/source before processing events.
+
+Keep all existing webhook idempotency protection.
+
+==================================================
+6. MERCHANT ID
+==================================================
+
+Use the LIVE PayPal Merchant ID in:
+
+PAYPAL_MERCHANT_ID
+
+The existing merchant/payee cross-check must remain enabled.
+
+If PayPal returns a definite payee mismatch:
+
+reject the capture.
+
+If PayPal does not return the optional payee data:
+
+do not incorrectly reject a legitimate transaction.
+
+==================================================
+7. IMPORTANT — DO NOT MODIFY PAYMENT BUSINESS LOGIC
+==================================================
+
+Do not change:
+
+claim calculation
+campaign calculation
+ranking calculation
+effective bid calculation
+ledger logic
+receipt logic
+payment idempotency
+duplicate capture protection
+webhook handling
+
+We are changing environment/credentials, not rewriting the payment system.
+
+==================================================
+8. BEFORE DEPLOYING
+==================================================
+
+Run:
+
+TypeScript check
+
+existing automated tests
+
+PayPal payment tests
+
+webhook tests
+
+idempotency tests
+
+amount mismatch tests
+
+currency mismatch tests
+
+merchant mismatch tests
+
+capture verification tests
+
+Build the application.
+
+Do not proceed if there are TypeScript/build failures.
+
+==================================================
+9. VERIFY LIVE CONFIGURATION WITHOUT CHARGING ANYONE
+==================================================
+
+Before performing a real transaction:
+
+Verify that the server can obtain a PayPal LIVE OAuth access token using the configured credentials.
+
+Do NOT create a real order yet.
+
+Confirm:
+
+environment = live
+
+PayPal base URL = https://api-m.paypal.com
+
+live Client ID is present
+
+live Client Secret is present
+
+live Merchant ID is present
+
+live webhook ID is present
+
+PAYMENTS_LIVE_ENABLED=true
+
+payment provider = paypal
+
+Do not print secrets to logs.
+
+Do not print Client Secret.
+
+Do not print access tokens.
+
+==================================================
+10. CHECK FOR ACCIDENTAL SANDBOX REFERENCES
+==================================================
+
+Search the entire application for:
+
+api-m.sandbox.paypal.com
+
+sandbox.paypal.com
+
+sandbox Client ID
+
+PAYPAL_ENVIRONMENT=sandbox
+
+hardcoded sandbox configuration
+
+Report every remaining occurrence.
+
+Sandbox references may remain in tests/development documentation, but they must NOT be used by the production payment path.
+
+==================================================
+11. PRODUCTION TEST — EXACTLY ONE REAL $5 TRANSACTION
+==================================================
+
+After the live configuration is verified, perform ONE controlled production test.
+
+Use:
+
+Claim amount: $5
+
+Do not test with $255.
+
+Do not create multiple real transactions.
+
+Use a real PayPal buyer account.
+
+The test flow must be:
+
+1. Open UpDownBid production site.
+2. Log in with the test user account.
+3. Select a test listing.
+4. Start a claim.
+5. Confirm the amount is exactly $5.
+6. Proceed to PayPal.
+7. Complete the real PayPal payment.
+8. Return to UpDownBid.
+9. Verify successful payment state.
+
+==================================================
+12. VERIFY THE REAL PAYMENT SERVER-SIDE
+==================================================
+
+After payment:
+
+verify PayPal capture status.
+
+Verify:
+
+status = COMPLETED
+
+currency = expected currency
+
+amount = exactly $5
+
+payee/merchant = expected LIVE merchant
+
+capture ID exists
+
+PayPal order ID exists
+
+payment is associated with the correct authenticated UpDownBid user
+
+payment is associated with the correct listing
+
+payment is associated with the correct campaign
+
+==================================================
+13. VERIFY DATABASE RESULT
+==================================================
+
+After successful capture verify:
+
+exactly ONE payment record
+
+exactly ONE receipt
+
+exactly ONE ledger entry
+
+exactly ONE effective bid/ranking update
+
+No duplicate entries.
+
+No duplicate ledger balance.
+
+No duplicate bid increase.
+
+The payment must be idempotent.
+
+==================================================
+14. VERIFY WEBHOOK
+==================================================
+
+Wait for the PayPal webhook event.
+
+Verify the webhook is accepted and verified.
+
+Verify webhook processing does NOT create another:
+
+payment
+
+receipt
+
+ledger entry
+
+bid update
+
+The synchronous capture and webhook must safely converge on the same transaction.
+
+==================================================
+15. VERIFY USER ACCOUNT ISOLATION
+==================================================
+
+This is especially important because we recently found account-isolation issues.
+
+The successful $5 payment must belong to the account that actually initiated the claim.
+
+Test:
+
+User A performs the payment.
+
+User B must NOT see User A's:
+
+payment
+
+receipt
+
+pending checkout
+
+private payment state
+
+owner state
+
+Admin may see the transaction through explicit admin functionality, but Admin must not become the payment owner.
+
+==================================================
+16. VERIFY PAYMENT RETURN FLOW
+==================================================
+
+After PayPal approval/capture:
+
+the user must return to the correct UpDownBid payment/success state.
+
+Do NOT send the user to the public homepage.
+
+Do NOT require a manual refresh.
+
+Do NOT make the user click "Try payment again" after a successful payment.
+
+The application should immediately recognize the completed payment.
+
+==================================================
+17. FAILURE TEST — DO NOT CHARGE MULTIPLE TIMES
+==================================================
+
+After the successful $5 test, verify that refreshing the success page does NOT create another payment.
+
+Verify repeated capture/webhook delivery does NOT create another ledger entry.
+
+Do not perform additional real charges.
+
+Use existing automated/idempotency tests for deeper duplicate scenarios.
+
+==================================================
+18. PRODUCTION LOGGING
+==================================================
+
+Production logs must never contain:
+
+PAYPAL_CLIENT_SECRET
+
+OAuth access tokens
+
+buyer passwords
+
+full payment credentials
+
+sensitive personal information
+
+Only log safe identifiers such as:
+
+PayPal order ID
+
+capture ID
+
+internal payment ID
+
+status
+
+amount
+
+currency
+
+timestamps
+
+==================================================
+19. IF ANYTHING FAILS
+==================================================
+
+STOP.
+
+Do not repeatedly charge the buyer.
+
+Do not retry a real payment automatically.
+
+Report:
+
+- exact failing step
+- HTTP status
+- safe PayPal error/debug ID
+- internal payment ID
+- whether PayPal charged the buyer
+- whether database records were created
+- whether webhook was received
+
+Then wait for further instructions.
+
+==================================================
+20. FINAL PRODUCTION TEST REPORT
+==================================================
+
+Report:
+
+PAYPAL ENVIRONMENT:
+LIVE
+
+LIVE API CONNECTION:
+PASS/FAIL
+
+LIVE ORDER CREATION:
+PASS/FAIL
+
+BUYER APPROVAL:
+PASS/FAIL
+
+LIVE CAPTURE:
+PASS/FAIL
+
+AMOUNT VERIFICATION:
+PASS/FAIL
+
+CURRENCY VERIFICATION:
+PASS/FAIL
+
+MERCHANT VERIFICATION:
+PASS/FAIL
+
+WEBHOOK:
+PASS/FAIL
+
+IDEMPOTENCY:
+PASS/FAIL
+
+PAYMENT RECORD:
+PASS/FAIL
+
+RECEIPT:
+PASS/FAIL
+
+LEDGER:
+PASS/FAIL
+
+RANKING/BID UPDATE:
+PASS/FAIL
+
+ACCOUNT OWNERSHIP:
+PASS/FAIL
+
+RETURN FLOW:
+PASS/FAIL
+
+DUPLICATE PROTECTION:
+PASS/FAIL
+
+REAL AMOUNT CHARGED:
+$5.00
+
+Do not claim success unless the real PayPal capture and corresponding server/database verification both succeeded.
+
+==================================================
+IMPORTANT
+==================================================
+
+This is a REAL MONEY production test.
+
+Use exactly $5.
+
+Do not use the previous $255 test amount.
+
+Do not perform another real transaction after the first successful $5 transaction unless explicitly instructed.
+
+Do not expose or print any PayPal secrets.

@@ -1,0 +1,924 @@
+UPDOWNBID — LEGAL, SAFETY, CONTENT POLICY & USER PROTECTION SYSTEM
+
+Implement a complete, professional policy and safety system for Updownbid.
+
+IMPORTANT:
+- Inspect the existing application architecture before making changes.
+- Do not break existing authentication, Google login, PayPal, ranking, boost, push-down, campaign, listing, or payment functionality.
+- Do not make unrelated UI changes.
+- Reuse the existing routing, database, authentication, and design system.
+- All policy text must be stored in a maintainable way so it can be updated later.
+- The final legal wording must be clearly presented as Updownbid's policies and must not falsely claim certification or legal compliance.
+- Do not claim that these policies override applicable law.
+- Where applicable law gives a user a mandatory right, the policy must not attempt to remove that right.
+
+==================================================
+1. REQUIRED POLICY PAGES
+==================================================
+
+Create these public pages:
+
+/terms
+/ privacy
+/website-policy
+/refund-policy
+/community-guidelines
+/grievance
+
+Use the application's existing routing conventions if different.
+
+Add links to these pages in:
+- Footer
+- Account/profile area
+- Listing submission flow
+- Claim/payment flow where relevant
+- Signup/login consent area where legally appropriate
+
+Footer should contain:
+
+Terms & Conditions
+Privacy Policy
+Website & Content Policy
+Refund & Cancellation Policy
+Community Guidelines
+Grievance & Contact
+
+==================================================
+2. TERMS & CONDITIONS
+==================================================
+
+Page title:
+
+Terms & Conditions
+
+Subtitle:
+
+Last updated: [dynamic/current policy date]
+
+Include the following sections:
+
+1. About Updownbid
+
+Updownbid is a platform that allows users to submit websites/products and participate in time-limited ranking campaigns.
+
+Users may interact with listings through actions such as:
+- claiming a ranking position
+- boosting a listing
+- pushing down a listing
+- other platform features introduced in the future
+
+Updownbid does not guarantee that any listing will receive a particular ranking, traffic level, sales, leads, search-engine position, visibility, or business result.
+
+Ranking positions can change based on activity and the rules of the applicable campaign.
+
+2. Eligibility
+
+Users must provide accurate information when creating an account.
+
+Users are responsible for maintaining the security of their account.
+
+Users must not create accounts for fraudulent, abusive, or deceptive purposes.
+
+If age restrictions apply under applicable law or payment-provider requirements, users must comply with them.
+
+3. User Accounts
+
+Users are responsible for:
+- account credentials
+- activity performed through their account
+- keeping account information accurate
+- notifying Updownbid of suspected unauthorized access
+
+Updownbid may suspend or terminate accounts that violate these Terms, applicable law, payment-provider requirements, or platform policies.
+
+4. Website Listings
+
+Users must only submit websites they are authorized to promote.
+
+A user must not submit:
+- someone else's website without authorization
+- malicious websites
+- phishing websites
+- malware
+- fraudulent websites
+- scam websites
+- impersonation websites
+- websites containing illegal content
+- prohibited adult/sexually explicit content
+- gambling or betting websites
+- illegal lotteries
+- deceptive financial schemes
+- illegal investment schemes
+- spam websites
+- websites primarily designed for abusive traffic generation
+- websites that facilitate criminal activity
+- websites violating intellectual-property rights
+- websites violating applicable laws
+
+5. Ranking System
+
+Updownbid provides a ranking mechanism based on the rules of each campaign.
+
+Ranking is not a guarantee of:
+- search-engine ranking
+- website popularity
+- revenue
+- traffic
+- conversion
+- customer acquisition
+- business success
+
+Campaigns may have different rules, durations, minimum amounts, and ranking mechanics.
+
+6. Payments
+
+Payments may be processed through supported third-party payment providers such as PayPal.
+
+Updownbid does not store users' complete payment-card credentials when payment is processed by the payment provider.
+
+Payment-provider terms may also apply.
+
+The amount shown before payment should clearly identify applicable charges and taxes where required.
+
+7. Prohibited Activities
+
+Users must not use Updownbid to:
+- manipulate rankings through fraud
+- create fake accounts
+- create automated fake activity
+- spam users
+- abuse payment systems
+- perform chargeback fraud
+- exploit technical vulnerabilities
+- attack the platform
+- interfere with other users
+- submit prohibited websites
+- circumvent campaign limits
+- manipulate click analytics
+- manipulate boost/push-down activity
+- use bots to create artificial engagement
+- misrepresent a product or service
+
+8. Platform Moderation
+
+Updownbid may:
+- review listings
+- suspend listings
+- remove listings
+- freeze campaign activity
+- suspend accounts
+- restrict platform functionality
+- investigate suspicious activity
+- cooperate with payment providers and lawful authorities where appropriate
+
+9. External Websites
+
+Updownbid may display links to websites submitted by users.
+
+Updownbid does not automatically endorse or guarantee third-party websites.
+
+Users visit external websites at their own risk.
+
+Updownbid is not responsible for third-party website content, availability, products, services, privacy practices, or transactions except where applicable law provides otherwise.
+
+10. Intellectual Property
+
+Users must have the rights necessary to submit names, logos, images, descriptions, URLs, and other content.
+
+Users must not upload or submit material that infringes another person's intellectual-property rights.
+
+11. Platform Changes
+
+Updownbid may modify, improve, suspend, or discontinue features.
+
+Campaign rules may change for future campaigns.
+
+Existing paid transactions should be handled according to the applicable transaction terms and applicable law.
+
+12. Disclaimer
+
+Updownbid does not guarantee uninterrupted availability or any specific business outcome.
+
+Nothing in these Terms excludes liability or consumer rights that cannot legally be excluded.
+
+13. Governing Law
+
+Use a placeholder for the final legal jurisdiction rather than inventing one.
+
+Example:
+
+"These Terms are intended to be governed by the laws applicable to Updownbid's operating entity and applicable mandatory consumer-protection laws. The final governing-law and jurisdiction provisions should be confirmed by legal counsel."
+
+14. Contact
+
+Provide the official Updownbid support/contact details from the existing application configuration.
+
+Do NOT invent an email address.
+
+==================================================
+3. WEBSITE & CONTENT POLICY
+==================================================
+
+Page title:
+
+Website & Content Policy
+
+Purpose:
+
+Protect the Updownbid community and prevent the platform from being used to promote harmful, illegal, deceptive, abusive, or prohibited websites.
+
+Clearly state:
+
+Updownbid may remove a listing if the submitted website or associated content violates this policy.
+
+PROHIBITED CONTENT:
+
+A. Spam
+
+- spam websites
+- automated spam
+- mass unsolicited promotion
+- fake landing pages
+- traffic-generation abuse
+- repetitive submissions intended to manipulate rankings
+
+B. Fraud and scams
+
+- phishing
+- fake login pages
+- impersonation
+- fraudulent stores
+- fake investment schemes
+- fake financial services
+- deceptive offers
+- pyramid/Ponzi-style schemes
+- fraudulent fundraising
+- identity theft
+
+C. Malware and security threats
+
+- malware
+- ransomware
+- credential theft
+- malicious downloads
+- exploit delivery
+- botnets
+- malicious scripts
+- websites designed to compromise visitors
+
+D. Adult/sexually explicit content
+
+Do not allow websites primarily containing:
+- pornography
+- sexually explicit material
+- sexual services
+- sexual exploitation
+- non-consensual sexual content
+
+Any content involving sexual exploitation of minors must be prohibited and handled according to applicable law.
+
+E. Gambling and betting
+
+Do not allow:
+- illegal gambling
+- betting services where prohibited
+- casino promotion where prohibited
+- unauthorized lotteries
+- gambling-related fraud
+
+Do not assume that every gaming website is gambling.
+
+If a legitimate skill-based or regulated service is submitted, it may require manual review depending on applicable law and platform policy.
+
+F. Illegal activity
+
+- illegal drugs
+- trafficking
+- weapons prohibited by law
+- criminal services
+- stolen goods
+- hacking-for-hire
+- illegal surveillance
+- other unlawful activity
+
+G. Hate, harassment and extremist content
+
+Do not allow content that promotes:
+- violent extremism
+- terrorism
+- hate-based violence
+- targeted harassment
+- threats
+
+H. Copyright/IP infringement
+
+Users must not knowingly submit websites that infringe third-party rights.
+
+I. Misleading claims
+
+Do not submit websites using:
+- fake testimonials
+- fake reviews
+- deceptive pricing
+- false claims
+- impersonation
+- misleading business identity
+
+J. Dangerous or harmful content
+
+Updownbid may remove content that creates a serious risk of harm to users.
+
+==================================================
+4. ENFORCEMENT POLICY
+==================================================
+
+Explain that enforcement may include:
+
+1. Warning
+2. Temporary suspension
+3. Listing removal
+4. Campaign removal
+5. Account restriction
+6. Permanent account termination
+7. Payment/campaign restriction where appropriate
+8. Referral to appropriate authorities where legally required
+
+Do not promise that every violation receives the same punishment.
+
+Severity, intent, repetition, risk, and applicable law may be considered.
+
+==================================================
+5. PAYMENT + POLICY VIOLATION
+==================================================
+
+IMPORTANT:
+
+Do NOT write:
+
+"ALL PAYMENTS ARE NON-REFUNDABLE UNDER ALL CIRCUMSTANCES."
+
+Instead write:
+
+"Users should review the listing, campaign rules, applicable fees, and these policies before completing payment. If a listing or activity violates Updownbid policies, Updownbid may remove or suspend the listing or associated activity. Refund eligibility will be determined according to the applicable Refund & Cancellation Policy, the transaction terms, applicable law, and any mandatory consumer rights."
+
+Clearly state:
+
+"Policy violations do not create an automatic entitlement to a refund."
+
+But also:
+
+"Nothing in this policy is intended to remove or restrict any refund, cancellation, consumer, or other legal right that cannot lawfully be excluded."
+
+==================================================
+6. REFUND & CANCELLATION POLICY
+==================================================
+
+Create:
+
+/refund-policy
+
+Include:
+
+- payment confirmation
+- campaign-specific rules
+- cancellation rules
+- failed-payment handling
+- duplicate-payment handling
+- technical payment failures
+- unauthorized transactions
+- policy violations
+- fraudulent activity
+- chargebacks
+- payment-provider disputes
+- legally required refunds
+
+Important wording:
+
+"Refund eligibility depends on the nature of the transaction, campaign rules, payment status, applicable law, and the circumstances of the request."
+
+Do not promise "no refunds" universally.
+
+For prohibited/policy-violating listings:
+
+"Where a user violates the Website & Content Policy, Updownbid may remove the listing and restrict the associated account or campaign activity. A refund is not automatically guaranteed solely because a listing was removed for a policy violation. Any refund request will be evaluated under the applicable refund rules and applicable law."
+
+For duplicate charges:
+
+"If the same transaction is accidentally charged more than once, the duplicate transaction should be investigated and handled appropriately."
+
+For technical payment failure:
+
+"If a payment is unsuccessful, Updownbid must not treat the transaction as successfully completed merely because the user reached a payment page."
+
+For unauthorized transactions:
+
+"Users should contact Updownbid support and the relevant payment provider promptly."
+
+Do not create fake refund timeframes unless the actual business policy has been decided.
+
+==================================================
+7. PRIVACY POLICY
+==================================================
+
+Create:
+
+/privacy
+
+Include:
+
+1. Information collected
+
+Only collect information necessary for:
+- account creation
+- authentication
+- payment processing
+- platform operation
+- fraud/security
+- customer support
+- analytics
+- legal obligations
+
+Potential data:
+- name
+- email
+- account identifier
+- authentication provider information
+- website/listing information
+- transaction information
+- platform activity
+- anonymous analytics identifiers
+
+2. Google authentication
+
+Explain that when users sign in using Google, Updownbid receives information made available through the authentication flow, subject to the permissions and policies of the authentication provider.
+
+Do not claim to receive information that the application does not actually receive.
+
+3. Payment information
+
+State that PayPal or another payment provider may process payment information.
+
+Do not claim Updownbid stores card numbers unless the actual architecture does.
+
+4. Click analytics
+
+Explain that Updownbid may collect privacy-conscious analytics such as:
+- listing click events
+- listing identifier
+- timestamp
+- anonymous visitor/session identifier
+
+Explain the purpose:
+- measure listing interest
+- prevent abuse
+- improve ranking/analytics
+- detect fraudulent activity
+
+Avoid collecting unnecessary personal information.
+
+5. Cookies/session storage
+
+Explain authentication/session technologies and analytics technologies actually used by the application.
+
+Do not claim to use technologies that aren't actually present.
+
+6. Data sharing
+
+Data may be shared with:
+- authentication providers
+- payment processors
+- infrastructure/service providers
+- analytics/security providers
+- authorities where legally required
+
+7. Data retention
+
+Retain data only as long as reasonably necessary for:
+- account operation
+- transactions
+- security
+- dispute resolution
+- legal obligations
+
+8. Security
+
+Describe reasonable technical and organizational security practices without making unrealistic guarantees.
+
+9. User rights
+
+Provide appropriate mechanisms for users to request access, correction, deletion, or other rights where applicable.
+
+10. Contact
+
+Use the actual Updownbid support contact configured by the application.
+
+IMPORTANT:
+The privacy policy must be written in clear language and should not make false claims about data practices.
+
+==================================================
+8. COMMUNITY GUIDELINES
+==================================================
+
+Create:
+
+/community-guidelines
+
+Explain:
+
+"Updownbid is intended for legitimate products, businesses, projects, software, websites, and services."
+
+Users should:
+- submit legitimate websites
+- use accurate descriptions
+- respect other users
+- avoid manipulation
+- avoid spam
+- avoid fake engagement
+- avoid abusive behavior
+
+Prohibited:
+- fake accounts
+- bots
+- coordinated manipulation
+- harassment
+- scams
+- malicious activity
+- prohibited websites
+- fraudulent payment behavior
+
+Explain reporting/moderation.
+
+==================================================
+9. GRIEVANCE & CONTACT PAGE
+==================================================
+
+Create:
+
+/grievance
+
+Include:
+
+- Support/contact method
+- How to report a prohibited listing
+- How to report account abuse
+- How to report payment problems
+- How to request review of a moderation decision
+- How to submit a privacy request
+- Expected acknowledgement process
+
+Do not invent a statutory grievance officer or address.
+
+Instead create configuration values/placeholders in the admin/settings system for:
+
+GRIEVANCE_OFFICER_NAME
+GRIEVANCE_OFFICER_EMAIL
+SUPPORT_EMAIL
+BUSINESS_NAME
+BUSINESS_ADDRESS
+
+The final production values must be configured by the business owner.
+
+If applicable legal requirements require specific grievance information, make it easy to configure.
+
+==================================================
+10. WARNING POPUP BEFORE LISTING SUBMISSION
+==================================================
+
+Before a user submits a website/product to Updownbid, show a clear warning.
+
+Title:
+
+Important — Website & Content Policy
+
+Message:
+
+"Updownbid does not allow spam, scams, phishing, malware, fraudulent or misleading websites, illegal activities, adult/sexually explicit content, prohibited gambling or betting services, or other prohibited content.
+
+We may remove or suspend listings that violate our policies, including after payment.
+
+Policy violations do not automatically qualify for a refund. Refund eligibility is determined under our Refund & Cancellation Policy and applicable law.
+
+By continuing, you confirm that you are authorized to submit this website and that it complies with Updownbid's policies."
+
+Checkbox:
+
+[ ] I confirm that I am authorized to submit this website and that it complies with the Updownbid Website & Content Policy.
+
+Buttons:
+
+[Cancel]
+[Continue]
+
+The Continue button must remain disabled until the checkbox is checked.
+
+Links:
+
+Terms & Conditions
+Website & Content Policy
+Refund Policy
+
+Do NOT use deceptive wording.
+
+==================================================
+11. CLAIM / PAYMENT CONFIRMATION
+==================================================
+
+Before the user completes a paid claim/payment, show a concise confirmation:
+
+"You are about to pay $X to participate in this campaign."
+
+Show:
+- Listing
+- Website/domain
+- Campaign
+- Amount
+- applicable taxes/fees if any
+- key campaign rule
+- Refund Policy link
+- Terms link
+
+Checkbox where appropriate:
+
+[ ] I agree to the Updownbid Terms & Conditions and confirm that I have reviewed the Refund Policy.
+
+Do not hide important pricing information.
+
+The final PayPal payment button should only be available after the required confirmation.
+
+Do not make the user accept the same policy repeatedly unnecessarily during one flow.
+
+==================================================
+12. ADMIN POLICY MANAGEMENT
+==================================================
+
+If an admin panel exists, add:
+
+Admin → Policies
+
+Allow authorized administrators to manage:
+
+- Terms
+- Privacy Policy
+- Website & Content Policy
+- Refund Policy
+- Community Guidelines
+- Grievance information
+
+Store:
+- policy content
+- version
+- updatedAt
+- publishedAt
+- status
+
+Do not allow ordinary users to edit policies.
+
+Policy changes should not silently modify previously completed transaction records.
+
+==================================================
+13. USER ACCEPTANCE RECORD
+==================================================
+
+When a user accepts an important policy during listing submission or payment:
+
+Record:
+
+- user ID
+- policy type
+- policy version
+- acceptedAt
+- relevant action/context
+
+Do NOT store unnecessary personal information.
+
+Do not require acceptance every time a user simply views a page.
+
+For future policy versions, design the system so users can be asked to accept the updated version when appropriate.
+
+==================================================
+14. MODERATION DATABASE
+==================================================
+
+Inspect the existing listing schema.
+
+If moderation fields do not exist, add an appropriate moderation state.
+
+Suggested statuses:
+
+ACTIVE
+PENDING_REVIEW
+FLAGGED
+SUSPENDED
+REMOVED
+
+Store appropriate moderation metadata:
+
+- moderationStatus
+- moderationReason
+- moderatedAt
+- moderatedBy
+
+Do not expose internal moderation notes publicly.
+
+==================================================
+15. ADMIN MODERATION
+==================================================
+
+Add an admin moderation interface if an admin panel exists.
+
+Admin should be able to:
+
+- view flagged listings
+- inspect website/domain
+- suspend listing
+- remove listing
+- restore listing
+- record reason
+- view moderation history
+
+Do not allow ordinary users to perform these actions.
+
+==================================================
+16. AUTOMATED SAFETY CHECKS
+==================================================
+
+When a website is submitted:
+
+Perform basic safe validation.
+
+Check:
+- valid URL
+- http/https only
+- hostname
+- malformed URLs
+- obvious malicious patterns
+- duplicate submissions
+
+Do NOT build an unsafe crawler that blindly executes arbitrary website JavaScript.
+
+Do not fetch arbitrary websites from the server without appropriate SSRF protections.
+
+If server-side URL fetching is already implemented, protect it against:
+- localhost
+- 127.0.0.1
+- private IP ranges
+- cloud metadata endpoints
+- internal network addresses
+- unsupported protocols
+- DNS rebinding
+- redirects to internal addresses
+
+Use an appropriate safe URL validation architecture.
+
+Automated classification should be treated as a signal, not an unquestionable legal determination.
+
+High-risk cases should be flagged for manual review.
+
+==================================================
+17. REPORT LISTING
+==================================================
+
+Add a "Report" option on public listing pages/cards.
+
+Possible reasons:
+
+- Spam
+- Scam/Fraud
+- Phishing
+- Malware
+- Adult content
+- Gambling/Betting
+- Illegal activity
+- Copyright/IP issue
+- Misleading information
+- Other
+
+Do not require a user to create an account merely to report a public listing if the existing architecture can safely support anonymous reports.
+
+Rate-limit abuse of the reporting endpoint.
+
+Store reports securely.
+
+==================================================
+18. PUBLIC POLICY FOOTER
+==================================================
+
+Add a clean footer containing:
+
+Updownbid
+
+Terms & Conditions
+Privacy Policy
+Website & Content Policy
+Refund & Cancellation Policy
+Community Guidelines
+Grievance & Contact
+Report a Listing
+
+Do not make the footer visually overwhelming.
+
+Keep it mobile friendly.
+
+==================================================
+19. IMPORTANT LEGAL SAFETY
+==================================================
+
+Do NOT write any statement that says:
+
+"Updownbid can do anything and the user has no rights."
+
+Do NOT write:
+
+"No refunds under any circumstances."
+
+Do NOT write:
+
+"Users waive all legal rights."
+
+Do NOT write:
+
+"Updownbid is never responsible for anything."
+
+Instead use reasonable limitations and preserve mandatory rights.
+
+The policies should explicitly say:
+
+"Nothing in these policies is intended to exclude, restrict, or override any right or protection that cannot lawfully be excluded or restricted."
+
+==================================================
+20. SECURITY
+==================================================
+
+Do not expose:
+- PayPal secrets
+- authentication secrets
+- database credentials
+- admin credentials
+- internal moderation notes
+
+Do not put sensitive policy/admin configuration into frontend environment variables.
+
+Protect admin moderation APIs with proper authorization.
+
+Protect report APIs from spam.
+
+Protect policy acceptance records from user manipulation.
+
+==================================================
+21. TESTING
+==================================================
+
+Test:
+
+1. All policy pages load.
+2. All footer links work.
+3. Mobile layout works.
+4. Desktop layout works.
+5. Listing submission warning appears.
+6. Continue remains disabled until checkbox is checked.
+7. Policy links open correctly.
+8. Policy acceptance is recorded.
+9. Payment confirmation displays correct amount.
+10. Refund policy link works.
+11. Report Listing works.
+12. Rate limiting works.
+13. Admin can moderate.
+14. Normal users cannot moderate.
+15. Existing PayPal payment flow still works.
+16. Existing authentication still works.
+17. Existing Google login still works.
+18. Existing ranking remains unchanged.
+19. Existing boost/push-down remains unchanged.
+20. Existing click analytics remains unchanged.
+21. No open redirect or SSRF vulnerability is introduced.
+22. TypeScript/build checks pass.
+23. Existing tests pass.
+
+==================================================
+22. FINAL OUTPUT
+==================================================
+
+After implementation, report:
+
+1. Files created/changed
+2. Routes created
+3. Policy pages created
+4. Database migrations
+5. Listing moderation system
+6. Report system
+7. Policy acceptance system
+8. Warning popup behavior
+9. Payment confirmation behavior
+10. Security protections added
+11. Tests performed and results
+12. Any configuration values that I must fill in before production
+
+Do not deploy to production automatically.
+
+Do not modify production payment credentials.
+
+Do not change PayPal credentials.
+
+Do not make unrelated changes.
+
+The final result should feel like a professional marketplace/platform safety system rather than a collection of random warning messages.

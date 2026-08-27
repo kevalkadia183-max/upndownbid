@@ -1,0 +1,3010 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: listings
+    description: Public leaderboard listings
+  - name: activity
+    description: Public activity feed
+  - name: public-marketplace
+    description: Account-free sandbox marketplace actions
+  - name: campaigns
+    description: Weekly public bidding campaigns and permanent winner history
+  - name: member
+    description: Authenticated member account and listings
+  - name: moderation
+    description: Moderator controls and trust operations
+  - name: storage
+    description: Object storage serving endpoints
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /listings:
+    get:
+      operationId: getListings
+      tags: [listings]
+      summary: Get ranked listings
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [rank, newest, rating, supporters, controversial]
+            default: rank
+      responses:
+        "200":
+          description: Ranked listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+  /listings/{slug}:
+    get:
+      operationId: getListing
+      tags: [listings]
+      summary: Get one listing
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Listing detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingDetail"
+        "404":
+          description: Listing not found
+  /campaigns/current:
+    get:
+      operationId: getCurrentCampaign
+      tags: [campaigns]
+      summary: Get the server-authoritative live campaign
+      responses:
+        "200":
+          description: Current Sunday-to-Sunday campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentCampaign"
+  /campaigns/top4:
+    get:
+      operationId: getTop4Board
+      tags: [campaigns]
+      summary: Get the homepage TOP 4 board (live rankings or the previous campaign's frozen winners)
+      description: Returns the live current-campaign top 4 rankings when no prior campaign has completed yet, or the immediately preceding completed campaign's frozen final top 4 once one exists. The frozen entries never change while the current campaign is live.
+      responses:
+        "200":
+          description: TOP 4 board
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Top4Board"
+  /analytics/public:
+    get:
+      operationId: getPublicAnalytics
+      tags: [analytics]
+      summary: Get public platform proof metrics
+      responses:
+        "200":
+          description: Public analytics totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicAnalytics"
+  /analytics/visit:
+    post:
+      operationId: recordAnalyticsVisit
+      tags: [analytics]
+      summary: Record one anonymous visitor session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyticsVisitInput"
+      responses:
+        "204":
+          description: Visit recorded or already counted for this session
+        "400":
+          description: Invalid analytics payload
+  /winners:
+    get:
+      operationId: getCampaignWinners
+      tags: [campaigns]
+      summary: Get permanent weekly winner history and final standings
+      responses:
+        "200":
+          description: Completed campaign winners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignWinner"
+  /listings/{listingId}/click:
+    get:
+      operationId: clickListingWebsite
+      tags: [listings]
+      summary: Record a website click and redirect to the destination
+      description: Public, unauthenticated endpoint meant for direct browser navigation (an anchor href), not the generated API client. Resolves the listing's canonical website URL server-side, records an anonymous click event, and responds with a redirect. Never accepts a client-supplied destination URL.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirects to the listing's website
+        "404":
+          description: Listing not found or has no valid website URL
+  /listings/{listingId}/demo-view:
+    post:
+      operationId: recordDemoView
+      tags: [listings]
+      summary: Record a demo video view, deduplicated per anonymous visitor
+      description: Public, unauthenticated endpoint called when a viewer opens a listing's demo video. Increments the listing's demo view counter at most once per distinct visitor (identified the same way as website-click and site-visit analytics). Returns 404 when the listing has no demo video configured.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordDemoViewInput"
+      responses:
+        "200":
+          description: Current authoritative demo view count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoViewCount"
+        "404":
+          description: Listing not found or has no demo video
+  /listings/{listingId}/spotlight-impression:
+    post:
+      operationId: recordSpotlightImpression
+      tags: [listings]
+      summary: Record a homepage featured-spotlight popup impression
+      description: Public, unauthenticated endpoint fired once when the homepage's featured-listing spotlight popup is actually shown to a visitor. Not deduplicated per visitor -- each session-gated popup showing counts as one impression. Requires the listing to exist and be active.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordSpotlightImpressionInput"
+      responses:
+        "200":
+          description: Impression recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotlightImpressionAck"
+        "404":
+          description: Listing not found
+  /listings/{slug}/support:
+    post:
+      operationId: supportListing
+      tags: [listings]
+      summary: Record a sandbox support signal
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignalInput"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+  /listings/{slug}/penalize:
+    post:
+      operationId: penalizeListing
+      tags: [listings]
+      summary: Record a sandbox penalty signal
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignalInput"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+  /public/listings/preview:
+    post:
+      operationId: previewPublicListing
+      tags: [public-marketplace]
+      summary: Preview a public sandbox listing
+      description: Projects the rank for an account-free listing checkout. This endpoint is sandbox-only and does not create a listing or collect funds. Browser requests must be same-origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicListingPreviewInput"
+            example:
+              websiteUrl: https://example.com
+              ownerBid: 100
+      responses:
+        "200":
+          description: Projected sandbox rank or an existing listing with the same website
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicListingPreview"
+              examples:
+                projection:
+                  value:
+                    canonicalUrl: https://example.com/
+                    rank: 4
+                    currentTop: 250
+                    toReachTop: 251
+                duplicate:
+                  value:
+                    canonicalUrl: https://example.com/
+                    duplicate:
+                      $ref: "#/components/schemas/Listing"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+  /public/campaign-bids:
+    post:
+      operationId: placeCampaignBid
+      tags: [public-marketplace, campaigns]
+      summary: Place a new product bid or increase an existing owner bid
+      description: Creates a sandbox-verified owner bid in the live campaign. A listed product can only be increased with its original private transaction email; no account is required.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignBidInput"
+      responses:
+        "201":
+          description: Verified campaign bid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignBidResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+        "409":
+          description: The bid does not increase the existing owner bid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /public/listings/checkout:
+    post:
+      operationId: createPublicListingCheckout
+      tags: [public-marketplace]
+      summary: Create a public sandbox listing checkout
+      description: Creates a listing and completes its opening bid in the server sandbox. No account, card details, or real funds are required. Retrying the same Idempotency-Key is safe; a replay returns 200 with the original result. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicListingCheckoutInput"
+            example:
+              websiteUrl: https://example.com
+              category: SaaS
+              name: Example Cloud
+              tagline: Simple tools for modern teams
+              description: A focused product for teams that want less busywork.
+              ownerBid: 100
+              email: owner@example.com
+              ownerName: Example Founder
+      responses:
+        "200":
+          description: Idempotent replay returned the original public sandbox checkout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicListingCheckoutResponse"
+        "201":
+          description: Created public sandbox listing and completed checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicListingCheckoutResponse"
+              example:
+                listing:
+                  $ref: "#/components/schemas/Listing"
+                payment:
+                  id: 6c0f53ce-6f6c-4aaf-97f7-4d4e4a2c18a3
+                  status: succeeded
+                  receiptNumber: SBX-000123
+                manageUrl: /manage/secure-management-token
+                sandbox: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+        "409":
+          description: The website is already listed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicConflictError"
+              example:
+                error: This website is already on the leaderboard
+                duplicate:
+                  $ref: "#/components/schemas/Listing"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /public/listings/{slug}/checkout:
+    post:
+      operationId: createPublicActionCheckout
+      tags: [public-marketplace]
+      summary: Record a public sandbox community signal
+      description: Completes an account-free support or penalty checkout against an active listing in the server sandbox. No card details or real funds are required. If checkout confirmation is indeterminate, retry the exact request with the same Idempotency-Key; the retry resumes the original payment attempt. Browser requests must be same-origin.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: example-cloud
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicActionCheckoutInput"
+            example:
+              type: support
+              amount: 25
+              email: supporter@example.com
+              reason: Great product
+      responses:
+        "200":
+          description: Idempotent replay resumed or returned the original public action checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicActionCheckoutResponse"
+        "201":
+          description: Completed public sandbox signal checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicActionCheckoutResponse"
+              example:
+                payment:
+                  id: 0e7a8fb7-0fd1-4a44-aab8-765c1f2377d1
+                  status: succeeded
+                  receiptNumber: SBX-000124
+                listing:
+                  $ref: "#/components/schemas/Listing"
+                sandbox: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+        "404":
+          description: Active listing not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: Active listing not found
+        "409":
+          description: The request conflicts with the original idempotent action or the listing is not eligible
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: The payment provider rejected the checkout or could not be reached after a stored checkout was confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: Checkout outcome is indeterminate; retry the exact request with its original Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: Payment checkout creation is pending confirmation; retry using the same Idempotency-Key
+                retryable: true
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /public/payment-environment:
+    get:
+      operationId: getPublicPaymentEnvironment
+      tags: [public-marketplace]
+      summary: Read the active public payment environment
+      description: Returns whether public checkout is operating in sandbox or live mode. It does not expose payment credentials or provider secrets.
+      responses:
+        "200":
+          description: Active public payment environment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentEnvironment"
+  /public/payments/{id}:
+    get:
+      operationId: getPublicPaymentStatus
+      tags: [public-marketplace]
+      summary: Read the status of a public checkout
+      description: Returns the server-authoritative status for the opaque payment ID included in the hosted checkout return URL. It contains no payer details. Rankings only change after the provider verifies payment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 0e7a8fb7-0fd1-4a44-aab8-765c1f2377d1
+      responses:
+        "200":
+          description: Public payment status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicPaymentReceipt"
+        "404":
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /public/payments/{id}/review:
+    post:
+      operationId: createPublicReview
+      tags: [public-marketplace]
+      summary: Submit a review for a public sandbox checkout
+      description: Adds one community review to a completed public support or penalty checkout. This endpoint is account-free and sandbox-only. Browser requests must be same-origin.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 0e7a8fb7-0fd1-4a44-aab8-765c1f2377d1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicReviewInput"
+            example:
+              anonymous: true
+              rating: 5
+              reason: Great product
+              body: This was useful for our team.
+      responses:
+        "201":
+          description: Created public review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicReview"
+              example:
+                id: 2f7eb8c8-fbe6-44b5-87a8-b8c0d6f53b5d
+                listingId: 4a7b8b9e-0ebd-4f51-9cb0-39c4de2f2d58
+                kind: support
+                author: Anonymous Supporter
+                rating: 5
+                reason: Great product
+                body: This was useful for our team.
+                createdAt: "2026-08-23T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+        "404":
+          description: Completed community checkout not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "409":
+          description: Review already exists or checkout is not in the ledger
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /public/manage/{token}:
+    get:
+      operationId: getPublicManagedListing
+      tags: [public-marketplace]
+      summary: Read a secure public listing management link
+      description: Reads a time-limited, revocable management link for an account-free sandbox listing. The token must be treated as a secret.
+      parameters:
+        - $ref: "#/components/parameters/ManagementToken"
+      responses:
+        "200":
+          description: Managed listing and recent activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicManagedListing"
+              example:
+                listing:
+                  $ref: "#/components/schemas/Listing"
+                ownerName: Example Founder
+                activity: []
+                managementExpiresAt: "2026-11-21T12:00:00.000Z"
+        "404":
+          description: Management link not found, expired, or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      operationId: updatePublicManagedListing
+      tags: [public-marketplace]
+      summary: Update a listing through a secure public management link
+      description: Updates account-free sandbox listing details. Owner bids may only increase; an Idempotency-Key is required when increasing the bid. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/ManagementToken"
+        - $ref: "#/components/parameters/OptionalIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicManagementUpdateInput"
+            example:
+              tagline: Simple tools for modern teams
+              ownerBid: 150
+      responses:
+        "200":
+          description: Updated public sandbox listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicManagedListingUpdateResponse"
+              example:
+                listing:
+                  $ref: "#/components/schemas/Listing"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          description: Same-origin browser request required, or suspended listings cannot be changed through the management link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Management link expired or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Owner bid cannot be reduced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: archivePublicManagedListing
+      tags: [public-marketplace]
+      summary: Archive a listing through a secure public management link
+      description: Archives an account-free sandbox listing and revokes its management link. The token must be treated as a secret. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/ManagementToken"
+      responses:
+        "204":
+          description: Listing archived and management link revoked
+        "403":
+          description: Same-origin browser request required, or suspended listings cannot be archived through the management link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Management link expired or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /public/manage/{token}/logo-upload-url:
+    post:
+      operationId: requestPublicManagedListingLogoUploadUrl
+      tags: [public-marketplace]
+      summary: Request a presigned upload URL for a managed listing's logo
+      description: Account-free equivalent of the member logo-upload-url endpoint, authorized by the secure management token instead of a session. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/ManagementToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoUploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoUploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Same-origin browser request required, or suspended listings cannot be changed through the management link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Management link expired or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /public/reviews/{id}/vote:
+    post:
+      operationId: votePublicReview
+      tags: [public-marketplace]
+      summary: Mark a public review helpful
+      description: Records an anonymous, rate-limited helpful vote for a published review. This endpoint is account-free and sandbox-only. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+      responses:
+        "200":
+          description: Updated anonymous review vote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewVote"
+              example:
+                reviewId: 2f7eb8c8-fbe6-44b5-87a8-b8c0d6f53b5d
+                helpfulCount: 7
+                voted: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+        "404":
+          description: Published review not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      operationId: removePublicReviewVote
+      tags: [public-marketplace]
+      summary: Remove an anonymous helpful vote
+      description: Removes the current visitor's anonymous helpful vote from a published review. This endpoint is account-free and sandbox-only. Browser requests must be same-origin.
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+      responses:
+        "200":
+          description: Updated anonymous review vote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewVote"
+              example:
+                reviewId: 2f7eb8c8-fbe6-44b5-87a8-b8c0d6f53b5d
+                helpfulCount: 6
+                voted: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/SameOriginForbidden"
+  /storage/objects/{objectPath}:
+    get:
+      operationId: getStorageObject
+      tags: [storage]
+      summary: Serve an uploaded object (e.g. a listing logo)
+      description: Streams binary content for an object uploaded via a logo-upload-url flow. Unauthenticated by default -- logos are public-facing images shown throughout the app.
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema: { type: string }
+          description: Object path within the private object dir (e.g. `uploads/<uuid>`).
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Failed to serve object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /payments/checkout:
+    post:
+      operationId: createPaymentCheckout
+      tags: [payments]
+      summary: Create an idempotent payment checkout
+      description: Creates a pending checkout. A payment only affects the ledger after a verified provider event is received. Test-mode checkouts are completed by a server-generated test event.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentCheckoutInput"
+      responses:
+        "201":
+          description: Payment checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          description: Invalid checkout or idempotency key
+        "401":
+          description: Authentication required
+        "409":
+          description: Idempotency key conflict
+        "503":
+          description: Live payments are not enabled or configured
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [payments]
+      summary: Get one of the authenticated member's payments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "401":
+          description: Authentication required
+        "403":
+          description: Payment is not owned by the member
+        "404":
+          description: Payment not found
+  /payments/{id}/refund:
+    post:
+      operationId: refundPayment
+      tags: [payments]
+      summary: Request a refund for an eligible payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRefundInput"
+      responses:
+        "200":
+          description: Refund and updated payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRefundResponse"
+        "400":
+          description: Invalid refund
+        "401":
+          description: Authentication required
+        "403":
+          description: Payment is not owned by the member
+        "404":
+          description: Payment not found
+        "409":
+          description: Payment is not refundable or amount exceeds the balance
+        "503":
+          description: Live refunds are not enabled or configured
+  /paypal/create-order:
+    post:
+      operationId: createPayPalOrder
+      tags: [payments]
+      summary: Create a PayPal Orders v2 order for a local payment
+      description: Authenticated. Accepts only the opaque local payment ID; amount and currency are derived server-side.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayPalCreateOrderInput"
+      responses:
+        "201": { description: PayPal order created }
+  /paypal/capture-order:
+    post:
+      operationId: capturePayPalOrder
+      tags: [payments]
+      summary: Capture an approved PayPal order
+      description: Authenticated. The server verifies capture status, local order binding, USD currency, and cents before finality.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayPalCaptureOrderInput"
+      responses:
+        "200": { description: Verified payment result }
+  /paypal/webhook:
+    post:
+      operationId: receivePayPalWebhook
+      tags: [payments]
+      summary: Receive a verified PayPal webhook
+      description: Raw JSON only. The server verifies PayPal transmission headers through PayPal's verify-webhook-signature endpoint.
+      responses:
+        "202": { description: Event accepted }
+        "401": { description: Invalid webhook signature }
+  /payments/webhooks/{provider}:
+    post:
+      operationId: receivePaymentWebhook
+      tags: [payments]
+      summary: Receive a signed provider payment event
+      description: Provider events must include a valid HMAC signature. Replayed event IDs are acknowledged without applying a second ledger mutation.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: x-payment-signature
+          in: header
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProviderWebhookPayload"
+      responses:
+        "200":
+          description: Event accepted and reconciled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentWebhookResponse"
+        "400":
+          description: Invalid or unsupported event
+        "401":
+          description: Invalid webhook signature
+        "404":
+          description: Payment not found
+  /admin/payments/reconciliation:
+    post:
+      operationId: reconcilePayments
+      tags: [moderation]
+      summary: Reconcile stale payment states
+      description: Marks pending checkouts older than fifteen minutes for manual provider reconciliation. It never fabricates a successful payment.
+      responses:
+        "200":
+          description: Reconciliation report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReconciliation"
+        "401":
+          description: Moderator identity required
+        "403":
+          description: Moderator role required
+  /me:
+    get:
+      operationId: getMyProfile
+      tags: [member]
+      summary: Get the authenticated member profile
+      responses:
+        "200":
+          description: Member profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberProfile"
+        "401":
+          description: Authentication required
+    patch:
+      operationId: updateMyProfile
+      tags: [member]
+      summary: Update the authenticated member profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberProfileUpdate"
+      responses:
+        "200":
+          description: Updated member profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberProfile"
+        "401":
+          description: Authentication required
+  /me/listings:
+    get:
+      operationId: getMyListings
+      tags: [member]
+      summary: List listings owned by the authenticated member
+      responses:
+        "200":
+          description: Owned listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberListing"
+        "401":
+          description: Authentication required
+    post:
+      operationId: createListing
+      tags: [member]
+      summary: Create a listing owned by the authenticated member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingInput"
+      responses:
+        "201":
+          description: Created listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberListing"
+        "401":
+          description: Authentication required
+  /me/listings/{id}:
+    patch:
+      operationId: updateMyListing
+      tags: [member]
+      summary: Update a listing owned by the authenticated member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberListing"
+        "401":
+          description: Authentication required
+    delete:
+      operationId: archiveMyListing
+      tags: [member]
+      summary: Archive a listing owned by the authenticated member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Listing archived
+        "401":
+          description: Authentication required
+        "403":
+          description: Listing is not owned by the member
+        "404":
+          description: Listing not found
+  /me/listings/{id}/logo-upload-url:
+    post:
+      operationId: requestMyListingLogoUploadUrl
+      tags: [member]
+      summary: Request a presigned upload URL for a listing's logo
+      description: Returns a presigned GCS URL for direct upload. The client sends JSON metadata here, uploads the file directly to the returned URL, then PATCHes the listing with the returned objectPath as logoUrl.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoUploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoUploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Authentication required
+        "404":
+          description: Listing not found
+  /me/listings/{listingId}/reviews/{reviewId}/reply:
+    post:
+      operationId: replyToOwnedListingReview
+      tags: [member]
+      summary: Publish an owner reply to feedback on an owned listing
+      description: Only the verified owner of the listing can post or replace this public reply. Community feedback remains immutable.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: reviewId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerReplyInput"
+      responses:
+        "200":
+          description: Feedback with the owner's public reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "401":
+          description: Authentication required
+        "403":
+          description: Listing ownership is required
+        "404":
+          description: Listing or feedback not found
+  /me/transactions:
+    get:
+      operationId: getMyTransactions
+      tags: [member]
+      summary: Get the authenticated member's sandbox transaction history
+      responses:
+        "200":
+          description: Personal transaction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberTransaction"
+        "401":
+          description: Authentication required
+  /me/invoices:
+    get:
+      operationId: getMyInvoices
+      tags: [member]
+      summary: Get the authenticated member's own invoices
+      responses:
+        "200":
+          description: Personal invoice history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+        "401":
+          description: Authentication required
+  /me/invoices/{id}/pdf:
+    get:
+      operationId: downloadMyInvoicePdf
+      tags: [member]
+      summary: Download the authenticated member's own invoice PDF
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invoice PDF
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "401":
+          description: Authentication required
+        "403":
+          description: This invoice does not belong to the authenticated member
+        "404":
+          description: Invoice not found
+  /admin/invoices/{id}/pdf:
+    get:
+      operationId: downloadAdminInvoicePdf
+      tags: [moderation]
+      summary: Download any invoice PDF (moderator/admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invoice PDF
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "401":
+          description: Moderator identity required
+        "403":
+          description: Moderator role required
+        "404":
+          description: Invoice not found
+  /reviews/{id}/vote:
+    post:
+      operationId: voteReview
+      tags: [member]
+      summary: Mark a review helpful for the authenticated member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated review vote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewVote"
+        "401":
+          description: Authentication required
+        "404":
+          description: Review not found
+    delete:
+      operationId: removeReviewVote
+      tags: [member]
+      summary: Remove the authenticated member's helpful vote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated review vote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewVote"
+        "401":
+          description: Authentication required
+        "404":
+          description: Review not found
+  /reports:
+    post:
+      operationId: createReport
+      tags: [moderation]
+      summary: Submit a report for moderation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Report submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReport"
+        "429":
+          description: Report rate limit exceeded
+  /feedback:
+    post:
+      operationId: createFeedback
+      tags: [moderation]
+      summary: Submit site feedback (payment issue, bug, or other)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "201":
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFeedback"
+        "429":
+          description: Feedback rate limit exceeded
+  /policies:
+    get:
+      operationId: getPolicies
+      tags: [policies]
+      summary: Get all published policy documents
+      responses:
+        "200":
+          description: Published policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Policy"
+  /policies/{policyType}:
+    get:
+      operationId: getPolicy
+      tags: [policies]
+      summary: Get one published policy document
+      parameters:
+        - name: policyType
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Published policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Policy"
+        "404":
+          description: Policy not found
+  /site-settings:
+    get:
+      operationId: getSiteSettings
+      tags: [policies]
+      summary: Get public business/contact configuration used on policy pages
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /policy-acceptances:
+    post:
+      operationId: createPolicyAcceptance
+      tags: [policies]
+      summary: Record that the signed-in user accepted a policy in a given context
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyAcceptanceInput"
+      responses:
+        "201":
+          description: Acceptance recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyAcceptance"
+        "401":
+          description: Authentication required
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [moderation]
+      summary: Get the moderator dashboard overview
+      responses:
+        "200":
+          description: Moderator dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          description: Moderator identity required
+        "403":
+          description: Moderator role required
+  /admin/users:
+    get:
+      operationId: searchAdminUsers
+      tags: [moderation]
+      summary: Search verified members for moderator access management
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 120
+      responses:
+        "200":
+          description: Verified members matching the search
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Admin identity required
+        "403":
+          description: Admin role required
+  /admin/users/{id}/status:
+    patch:
+      operationId: updateAdminUserStatus
+      tags: [moderation]
+      summary: Suspend or reactivate a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModerationStatusInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+  /admin/users/{id}/role:
+    patch:
+      operationId: updateAdminUserRole
+      tags: [moderation]
+      summary: Grant or revoke moderator access for a verified member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserRoleInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Admin identity required
+        "403":
+          description: The actor cannot change this account
+        "404":
+          description: Verified member not found
+        "409":
+          description: User role is unchanged or was changed by another request
+  /admin/listings/{id}/status:
+    patch:
+      operationId: updateAdminListingStatus
+      tags: [moderation]
+      summary: Freeze or reactivate a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModerationStatusInput"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminListing"
+  /admin/listings/{id}/moderation:
+    patch:
+      operationId: moderateListing
+      tags: [moderation]
+      summary: Set a listing's granular moderation workflow state
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingModerationInput"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminListing"
+  /admin/reviews/{id}/moderation:
+    patch:
+      operationId: moderateReview
+      tags: [moderation]
+      summary: Publish, review, or hide a review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewModerationInput"
+      responses:
+        "200":
+          description: Updated review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReview"
+  /admin/reports/{id}:
+    patch:
+      operationId: resolveReport
+      tags: [moderation]
+      summary: Update a report workflow status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportResolutionInput"
+      responses:
+        "200":
+          description: Updated report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReport"
+  /admin/feedback/{id}:
+    patch:
+      operationId: resolveFeedback
+      tags: [moderation]
+      summary: Resolve or dismiss a feedback submission
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackResolutionInput"
+      responses:
+        "200":
+          description: Updated feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFeedback"
+  /admin/limits/{action}:
+    patch:
+      operationId: updateRateLimit
+      tags: [moderation]
+      summary: Change a server-side action rate limit
+      parameters:
+        - name: action
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RateLimitInput"
+      responses:
+        "200":
+          description: Updated rate limit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRateLimit"
+  /admin/policies:
+    get:
+      operationId: getAdminPolicies
+      tags: [policies]
+      summary: List all policy documents for admin editing
+      responses:
+        "200":
+          description: All policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminPolicy"
+  /admin/policies/{policyType}:
+    patch:
+      operationId: updateAdminPolicy
+      tags: [policies]
+      summary: Update and publish a policy document (admin only)
+      parameters:
+        - name: policyType
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyUpdate"
+      responses:
+        "200":
+          description: Updated policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPolicy"
+  /admin/site-settings:
+    patch:
+      operationId: updateAdminSiteSettings
+      tags: [policies]
+      summary: Update business/contact configuration (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /activity:
+    get:
+      operationId: getActivity
+      tags: [activity]
+      summary: Get recent public activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEvent"
+  /sponsorships/active:
+    get:
+      operationId: getActiveSponsorships
+      tags: [sponsorships]
+      summary: Get the currently active Featured/Sponsored listings
+      responses:
+        "200":
+          description: Active sponsorships
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SponsorshipListResponse"
+  /sponsorships/availability:
+    get:
+      operationId: getSponsorshipAvailability
+      tags: [sponsorships]
+      summary: Get Featured/Sponsored slot pricing and current availability
+      responses:
+        "200":
+          description: Sponsorship availability
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SponsorshipAvailability"
+  /sponsorships/events:
+    post:
+      operationId: recordSponsorshipEvent
+      tags: [sponsorships]
+      summary: Record a sponsorship popup/section impression or click
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SponsorshipEventInput"
+      responses:
+        "202":
+          description: Recorded
+  /sponsorships/checkout:
+    post:
+      operationId: createSponsorshipCheckout
+      tags: [sponsorships]
+      summary: Purchase a Featured/Sponsored slot for a listing owned by the signed-in member
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SponsorshipCheckoutInput"
+      responses:
+        "201":
+          description: Sponsorship checkout created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SponsorshipCheckoutResponse"
+        "401":
+          description: Authentication required
+        "403":
+          description: Only the listing owner can sponsor this listing
+        "409":
+          description: No Featured slot is currently available
+  /sponsorships/{id}/cancel:
+    post:
+      operationId: cancelSponsorship
+      tags: [sponsorships]
+      summary: Cancel an active sponsorship (owner or admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cancelled sponsorship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSponsorship"
+        "401":
+          description: Authentication required
+        "403":
+          description: Not authorized to cancel this sponsorship
+        "404":
+          description: Sponsorship not found
+  /admin/sponsorships:
+    get:
+      operationId: getAdminSponsorships
+      tags: [moderation]
+      summary: List all Featured Sponsor slots with analytics and revenue (admin only)
+      responses:
+        "200":
+          description: Sponsorship slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSponsorship"
+        "401":
+          description: Admin identity required
+        "403":
+          description: Admin role required
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: A stable key for safely retrying the same payment operation.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+    OptionalIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: A stable key for safely retrying a sandbox owner-bid increase.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+    ManagementToken:
+      name: token
+      in: path
+      required: true
+      description: Secret, time-limited token from a public sandbox listing checkout.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 255
+    ReviewId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Invalid request
+    SameOriginForbidden:
+      description: The request did not include a matching same-origin Origin header.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            missingOrigin:
+              value:
+                error: Same-origin requests are required
+            crossOrigin:
+              value:
+                error: Cross-origin requests are not allowed
+    RateLimited:
+      description: The anonymous action rate limit has been reached.
+      headers:
+        Retry-After:
+          description: Seconds until the current action window resets.
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Rate limit reached. Try again later.
+  schemas:
+    PayPalCreateOrderInput:
+      type: object
+      required: [paymentId]
+      properties:
+        paymentId: { type: string }
+    PayPalCaptureOrderInput:
+      type: object
+      required: [paymentId, orderId]
+      properties:
+        paymentId: { type: string }
+        orderId: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        retryable:
+          type: boolean
+          description: Whether retrying the same idempotent request is safe and appropriate.
+      required: [error]
+    CampaignListing:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        initials: { type: string }
+        accent: { type: string }
+        websiteUrl:
+          type: string
+          nullable: true
+          description: Optional; only populated by endpoints that need to link out to the product's site.
+        demoVideoUrl:
+          type: string
+          nullable: true
+          description: Optional demo video URL; when present, listing cards show a compact Demo button (no view count here).
+        logoUrl:
+          type: ["string", "null"]
+          description: Owner-uploaded brand logo path, when one has been uploaded.
+      required: [id, name, slug, initials, accent, logoUrl]
+    CampaignStanding:
+      type: object
+      properties:
+        rank: { type: number, minimum: 1 }
+        effectiveBid: { type: number }
+        ownerBid: { type: number, description: "The listing owner's own bid, before community boosts/penalties. effectiveBid minus this is the net community boost currently applied." }
+        listing: { $ref: "#/components/schemas/CampaignListing" }
+      required: [rank, effectiveBid, ownerBid, listing]
+    CampaignWinner:
+      type: object
+      properties:
+        campaignNumber: { type: number, minimum: 1 }
+        startAt: { type: string }
+        endAt: { type: string }
+        declaredAt: { type: string }
+        finalEffectiveBid: { type: number }
+        listing:
+          allOf:
+            - $ref: "#/components/schemas/CampaignListing"
+            - type: object
+              properties:
+                category: { type: string }
+              required: [category]
+        finalRankings:
+          type: array
+          items: { $ref: "#/components/schemas/CampaignStanding" }
+      required: [campaignNumber, startAt, endAt, declaredAt, finalEffectiveBid, listing, finalRankings]
+    Top4Board:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [live, final]
+          description: "live: no prior campaign has completed, so these are the current campaign's dynamic rankings. final: these are the previous completed campaign's frozen final standings."
+        campaignNumber:
+          type: number
+          description: The campaign these entries belong to (the current live campaign when mode is live, or the completed campaign when mode is final).
+        entries:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/CampaignStanding" }
+      required: [mode, campaignNumber, entries]
+    CurrentCampaign:
+      type: object
+      properties:
+        id: { type: string }
+        number: { type: number, minimum: 1 }
+        status: { type: string, enum: [live, completed] }
+        startAt: { type: string }
+        endAt: { type: string }
+        minimumBid: { type: number, minimum: 1 }
+        timezone: { type: string, const: UTC }
+        lastWinner:
+          type: ["object", "null"]
+          properties:
+            campaignNumber: { type: number, minimum: 1 }
+            name: { type: string }
+            slug: { type: string }
+            initials: { type: string }
+            accent: { type: string }
+            effectiveBid: { type: number }
+          required: [campaignNumber, name, slug, initials, accent, effectiveBid]
+      required: [id, number, status, startAt, endAt, minimumBid, timezone, lastWinner]
+    AnalyticsVisitInput:
+      type: object
+      properties:
+        visitorId:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+        sessionId:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+        path:
+          type: string
+          maxLength: 200
+      required: [visitorId, sessionId, path]
+    PublicAnalytics:
+      type: object
+      properties:
+        totalVisits: { type: number, minimum: 0 }
+        uniqueVisitors: { type: number, minimum: 0 }
+        activeProducts: { type: number, minimum: 0 }
+        totalBidVolume: { type: number, minimum: 0 }
+        ownerClaimVolume: { type: number, minimum: 0 }
+        communityBoostVolume: { type: number, minimum: 0 }
+        totalBoosts: { type: number, minimum: 0 }
+        totalPushDowns: { type: number, minimum: 0 }
+        totalReviews: { type: number, minimum: 0 }
+        completedCampaigns: { type: number, minimum: 0 }
+      required: [totalVisits, uniqueVisitors, activeProducts, totalBidVolume, ownerClaimVolume, communityBoostVolume, totalBoosts, totalPushDowns, totalReviews, completedCampaigns]
+    PublicListingPreviewInput:
+      type: object
+      properties:
+        websiteUrl:
+          type: string
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Valid website domain or http/https URL.
+        ownerBid: { type: number, minimum: 5, maximum: 100000, multipleOf: 1 }
+      required: [websiteUrl, ownerBid]
+    PublicListingPreview:
+      type: object
+      properties:
+        canonicalUrl: { type: string }
+        rank: { type: number }
+        currentTop: { type: number }
+        toReachTop: { type: number }
+        duplicate: { $ref: "#/components/schemas/Listing" }
+      required: [canonicalUrl]
+    CampaignBidInput:
+      type: object
+      properties:
+        websiteUrl:
+          type: string
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+        category: { type: string, minLength: 1, maxLength: 80 }
+        ownerBid: { type: number, minimum: 5, maximum: 100000, multipleOf: 1 }
+        email:
+          type: string
+          pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$'
+          maxLength: 320
+        ownerName: { type: string, minLength: 2, maxLength: 80 }
+        demoVideoUrl:
+          type: string
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Optional demo video URL (YouTube, YouTube Shorts, Vimeo, or another http(s) link).
+        accent:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+          description: Optional brand accent color as a 6-digit hex value (e.g. #FF7A5C). When omitted, one is auto-assigned.
+      required: [websiteUrl, category, ownerBid, email]
+    CampaignBidResponse:
+      type: object
+      properties:
+        mode: { type: string, enum: [new, increase] }
+        campaign:
+          type: object
+          properties:
+            number: { type: number, minimum: 1 }
+            minimumBid: { type: number, minimum: 1 }
+            startAt: { type: string }
+            endAt: { type: string }
+          required: [number, minimumBid, startAt, endAt]
+        listing: { $ref: "#/components/schemas/Listing" }
+        payment: { $ref: "#/components/schemas/PublicPaymentReceipt" }
+        manageUrl: { type: string }
+      required: [mode, campaign, listing, payment]
+    PublicListingCheckoutInput:
+      type: object
+      properties:
+        websiteUrl:
+          type: string
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Valid website domain or http/https URL.
+        category: { type: string, minLength: 1, maxLength: 80 }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        tagline: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        ownerBid: { type: number, minimum: 5, maximum: 100000, multipleOf: 1 }
+        email:
+          type: string
+          pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$'
+          maxLength: 320
+          description: Valid email address used only for the sandbox record.
+        ownerName: { type: string, maxLength: 80 }
+      required: [websiteUrl, category, name, tagline, description, ownerBid, email]
+    PublicPaymentReceipt:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, succeeded, failed, refunded, partially_refunded, requires_reconciliation] }
+        receiptNumber: { type: ["string", "null"] }
+        environment:
+          type: string
+          enum: [sandbox, live]
+          description: Environment that created this checkout.
+        checkoutUrl:
+          type: ["string", "null"]
+          description: Hosted provider checkout URL when an external checkout is pending.
+      required: [id, status, receiptNumber, environment]
+    PaymentEnvironment:
+      type: object
+      properties:
+        mode: { type: string, enum: [sandbox, live] }
+        provider: { type: string }
+        liveEnabled: { type: boolean }
+        paypalClientId:
+          type: ["string", "null"]
+          description: PayPal JavaScript SDK client ID; never includes a secret.
+      required: [mode, provider, liveEnabled]
+    PublicListingCheckoutResponse:
+      type: object
+      properties:
+        listing: { $ref: "#/components/schemas/Listing" }
+        payment: { $ref: "#/components/schemas/PublicPaymentReceipt" }
+        manageUrl: { type: string, minLength: 1 }
+        sandbox: { type: boolean, description: Whether this checkout used the sandbox environment. }
+      required: [listing, payment, manageUrl, sandbox]
+    PublicActionCheckoutInput:
+      type: object
+      properties:
+        type: { type: string, enum: [support, penalty] }
+        amount: { type: number, minimum: 5, maximum: 10000, multipleOf: 1 }
+        email:
+          type: string
+          pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$'
+          maxLength: 320
+          description: Valid email address used only for the sandbox record.
+        reason:
+          type: string
+          maxLength: 120
+          description: A free-form boost reason, or the selected Push Down reason.
+        reasonDescription:
+          type: string
+          maxLength: 120
+          description: Optional issue detail for Bug, UI / UX, Performance, or Missing / broken feature; required for Other.
+      required: [type, amount, email]
+    PublicActionCheckoutResponse:
+      type: object
+      properties:
+        payment: { $ref: "#/components/schemas/PublicPaymentReceipt" }
+        listing: { $ref: "#/components/schemas/Listing" }
+        sandbox: { type: boolean, description: Whether this checkout used the sandbox environment. }
+      required: [payment, listing, sandbox]
+    PublicReviewInput:
+      type: object
+      properties:
+        anonymous: { type: boolean, default: true }
+        displayName: { type: string, minLength: 2, maxLength: 80 }
+        rating: { type: number, minimum: 1, maximum: 5, multipleOf: 1, default: 5 }
+        reason: { type: string, minLength: 1, maxLength: 120 }
+        body: { type: string, maxLength: 1000, default: "" }
+      required: [reason]
+    PublicReview:
+      type: object
+      properties:
+        id: { type: string }
+        listingId: { type: string }
+        kind: { type: string, enum: [support, penalty] }
+        author: { type: string }
+        rating: { type: number, minimum: 1, maximum: 5 }
+        reason: { type: string }
+        body: { type: string }
+        createdAt: { type: string }
+      required: [id, listingId, kind, author, rating, reason, body, createdAt]
+    PublicManagedActivity:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [OWNER_BID, COMMUNITY_BID, PENALTY, REFUND] }
+        amount: { type: number }
+        createdAt: { type: string }
+        reason: { type: ["string", "null"] }
+      required: [id, type, amount, createdAt, reason]
+    PublicManagedListing:
+      type: object
+      properties:
+        listing: { $ref: "#/components/schemas/Listing" }
+        ownerName: { type: ["string", "null"] }
+        activity:
+          type: array
+          items: { $ref: "#/components/schemas/PublicManagedActivity" }
+        managementExpiresAt: { type: ["string", "null"] }
+      required: [listing, ownerName, activity, managementExpiresAt]
+    PublicManagementUpdateInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        tagline: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        websiteUrl:
+          type: ["string", "null"]
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Valid website domain or http/https URL when provided.
+        ownerBid: { type: number, minimum: 5, maximum: 100000, multipleOf: 1 }
+        demoVideoUrl:
+          type: ["string", "null"]
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Optional demo video URL when provided; set to null to remove an existing one.
+        logoUrl:
+          type: ["string", "null"]
+          pattern: '^/objects/.+$'
+          maxLength: 500
+          description: Object-storage path returned by the logo-upload-url flow. Set to null to remove the uploaded logo and revert to the initials avatar.
+    PublicManagedListingUpdateResponse:
+      type: object
+      properties:
+        listing: { $ref: "#/components/schemas/Listing" }
+      required: [listing]
+    PublicConflictError:
+      type: object
+      properties:
+        error: { type: string }
+        duplicate: { $ref: "#/components/schemas/Listing" }
+      required: [error]
+    PaymentCheckoutInput:
+      type: object
+      properties:
+        listingId: { type: string, minLength: 1 }
+        type:
+          type: string
+          enum: [OWNER_BID, COMMUNITY_BID, PENALTY]
+        amount: { type: number, exclusiveMinimum: 0, maximum: 100000 }
+        currency: { type: string, minLength: 3, maxLength: 3, default: USD }
+        reason: { type: string, maxLength: 120 }
+        receiptEmail: { type: ["string", "null"], maxLength: 320 }
+      required: [listingId, type, amount]
+    PaymentRefundInput:
+      type: object
+      properties:
+        amount: { type: number, exclusiveMinimum: 0, maximum: 100000 }
+        reason: { type: string, maxLength: 500 }
+      required: [amount]
+    Payment:
+      type: object
+      properties:
+        id: { type: string }
+        listingId:
+          type: ["string", "null"]
+          description: Null until a deferred new-listing checkout's payment succeeds and its listing is created.
+        type: { type: string, enum: [OWNER_BID, COMMUNITY_BID, PENALTY, SPONSORSHIP] }
+        amount: { type: number }
+        currency: { type: string }
+        platformFee: { type: number }
+        provider: { type: string }
+        status:
+          type: string
+          enum: [pending, succeeded, failed, refunded, partially_refunded, requires_reconciliation]
+        providerCheckoutId: { type: ["string", "null"] }
+        providerPaymentId: { type: ["string", "null"] }
+        failureCode: { type: ["string", "null"] }
+        failureMessage: { type: ["string", "null"] }
+        receiptNumber: { type: ["string", "null"] }
+        receiptEmail: { type: ["string", "null"] }
+        checkoutUrl:
+          type: ["string", "null"]
+          description: Hosted provider sandbox checkout URL when an external checkout is pending.
+        createdAt: { type: string }
+        updatedAt: { type: string }
+      required: [id, listingId, type, amount, currency, platformFee, provider, status, providerCheckoutId, providerPaymentId, failureCode, failureMessage, receiptNumber, receiptEmail, createdAt, updatedAt]
+    PaymentRefund:
+      type: object
+      properties:
+        id: { type: string }
+        paymentId: { type: string }
+        amount: { type: number }
+        reason: { type: ["string", "null"] }
+        status: { type: string, enum: [pending, succeeded, failed] }
+        providerRefundId: { type: ["string", "null"] }
+        createdAt: { type: string }
+      required: [id, paymentId, amount, reason, status, providerRefundId, createdAt]
+    PaymentRefundResponse:
+      type: object
+      properties:
+        refund: { $ref: "#/components/schemas/PaymentRefund" }
+        payment: { $ref: "#/components/schemas/Payment" }
+      required: [refund, payment]
+    PaymentWebhookResponse:
+      type: object
+      properties:
+        eventId: { type: string }
+        duplicate: { type: boolean }
+        handled: { type: boolean }
+        payment: { $ref: "#/components/schemas/Payment" }
+      required: [eventId, duplicate, handled, payment]
+    ProviderWebhookPayload:
+      type: object
+      description: Provider-specific signed event payload.
+      additionalProperties: true
+    PaymentReconciliation:
+      type: object
+      properties:
+        markedForReview: { type: number }
+        pending: { type: number }
+        failed: { type: number }
+        succeeded: { type: number }
+      required: [markedForReview, pending, failed, succeeded]
+    ReportInput:
+      type: object
+      properties:
+        targetType:
+          type: string
+          enum: [listing, review, transaction, user]
+        targetId: { type: string, minLength: 1 }
+        reason: { type: string, minLength: 1, maxLength: 120 }
+        details: { type: string, maxLength: 1000 }
+      required: [targetType, targetId, reason]
+    ModerationStatusInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, suspended]
+        reason: { type: string, maxLength: 500 }
+      required: [status]
+    ListingModerationInput:
+      type: object
+      properties:
+        moderationStatus:
+          type: string
+          enum: [active, pending_review, flagged, suspended, removed]
+        reason: { type: string, maxLength: 500 }
+      required: [moderationStatus]
+    Policy:
+      type: object
+      properties:
+        policyType: { type: string }
+        title: { type: string }
+        content: { type: string }
+        version: { type: number }
+        publishedAt: { type: ["string", "null"] }
+      required: [policyType, title, content, version, publishedAt]
+    AdminPolicy:
+      allOf:
+        - $ref: "#/components/schemas/Policy"
+        - type: object
+          properties:
+            status: { type: string, enum: [draft, published] }
+            updatedById: { type: ["string", "null"] }
+            updatedAt: { type: string }
+          required: [status, updatedById, updatedAt]
+    PolicyUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        content: { type: string, minLength: 1, maxLength: 200000 }
+        status:
+          type: string
+          enum: [draft, published]
+      required: [title, content]
+    SiteSettings:
+      type: object
+      properties:
+        businessName: { type: ["string", "null"] }
+        businessAddress: { type: ["string", "null"] }
+        supportEmail: { type: ["string", "null"] }
+        grievanceOfficerName: { type: ["string", "null"] }
+        grievanceOfficerEmail: { type: ["string", "null"] }
+        invoiceAdminEmail: { type: ["string", "null"] }
+        # A configured tax rate is what turns on the tax breakdown on newly
+        # issued invoices -- see taxRatePercent on SiteSettingsUpdate. Null
+        # means "no tax configured", not "0% tax".
+        taxRatePercent: { type: ["number", "null"] }
+        taxRegistrationNumber: { type: ["string", "null"] }
+        # Defaults to "Tax" when null -- lets a business call this "VAT",
+        # "GST", etc. to match what their region's invoices must say.
+        taxLabel: { type: ["string", "null"] }
+        # Null means "not configured" -- the Featured/Sponsored checkout
+        # falls back to a built-in default price/duration, it is never
+        # blocked on an admin having visited Site Settings first.
+        sponsorshipPriceCents: { type: ["number", "null"] }
+        sponsorshipDurationDays: { type: ["number", "null"] }
+      required: [businessName, businessAddress, supportEmail, grievanceOfficerName, grievanceOfficerEmail, invoiceAdminEmail, taxRatePercent, taxRegistrationNumber, taxLabel, sponsorshipPriceCents, sponsorshipDurationDays]
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        businessName: { type: ["string", "null"], maxLength: 200 }
+        businessAddress: { type: ["string", "null"], maxLength: 500 }
+        supportEmail: { type: ["string", "null"], maxLength: 200 }
+        grievanceOfficerName: { type: ["string", "null"], maxLength: 200 }
+        grievanceOfficerEmail: { type: ["string", "null"], maxLength: 200 }
+        invoiceAdminEmail: { type: ["string", "null"], maxLength: 200 }
+        taxRatePercent: { type: ["number", "null"], minimum: 0, maximum: 100, multipleOf: 0.01 }
+        taxRegistrationNumber: { type: ["string", "null"], maxLength: 100 }
+        taxLabel: { type: ["string", "null"], maxLength: 40 }
+        sponsorshipPriceCents: { type: ["number", "null"], minimum: 100, maximum: 10000000, multipleOf: 1 }
+        sponsorshipDurationDays: { type: ["number", "null"], minimum: 1, maximum: 90, multipleOf: 1 }
+    PolicyAcceptanceInput:
+      type: object
+      properties:
+        policyType:
+          type: string
+          enum: [terms, privacy, website_policy, refund_policy, community_guidelines]
+        context:
+          type: string
+          enum: [listing_submission, campaign_claim, payment, signup]
+      required: [policyType, context]
+    PolicyAcceptance:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        policyType: { type: string }
+        policyVersion: { type: number }
+        context: { type: string }
+        createdAt: { type: string }
+      required: [id, userId, policyType, policyVersion, context, createdAt]
+    AdminUserRoleInput:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [member, moderator]
+      required: [role]
+    ReviewModerationInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [published, under_review, hidden]
+        reason: { type: string, maxLength: 500 }
+      required: [status]
+    ReportResolutionInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, under_review, resolved, dismissed]
+        resolution: { type: string, maxLength: 500 }
+      required: [status]
+    FeedbackInput:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [payment_issue, bug, other]
+        message: { type: string, minLength: 1, maxLength: 2000 }
+        contactEmail:
+          type: string
+          maxLength: 200
+          pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        path: { type: string, maxLength: 300 }
+      required: [category, message]
+    FeedbackResolutionInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, resolved, dismissed]
+        resolution: { type: string, maxLength: 500 }
+      required: [status]
+    RateLimitInput:
+      type: object
+      properties:
+        maxRequests: { type: number, minimum: 1, maximum: 10000 }
+        windowSeconds: { type: number, minimum: 1, maximum: 86400 }
+      required: [maxRequests, windowSeconds]
+    RecordDemoViewInput:
+      type: object
+      properties:
+        visitorId:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+    DemoViewCount:
+      type: object
+      properties:
+        demoViews: { type: number, minimum: 0 }
+      required: [demoViews]
+    RecordSpotlightImpressionInput:
+      type: object
+      properties:
+        visitorId:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+    SpotlightImpressionAck:
+      type: object
+      properties:
+        recorded: { type: boolean }
+      required: [recorded]
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    SignalInput:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 1
+          maximum: 10000
+        reason:
+          type: string
+          maxLength: 120
+      required: [amount]
+    ListingInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        tagline: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        websiteUrl: { type: ["string", "null"], maxLength: 500 }
+        ownerBid: { type: number, minimum: 0, maximum: 100000 }
+        accent:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+          description: Optional brand accent color as a 6-digit hex value (e.g. #FF7A5C). When omitted, one is auto-assigned.
+        demoVideoUrl:
+          type: ["string", "null"]
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Optional demo video URL (YouTube, YouTube Shorts, Vimeo, or another http(s) link).
+      required: [name, tagline, description, category, ownerBid]
+    ListingUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        tagline: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        websiteUrl: { type: ["string", "null"], maxLength: 500 }
+        ownerBid: { type: number, minimum: 0, maximum: 100000 }
+        status: { type: string, enum: [active, archived] }
+        accent:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+          description: Brand accent color as a 6-digit hex value (e.g. #FF7A5C).
+        demoVideoUrl:
+          type: ["string", "null"]
+          pattern: '^(?:https?://)?[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^\s]*)?$'
+          maxLength: 2048
+          description: Optional demo video URL when provided; set to null to remove an existing one.
+        logoUrl:
+          type: ["string", "null"]
+          pattern: '^/objects/.+$'
+          maxLength: 500
+          description: Object-storage path returned by the logo-upload-url flow (e.g. `/objects/uploads/<uuid>`). Set to null to remove the uploaded logo and revert to the initials avatar.
+    Listing:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        tagline: { type: string }
+        description: { type: string }
+        category: { type: string }
+        initials: { type: string }
+        accent: { type: string }
+        rank: { type: number }
+        effectiveBid: { type: number }
+        ownerBid: { type: number }
+        communitySupport: { type: number }
+        penalties: { type: number }
+        supporters: { type: number }
+        penalizers: { type: number }
+        rating: { type: number }
+        reviewCount: { type: number }
+        clicks: { type: number }
+        clickAnalytics: { $ref: "#/components/schemas/ListingClickAnalytics" }
+        createdAt: { type: string }
+        trend: { type: number }
+        websiteUrl: { type: ["string", "null"] }
+        demoVideoUrl:
+          type: ["string", "null"]
+          description: Optional demo video URL (YouTube, YouTube Shorts, Vimeo, or another http(s) link).
+        demoViewCount:
+          type: number
+          minimum: 0
+          description: Count of distinct visitors who have opened this listing's demo video. Always 0 when demoVideoUrl is null.
+        logoUrl:
+          type: ["string", "null"]
+          description: Owner-uploaded brand logo, served from object storage (e.g. `/objects/uploads/<uuid>`). When null, clients should fall back to the initials/accent avatar.
+      required:
+        - id
+        - name
+        - slug
+        - tagline
+        - description
+        - category
+        - initials
+        - accent
+        - rank
+        - effectiveBid
+        - ownerBid
+        - communitySupport
+        - penalties
+        - supporters
+        - penalizers
+        - rating
+        - reviewCount
+        - clicks
+        - clickAnalytics
+        - createdAt
+        - trend
+        - websiteUrl
+        - demoVideoUrl
+        - demoViewCount
+        - logoUrl
+    ListingClickAnalytics:
+      type: object
+      description: Website click totals for a listing. uniqueClicks counts distinct anonymous visitors; totalClicks counts every recorded click event.
+      properties:
+        totalClicks: { type: number }
+        uniqueClicks: { type: number }
+      required:
+        - totalClicks
+        - uniqueClicks
+    LogoUploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Original file name.
+        size:
+          type: number
+          minimum: 1
+          maximum: 5242880
+          multipleOf: 1
+          description: File size in bytes (max 5MB).
+        contentType:
+          type: string
+          enum: [image/png, image/jpeg, image/webp, image/svg+xml]
+          description: MIME type of the logo image.
+    LogoUploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          description: Presigned GCS URL for the direct PUT upload.
+        objectPath:
+          type: string
+          description: Normalized object path (e.g. `/objects/uploads/<uuid>`). Pass this back as `logoUrl` on the listing update endpoint.
+    MemberListing:
+      allOf:
+        - $ref: "#/components/schemas/Listing"
+        - type: object
+          properties:
+            ownerId: { type: string }
+            status: { type: string, enum: [active, archived] }
+            feedback:
+              type: array
+              items:
+                $ref: "#/components/schemas/Review"
+          required: [ownerId, status, feedback]
+    MemberProfile:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: ["string", "null"] }
+        displayName: { type: string }
+        photoUrl: { type: ["string", "null"] }
+        bio: { type: ["string", "null"] }
+        company: { type: ["string", "null"] }
+        profileRole: { type: ["string", "null"] }
+        socialLinks: { type: ["string", "null"] }
+        website: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+        role: { type: string, enum: [member, moderator, admin] }
+        status: { type: string, enum: [active, suspended] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        listingsCount: { type: number }
+        transactionsCount: { type: number }
+      required: [id, email, displayName, photoUrl, bio, company, profileRole, socialLinks, website, location, role, status, createdAt, updatedAt, listingsCount, transactionsCount]
+    MemberProfileUpdate:
+      type: object
+      properties:
+        displayName: { type: string, minLength: 2, maxLength: 80 }
+        photoUrl: { type: ["string", "null"], maxLength: 2048 }
+        bio: { type: ["string", "null"], maxLength: 1000 }
+        company: { type: ["string", "null"], maxLength: 120 }
+        profileRole: { type: ["string", "null"], maxLength: 120 }
+        socialLinks: { type: ["string", "null"], maxLength: 2000 }
+        website: { type: ["string", "null"], maxLength: 2048 }
+        location: { type: ["string", "null"], maxLength: 120 }
+      required: [displayName]
+    Invoice:
+      type: object
+      properties:
+        id: { type: string }
+        invoiceNumber: { type: string }
+        paymentId: { type: string }
+        listingId: { type: ["string", "null"] }
+        listingName: { type: ["string", "null"] }
+        listingWebsiteUrl: { type: ["string", "null"] }
+        campaignNumber: { type: ["number", "null"] }
+        type: { type: string, enum: [OWNER_BID, COMMUNITY_BID, PENALTY, SPONSORSHIP] }
+        status: { type: string, enum: [PAID, REFUNDED, PARTIALLY_REFUNDED] }
+        currency: { type: string }
+        subtotal: { type: number }
+        tax: { type: number }
+        platformFee: { type: number }
+        total: { type: number }
+        refunded: { type: number }
+        billingName: { type: ["string", "null"] }
+        billingEmail: { type: ["string", "null"] }
+        provider: { type: string }
+        reason: { type: ["string", "null"] }
+        pdfAvailable: { type: boolean }
+        issuedAt: { type: string }
+      required: [id, invoiceNumber, paymentId, listingId, listingName, listingWebsiteUrl, campaignNumber, type, status, currency, subtotal, tax, platformFee, total, refunded, billingName, billingEmail, provider, reason, pdfAvailable, issuedAt]
+    MemberTransaction:
+      type: object
+      properties:
+        id: { type: string }
+        listingId: { type: string }
+        listingName: { type: string }
+        type: { type: string, enum: [OWNER_BID, COMMUNITY_BID, PENALTY] }
+        amount: { type: number }
+        reason: { type: ["string", "null"] }
+        status: { type: string }
+        provider: { type: string }
+        createdAt: { type: string }
+      required: [id, listingId, listingName, type, amount, reason, status, provider, createdAt]
+    ReviewVote:
+      type: object
+      properties:
+        reviewId: { type: string }
+        helpfulCount: { type: number }
+        voted: { type: boolean }
+      required: [reviewId, helpfulCount, voted]
+    ListingDetail:
+      allOf:
+        - $ref: "#/components/schemas/Listing"
+        - type: object
+          properties:
+            reviews:
+              type: array
+              items:
+                $ref: "#/components/schemas/Review"
+            transactions:
+              type: array
+              items:
+                $ref: "#/components/schemas/Transaction"
+            pushDownReasonCounts:
+              type: array
+              items:
+                $ref: "#/components/schemas/PushDownReasonCount"
+            owner:
+              type: ["object", "null"]
+              description: Public-safe profile details for this listing's registered owner. Null when the listing has no linked member account. Never includes email, role/status, or other account-internal fields.
+              properties:
+                displayName: { type: string }
+                photoUrl: { type: ["string", "null"] }
+                bio: { type: ["string", "null"] }
+                company: { type: ["string", "null"] }
+                profileRole: { type: ["string", "null"] }
+                socialLinks: { type: ["string", "null"] }
+                website: { type: ["string", "null"] }
+                location: { type: ["string", "null"] }
+              required: [displayName, photoUrl, bio, company, profileRole, socialLinks, website, location]
+    Review:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [support, penalty] }
+        author: { type: string }
+        amount: { type: number }
+        rating: { type: number, minimum: 1, maximum: 5 }
+        reason: { type: string }
+        body: { type: string }
+        createdAt: { type: string }
+        helpfulCount: { type: number }
+        ownerReply:
+          type: ["object", "null"]
+          properties:
+            author: { type: string }
+            body: { type: string }
+            createdAt: { type: string }
+          required: [author, body, createdAt]
+      required: [id, kind, author, amount, rating, reason, body, createdAt, helpfulCount, ownerReply]
+    OwnerReplyInput:
+      type: object
+      properties:
+        body: { type: string, minLength: 1, maxLength: 1000 }
+      required: [body]
+    PushDownReasonCount:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [Bug, UI / UX, Performance, Missing / broken feature, I’m a competitor, Just for fun, Other]
+        count: { type: number, minimum: 1 }
+      required: [reason, count]
+    Transaction:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [OWNER_BID, COMMUNITY_BID, PENALTY] }
+        amount: { type: number }
+        status: { type: string, enum: [sandbox_verified, verified] }
+        createdAt: { type: string }
+      required: [id, type, amount, status, createdAt]
+    ActivityEvent:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [support, penalty, owner] }
+        listingName: { type: string }
+        amount: { type: number }
+        rank: { type: number }
+        createdAt: { type: string }
+      required: [id, type, listingName, amount, rank, createdAt]
+    SponsorshipListingSummary:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        tagline: { type: string }
+        category: { type: string }
+        initials: { type: string }
+        accent: { type: string }
+        websiteUrl: { type: ["string", "null"] }
+        demoVideoUrl: { type: ["string", "null"] }
+        demoViewCount: { type: number, minimum: 0, multipleOf: 1 }
+        clickAnalytics: { $ref: "#/components/schemas/ListingClickAnalytics" }
+        logoUrl: { type: ["string", "null"] }
+      required: [id, name, slug, tagline, category, initials, accent, websiteUrl, demoVideoUrl, demoViewCount, clickAnalytics, logoUrl]
+    Sponsorship:
+      type: object
+      properties:
+        id: { type: string }
+        listing: { $ref: "#/components/schemas/SponsorshipListingSummary" }
+        slotNumber: { type: number, minimum: 1, maximum: 4 }
+        startAt: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+      required: [id, listing, slotNumber, startAt, expiresAt]
+    SponsorshipListResponse:
+      type: object
+      properties:
+        sponsorships:
+          type: array
+          items: { $ref: "#/components/schemas/Sponsorship" }
+        totalSlots: { type: number }
+      required: [sponsorships, totalSlots]
+    SponsorshipAvailability:
+      type: object
+      properties:
+        price: { type: number }
+        durationDays: { type: number }
+        totalSlots: { type: number }
+        availableSlots: { type: number }
+      required: [price, durationDays, totalSlots, availableSlots]
+    SponsorshipEventInput:
+      type: object
+      properties:
+        sponsorshipId: { type: string, minLength: 1 }
+        type: { type: string, enum: [popup_impression, section_impression, click] }
+      required: [sponsorshipId, type]
+    SponsorshipCheckoutInput:
+      type: object
+      properties:
+        listingId: { type: string, minLength: 1 }
+      required: [listingId]
+    SponsorshipCheckoutResponse:
+      type: object
+      properties:
+        payment: { $ref: "#/components/schemas/Payment" }
+        sponsorship: { $ref: "#/components/schemas/Sponsorship" }
+        sandbox: { type: boolean }
+      required: [payment, sponsorship, sandbox]
+    AdminSponsorship:
+      type: object
+      properties:
+        id: { type: string }
+        listing: { $ref: "#/components/schemas/SponsorshipListingSummary" }
+        ownerId: { type: string }
+        ownerName: { type: ["string", "null"] }
+        slotNumber: { type: number }
+        status: { type: string, enum: [pending, active, expired, cancelled] }
+        price: { type: number }
+        durationDays: { type: number }
+        paymentId: { type: string }
+        invoiceId: { type: ["string", "null"] }
+        startAt: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+        cancelledAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+        analytics:
+          type: object
+          properties:
+            popupImpressions: { type: number }
+            sectionImpressions: { type: number }
+            clicks: { type: number }
+            ctr: { type: number }
+          required: [popupImpressions, sectionImpressions, clicks, ctr]
+        revenue: { type: number }
+      required: [id, listing, ownerId, ownerName, slotNumber, status, price, durationDays, paymentId, invoiceId, startAt, expiresAt, cancelledAt, createdAt, analytics, revenue]
+    AdminUser:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+        role: { type: string, enum: [member, moderator, admin] }
+        status: { type: string, enum: [active, suspended] }
+        createdAt: { type: string }
+      required: [id, email, displayName, role, status, createdAt]
+    AdminListing:
+      allOf:
+        - $ref: "#/components/schemas/Listing"
+        - type: object
+          properties:
+            ownerId: { type: ["string", "null"] }
+            status: { type: string, enum: [active, suspended] }
+            moderationStatus: { type: string, enum: [active, pending_review, flagged, suspended, removed] }
+            moderationReason: { type: ["string", "null"] }
+            moderatedAt: { type: ["string", "null"] }
+    AdminTransaction:
+      type: object
+      properties:
+        id: { type: string }
+        listingId: { type: string }
+        listingName: { type: string }
+        userId: { type: ["string", "null"] }
+        type: { type: string }
+        amount: { type: number }
+        status: { type: string }
+        provider: { type: string }
+        createdAt: { type: string }
+        invoiceId: { type: ["string", "null"] }
+        invoiceNumber: { type: ["string", "null"] }
+        invoiceStatus: { type: ["string", "null"], enum: [PAID, REFUNDED, PARTIALLY_REFUNDED, null] }
+      required: [id, listingId, listingName, userId, type, amount, status, provider, createdAt, invoiceId, invoiceNumber, invoiceStatus]
+    AdminReview:
+      allOf:
+        - $ref: "#/components/schemas/Review"
+        - type: object
+          properties:
+            listingId: { type: string }
+            status: { type: string, enum: [published, under_review, hidden] }
+            moderationReason: { type: ["string", "null"] }
+    AdminReport:
+      type: object
+      properties:
+        id: { type: string }
+        reporterId: { type: ["string", "null"] }
+        targetType: { type: string }
+        targetId: { type: string }
+        reason: { type: string }
+        details: { type: string }
+        status: { type: string, enum: [open, under_review, resolved, dismissed] }
+        resolution: { type: ["string", "null"] }
+        createdAt: { type: string }
+        resolvedAt: { type: ["string", "null"] }
+      required: [id, reporterId, targetType, targetId, reason, details, status, resolution, createdAt, resolvedAt]
+    AdminFeedback:
+      type: object
+      properties:
+        id: { type: string }
+        category: { type: string, enum: [payment_issue, bug, other] }
+        message: { type: string }
+        contactEmail: { type: ["string", "null"] }
+        userId: { type: ["string", "null"] }
+        path: { type: ["string", "null"] }
+        status: { type: string, enum: [open, resolved, dismissed] }
+        resolution: { type: ["string", "null"] }
+        createdAt: { type: string }
+        resolvedAt: { type: ["string", "null"] }
+      required: [id, category, message, contactEmail, userId, path, status, resolution, createdAt, resolvedAt]
+    AdminRateLimit:
+      type: object
+      properties:
+        action: { type: string }
+        maxRequests: { type: number }
+        windowSeconds: { type: number }
+        updatedAt: { type: string }
+      required: [action, maxRequests, windowSeconds, updatedAt]
+    AuditEvent:
+      type: object
+      properties:
+        id: { type: string }
+        actorId: { type: string }
+        actorRole: { type: string }
+        action: { type: string }
+        targetType: { type: string }
+        targetId: { type: string }
+        metadata: { type: object, additionalProperties: true }
+        createdAt: { type: string }
+      required: [id, actorId, actorRole, action, targetType, targetId, metadata, createdAt]
+    AdminStats:
+      type: object
+      properties:
+        users: { type: number }
+        listings: { type: number }
+        transactions: { type: number }
+        reviews: { type: number }
+        openReports: { type: number }
+        suspendedAccounts: { type: number }
+        suspendedListings: { type: number }
+        openFeedback: { type: number }
+      required: [users, listings, transactions, reviews, openReports, suspendedAccounts, suspendedListings, openFeedback]
+    AdminOverview:
+      type: object
+      properties:
+        actorRole: { type: string, enum: [moderator, admin] }
+        stats: { $ref: "#/components/schemas/AdminStats" }
+        users:
+          type: array
+          items: { $ref: "#/components/schemas/AdminUser" }
+        listings:
+          type: array
+          items: { $ref: "#/components/schemas/AdminListing" }
+        transactions:
+          type: array
+          items: { $ref: "#/components/schemas/AdminTransaction" }
+        reviews:
+          type: array
+          items: { $ref: "#/components/schemas/AdminReview" }
+        reports:
+          type: array
+          items: { $ref: "#/components/schemas/AdminReport" }
+        feedback:
+          type: array
+          items: { $ref: "#/components/schemas/AdminFeedback" }
+        limits:
+          type: array
+          items: { $ref: "#/components/schemas/AdminRateLimit" }
+        auditEvents:
+          type: array
+          items: { $ref: "#/components/schemas/AuditEvent" }
+      required: [actorRole, stats, users, listings, transactions, reviews, reports, feedback, limits, auditEvents]

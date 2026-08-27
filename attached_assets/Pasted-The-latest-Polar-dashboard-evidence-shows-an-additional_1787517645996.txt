@@ -1,0 +1,148 @@
+The latest Polar dashboard evidence shows an additional webhook problem.
+
+Do NOT make another payment yet.
+Do NOT replay the existing 175 events.
+Do NOT manually credit any existing order.
+Do NOT modify the ledger manually.
+
+The dashboard shows:
+
+- order.paid → 404
+- order.paid → 404
+- checkout.created → 400
+- checkout.updated → 400
+- order.created → 400
+- order.updated → 400
+- customer.created → 400
+- customer.state_changed → 400
+- member.created → 400
+
+Fix the webhook implementation comprehensively.
+
+PRIMARY FIX:
+Ensure every public Polar checkout persists the internal payment record BEFORE creating the Polar hosted checkout.
+
+The sequence must be:
+
+validate request
+→ generate stable internal payment ID
+→ persist payment
+→ create Polar checkout
+→ attach the same internal payment ID/trusted metadata
+→ save Polar checkout/order IDs
+→ return checkout URL
+
+SECOND FIX:
+Do not return HTTP 400 for legitimate Polar events simply because they are not payment-credit events.
+
+For valid, correctly signed Polar events that the application does not need to process, acknowledge them with HTTP 2xx.
+
+Examples include:
+
+checkout.created
+checkout.updated
+order.created
+order.updated
+customer.created
+customer.state_changed
+member.created
+
+These events must not modify money, ledger, ranking, or payment success state.
+
+THIRD FIX:
+Keep strict verification for order.paid.
+
+order.paid must:
+
+1. Verify Polar Standard Webhooks signature.
+2. Verify native Polar event type.
+3. Locate the existing internal payment.
+4. Verify trusted internal payment ID.
+5. Verify campaign/listing/action metadata.
+6. Verify amount.
+7. Verify currency.
+8. Verify provider/environment.
+9. Verify Polar checkout/order relationship.
+10. Process exactly once.
+11. Create exactly one payment event.
+12. Create exactly one ledger entry.
+13. Apply exactly one ranking/campaign mutation.
+14. Create exactly one audit event.
+15. Return HTTP 2xx.
+
+If the internal payment does not exist:
+- never create it from the webhook
+- never credit the campaign
+- never create a ledger entry
+- return a retryable failure according to the existing webhook contract.
+
+FOURTH FIX:
+Unknown but validly signed Polar events should be safely acknowledged rather than treated as malformed requests.
+
+Invalid signatures must still return 401.
+Malformed requests must still return an appropriate 4xx.
+Do not weaken authentication.
+
+FIFTH FIX:
+Add automated tests for every behavior above.
+
+At minimum:
+
+- checkout persists payment before Polar API call
+- Polar checkout failure leaves payment non-paid
+- order.paid success
+- duplicate order.paid
+- missing payment
+- amount mismatch
+- currency mismatch
+- metadata mismatch
+- checkout.created → 2xx
+- checkout.updated → 2xx
+- order.created → 2xx
+- order.updated → 2xx
+- customer.created → 2xx
+- customer.state_changed → 2xx
+- member.created → 2xx
+- invalid signature → 401
+- unknown valid event → 2xx
+- concurrent checkout requests → one internal payment/checkout
+
+SIXTH FIX:
+Use an isolated disposable database for tests.
+
+Do not mutate production data during tests.
+
+SEVENTH:
+After implementation:
+
+- typecheck
+- production build
+- API tests
+- payment security tests
+- webhook tests
+- idempotency/concurrency tests
+- browser checkout flow tests
+
+Do NOT claim the integration is fixed merely because the build passes.
+
+Before asking me to make another $5 payment, report:
+
+PAYMENT PERSISTED BEFORE CHECKOUT: PASS/FAIL
+POLAR CHECKOUT CREATION: PASS/FAIL
+ORDER.PAID: PASS/FAIL
+NON-PAYMENT EVENTS ACKNOWLEDGED: PASS/FAIL
+SIGNATURE VERIFICATION: PASS/FAIL
+AMOUNT VALIDATION: PASS/FAIL
+CURRENCY VALIDATION: PASS/FAIL
+METADATA VALIDATION: PASS/FAIL
+IDEMPOTENCY: PASS/FAIL
+CONCURRENCY: PASS/FAIL
+REFUNDS: PASS/FAIL
+LEDGER PROTECTION: PASS/FAIL
+RANKING PROTECTION: PASS/FAIL
+AUTOMATED TESTS: PASS/FAIL
+PRODUCTION BUILD: PASS/FAIL
+
+Also report the exact webhook response status expected for each event class.
+
+Do not re-enable the Polar webhook or ask me to make another payment until all automated checks pass.
